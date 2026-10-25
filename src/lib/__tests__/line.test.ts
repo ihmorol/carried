@@ -29,7 +29,7 @@ describe("line codec", () => {
   });
 
   it("handles unicode names and lines", () => {
-    const { id } = encodeLine({ ...base, name: "Zoë", text: "Brontë was right — ça change tout." });
+    const { id } = encodeLine({ ...base, name: "Zoë", text: "Brontë was right, ça change tout." });
     const decoded = decodeLine(id);
     expect(decoded.n).toBe("Zoë");
     expect(decoded.q).toContain("ça change");
@@ -92,7 +92,7 @@ describe("store validation", () => {
   it("slugifies titles for reader-added books", () => {
     expect(slugifyTitle("The Wings of Fire!")).toBe("the-wings-of-fire");
     expect(slugifyTitle("Brontë & Sisters")).toBe("bronte-sisters");
-    expect(slugifyTitle("   ——— ")).toBe("");
+    expect(slugifyTitle("  ,.?!")).toBe("");
   });
 
   it("rejects bad lines and books with StoreError", () => {
@@ -144,7 +144,7 @@ describe("line slug ids", () => {
 
   it("drops stopwords and falls back to the book slug for non-latin lines", () => {
     expect(lineSlugId({ ...payload, q: "The it and the of" }).startsWith("the-alchemist-")).toBe(true);
-    expect(lineSlugId({ ...payload, q: "To be, or not to be — that is the question" }).startsWith("question")).toBe(true);
+    expect(lineSlugId({ ...payload, q: "To be, or not to be, that is the question" }).startsWith("question")).toBe(true);
     // a Bangla line keeps its link meaningful via the book slug
     const bnLine = { ...payload, q: "বইটা আমাকে যা শিখিয়েছে" };
     const id = lineSlugId(bnLine);
@@ -212,7 +212,7 @@ describe("memory store", () => {
     expect(resolved?.n.length).toBeGreaterThan(0);
   });
 
-  it("toggles underlines — one vote per voter, counted per line", async () => {
+  it("toggles underlines, one vote per voter, counted per line", async () => {
     const store = new MemoryStore();
     const rec = await store.addLine("the-alchemist", { q: "Vote on me.", n: "T", s: "paper" });
 

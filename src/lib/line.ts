@@ -3,12 +3,12 @@ import { LINE_MAX, NAME_MAX } from "./site";
 
 /**
  * A carried line lives entirely inside its URL. The link IS the database:
- * no account, no backend, nothing to store — the share carries the payload,
+ * no account, no backend, nothing to store, the share carries the payload,
  * and the OG image is rendered from the same payload server-side.
  *
  * The codec validates structure only. Whether the book exists on the
  * current shelf (curated or reader-added) is checked by the caller via
- * `findBook` — the shelf can grow without invalidating old links.
+ * `findBook`, the shelf can grow without invalidating old links.
  */
 
 export type LinePayload = {
@@ -55,7 +55,7 @@ export function encodeLine(input: {
   const name = input.name.trim().replace(/\s+/g, " ");
   if (!text) throw new LineError("Write the line first.");
   if (text.length > LINE_MAX) throw new LineError(`Lines carry at most ${LINE_MAX} characters.`);
-  if (!name) throw new LineError("Sign your name — that's the whole point.");
+  if (!name) throw new LineError("Sign your name, that's the whole point.");
   if (name.length > NAME_MAX) throw new LineError(`Names are at most ${NAME_MAX} characters.`);
   const payload: LinePayload = {
     v: 1,
@@ -68,7 +68,7 @@ export function encodeLine(input: {
   return { id: encodePayload(payload), payload };
 }
 
-/** Pure serialization — the store builds payloads for reader-added books itself. */
+/** Pure serialization, the store builds payloads for reader-added books itself. */
 export function encodePayload(payload: LinePayload): string {
   const json = JSON.stringify(payload);
   const bytes = new TextEncoder().encode(json);
@@ -79,8 +79,8 @@ export function encodePayload(payload: LinePayload): string {
  * Short, meaningful, unique line ids: the first significant words of the
  * line plus a deterministic 5-char hash of the exact payload.
  *   "Sheep follow. The boy chooses." + name/ink/date → sheep-follow-chooses-k3f2
- * Deterministic, so the same line always maps to the same URL — reposts
- * dedupe naturally — and different lines never share one.
+ * Deterministic, so the same line always maps to the same URL, reposts
+ * dedupe naturally, and different lines never share one.
  */
 const STOPWORDS = new Set([
   "the", "a", "an", "and", "or", "of", "to", "in", "is", "it", "its", "it's",
@@ -109,7 +109,7 @@ export function lineSlugId(payload: LinePayload, suffixChars = 5): string {
     .split(/\s+/)
     .filter((w) => w && !STOPWORDS.has(w));
   let base = words.slice(0, 4).join("-").slice(0, 28).replace(/-+$/, "");
-  // Bangla (and other non-Latin) lines have no latin words — the book's
+  // Bangla (and other non-Latin) lines have no latin words, the book's
   // slug keeps the link meaningful instead of a bare "line"
   if (!base) base = payload.b;
   const suffix = payloadHash(payload).toString(36).padStart(suffixChars, "0").slice(0, suffixChars);
@@ -157,7 +157,7 @@ export function formatStampDate(iso: string): string {
   return `${String(d).padStart(2, "0")} ${months[m - 1]} ${y}`;
 }
 
-/** Bengali script detection — used to pick the right typography everywhere. */
+/** Bengali script detection, used to pick the right typography everywhere. */
 export function isBengali(text: string): boolean {
   return /[\u0980-\u09FF]/.test(text);
 }
@@ -172,7 +172,7 @@ function toBnDigits(s: string): string {
   return s.replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
 }
 
-/** Stamp date in Bangla — for cards whose line is written in Bangla. */
+/** Stamp date in Bangla, for cards whose line is written in Bangla. */
 export function formatStampDateBn(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return iso;

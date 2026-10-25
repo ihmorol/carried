@@ -16,7 +16,7 @@ Not a review. Not a rating. You pick a book, write the one sentence you'd underl
  book (or    sign, stamp      stamped & shareable
  add one)            ▲                │
                      └── every share  ▼  "what did it leave
-                         is an invite    in you?" — the loop
+                         is an invite    in you?", the loop
 ```
 
 - **Everything is live.** Lines land on the book page and the home ticker in real time (6–8 s polling, no reload). No accounts anywhere: your name rides with the line.

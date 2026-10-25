@@ -12,7 +12,7 @@ import { useLocale } from "./LocaleProvider";
 
 /**
  * Write the line, sign it, stamp it. Posts to the live shelf when it's
- * connected; when it isn't, the line travels in its URL instead — either
+ * connected; when it isn't, the line travels in its URL instead, either
  * way the reader lands on their card.
  */
 export function Composer({ book }: { book: Book }) {
@@ -97,7 +97,7 @@ export function Composer({ book }: { book: Book }) {
       }
       throw new Error("live shelf unreachable");
     } catch {
-      // live shelf offline — the URL still carries the whole line
+      // live shelf offline, the URL still carries the whole line
       const { id, payload } = encodeLine({ bookSlug: book.slug, text, name, ink, date: today });
       finish(id, payload);
     }

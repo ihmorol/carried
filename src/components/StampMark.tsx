@@ -2,7 +2,7 @@ import { formatStampDate } from "@/lib/line";
 import type { Ink } from "@/lib/inks";
 
 /**
- * The rubber stamp — the ownership moment. Ink-textured via mask,
+ * The rubber stamp, the ownership moment. Ink-textured via mask,
  * slightly crooked, always in stamp red (or the ink's stamp color).
  */
 export function StampMark({

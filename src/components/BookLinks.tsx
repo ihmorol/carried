@@ -5,7 +5,7 @@ import { bookArchiveLinks } from "@/lib/bookmeta";
 import { useLocale } from "./LocaleProvider";
 
 /**
- * "Find the book" — free archives first, then honest ways to get it.
+ * "Find the book", free archives first, then honest ways to get it.
  * Search-page links only, so we never claim availability we can't verify.
  */
 export function BookLinks({ book, workUrl }: { book: Book; workUrl: string | null }) {

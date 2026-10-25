@@ -27,7 +27,7 @@ export async function generateMetadata({
   const book = await findBook(slug);
   if (!book) return {};
   return {
-    title: `${book.title} — ${book.author}`,
+    title: `${book.title}, ${book.author}`,
     description: `The lines readers carried out of ${book.title} (${book.author}, ${book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}). What did it leave in you?`,
     alternates: { canonical: `/b/${book.slug}` },
   };
@@ -106,7 +106,7 @@ export default async function BookPage({
           </div>
         </section>
 
-        {/* the composer — right here, one scroll away, no extra page */}
+        {/* the composer, right here, one scroll away, no extra page */}
         <section
           id="write"
           className="mx-auto max-w-6xl scroll-mt-6 border-t px-5 py-14"

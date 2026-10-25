@@ -1,6 +1,6 @@
 import type { Seed } from "./seed-type";
 
-/** Philosophy, psychology, memoir — the shelf of ideas. Original reader takeaways, not excerpts. */
+/** Philosophy, psychology, memoir, the shelf of ideas. Original reader takeaways, not excerpts. */
 export const IDEAS: Seed[] = [
   // Meditations
   { b: "meditations", q: "Nothing outside my choosing could ever be my doing. So I choose, and I let the rest be weather.", n: "Tomas", s: "paper", d: "2026-02-14" },
@@ -19,15 +19,15 @@ export const IDEAS: Seed[] = [
   { b: "the-myth-of-sisyphus", q: "There is but one truly serious philosophical problem: suicide. Camus opens with the door everyone avoids.", n: "Petra", s: "midnight", d: "2026-04-07" },
   { b: "the-myth-of-sisyphus", q: "The absurd is born of the confrontation between human need and the unreasonable silence of the world.", n: "Grace", s: "moss", d: "2026-05-07" },
   { b: "the-myth-of-sisyphus", q: "The struggle itself toward the heights is enough to fill a man's heart. Monday mornings agreed.", n: "Owen", s: "paper", d: "2026-06-07" },
-  { b: "the-myth-of-sisyphus", q: "Revolt gives life its value. Not revolution — the daily, stubborn kind.", n: "Rosa", s: "midnight", d: "2026-07-07" },
-  { b: "the-myth-of-sisyphus", q: "Don Juan, actor, conqueror — three lives lived fully in the face of nothing. Camus keeps his humor dry.", n: "Dario", s: "moss", d: "2026-08-07" },
+  { b: "the-myth-of-sisyphus", q: "Revolt gives life its value. Not revolution, the daily, stubborn kind.", n: "Rosa", s: "midnight", d: "2026-07-07" },
+  { b: "the-myth-of-sisyphus", q: "Don Juan, actor, conqueror, three lives lived fully in the face of nothing. Camus keeps his humor dry.", n: "Dario", s: "moss", d: "2026-08-07" },
   { b: "the-myth-of-sisyphus", q: "Real generosity toward the future lies in giving all to the present. My calendar underlined it.", n: "Hana", s: "paper", d: "2026-09-07" },
   { b: "the-myth-of-sisyphus", q: "In the midst of winter, I found there was, within me, an invincible summer. Technically from Return to Tipasa, but it lives here.", n: "Camila", s: "midnight", d: "2026-10-07" },
   { b: "the-myth-of-sisyphus", q: "Freedom is nothing but a chance to be better. Small print of the absurd, large heart.", n: "Amir", s: "moss", d: "2026-10-20" },
   { b: "the-myth-of-sisyphus", q: "Carried out of it: the boulder is yours either way. Style is the only variable.", n: "Ilan", s: "paper", d: "2026-10-27" },
 
   // Thus Spoke Zarathustra
-  { b: "thus-spoke-zarathustra", q: "Man is a rope, tied between beast and overman — a rope over an abyss. Read slowly, then live loudly.", n: "Petra", s: "paper", d: "2026-03-09" },
+  { b: "thus-spoke-zarathustra", q: "Man is a rope, tied between beast and overman, a rope over an abyss. Read slowly, then live loudly.", n: "Petra", s: "paper", d: "2026-03-09" },
   { b: "thus-spoke-zarathustra", q: "What is great in man is that he is a bridge and not an end. The bridge metaphor carried me for a year.", n: "Ilan", s: "midnight", d: "2026-04-09" },
   { b: "thus-spoke-zarathustra", q: "One must have chaos in oneself to give birth to a dancing star. My mess filed for purpose.", n: "Wren", s: "moss", d: "2026-05-09" },
   { b: "thus-spoke-zarathustra", q: "The last man blinked. Nietzsche described 2026 in 1883 and asked us to want more.", n: "Theo", s: "paper", d: "2026-06-09" },
@@ -46,7 +46,7 @@ export const IDEAS: Seed[] = [
   { b: "the-prince", q: "Men are so simple, and so much inclined to obey present needs, that a deceiver will always find victims. Ouch, forever.", n: "Grace", s: "midnight", d: "2026-07-11" },
   { b: "the-prince", q: "There is nothing more difficult to take in hand than to introduce a new order of things. Every founder's first month.", n: "Owen", s: "moss", d: "2026-08-11" },
   { b: "the-prince", q: "Fortune is the arbiter of one-half of our actions. Machiavelli leaves half to us. Generous, for 1513.", n: "Hana", s: "paper", d: "2026-09-11" },
-  { b: "the-prince", q: "Mildness vs. cruelty in Bologna — it is much safer to be feared than loved, but avoid being hated. The manual's fine print.", n: "Dario", s: "midnight", d: "2026-10-11" },
+  { b: "the-prince", q: "Mildness vs. cruelty in Bologna, it is much safer to be feared than loved, but avoid being hated. The manual's fine print.", n: "Dario", s: "midnight", d: "2026-10-11" },
   { b: "the-prince", q: "A return to first principles in a republic is sometimes caused by the simple virtues of one man. One person can be a reset.", n: "Grace", s: "moss", d: "2026-10-21" },
   { b: "the-prince", q: "Carried out of it: read it as comedy about power. It stops hurting and starts explaining.", n: "Theo", s: "paper", d: "2026-10-28" },
 
@@ -70,14 +70,14 @@ export const IDEAS: Seed[] = [
   { b: "walden", q: "If a man does not keep pace with his companions, perhaps it is because he hears a different drummer.", n: "Owen", s: "midnight", d: "2026-06-25" },
   { b: "walden", q: "The cost of a thing is the amount of life which is required to be exchanged for it. The truest price tag ever written.", n: "Hana", s: "moss", d: "2026-07-25" },
   { b: "walden", q: "Simplicity, simplicity, simplicity! He repeated it three times to make the point land. It landed.", n: "Mira", s: "paper", d: "2026-08-25" },
-  { b: "walden", q: "The bean-field chapter — he hoes seven miles of beans and calls it an argument. Slow content, perfect form.", n: "Amir", s: "midnight", d: "2026-09-25" },
+  { b: "walden", q: "The bean-field chapter, he hoes seven miles of beans and calls it an argument. Slow content, perfect form.", n: "Amir", s: "midnight", d: "2026-09-25" },
   { b: "walden", q: "I have never found a companion that was so companionable as solitude. Introverts' founding document.", n: "Rosa", s: "moss", d: "2026-10-25" },
   { b: "walden", q: "Carried out of it: live deliberately. Thoreau only rented the pond; the deliberateness was owned.", n: "Ilan", s: "paper", d: "2026-10-28" },
 
   // Man's Search for Meaning
   { b: "mans-search-for-meaning", q: "Meaning isn't found once and kept. It's remade every ordinary morning.", n: "Elena", s: "paper", d: "2026-02-02" },
   { b: "mans-search-for-meaning", q: "He who has a why to live can bear almost any how. Frankl borrowed Nietzsche's line and earned it.", n: "Ilan", s: "midnight", d: "2026-03-06" },
-  { b: "mans-search-for-meaning", q: "Everything can be taken from a man but one thing: the last of the human freedoms — to choose one's attitude.", n: "Grace", s: "moss", d: "2026-04-06" },
+  { b: "mans-search-for-meaning", q: "Everything can be taken from a man but one thing: the last of the human freedoms, to choose one's attitude.", n: "Grace", s: "moss", d: "2026-04-06" },
   { b: "mans-search-for-meaning", q: "Those who have a why can survive almost any camp. Frankl's psychiatry was built in the worst room on earth.", n: "Amir", s: "paper", d: "2026-05-06" },
   { b: "mans-search-for-meaning", q: "Love is the ultimate and the highest goal to which man can aspire. He wrote it thinking of his wife, walking to work.", n: "Rosa", s: "midnight", d: "2026-06-06" },
   { b: "mans-search-for-meaning", q: "The prisoner who had lost faith in the future was doomed. Hope is a clinical variable.", n: "Petra", s: "moss", d: "2026-07-06" },
@@ -89,19 +89,19 @@ export const IDEAS: Seed[] = [
   // Thinking, Fast and Slow
   { b: "thinking-fast-and-slow", q: "My confident self is mostly a narrator inventing reasons. I ask for the data before the story.", n: "Karim", s: "paper", d: "2026-05-16" },
   { b: "thinking-fast-and-slow", q: "System 1 jumps, System 2 files the paperwork late. I caught my own brain mid-jump twice this week.", n: "Theo", s: "midnight", d: "2026-03-08" },
-  { b: "thinking-fast-and-slow", q: "WYSIATI — what you see is all there is. The acronym that explains half my arguments.", n: "Grace", s: "moss", d: "2026-04-08" },
+  { b: "thinking-fast-and-slow", q: "WYSIATI, what you see is all there is. The acronym that explains half my arguments.", n: "Grace", s: "moss", d: "2026-04-08" },
   { b: "thinking-fast-and-slow", q: "Loss aversion: losses loom about twice as large as gains. My portfolio and my heart read it together.", n: "Hana", s: "paper", d: "2026-06-08" },
-  { b: "thinking-fast-and-slow", q: "The anchoring effect — even a random number bends the answer. I watch the first number in every negotiation now.", n: "Ilan", s: "midnight", d: "2026-07-08" },
+  { b: "thinking-fast-and-slow", q: "The anchoring effect, even a random number bends the answer. I watch the first number in every negotiation now.", n: "Ilan", s: "midnight", d: "2026-07-08" },
   { b: "thinking-fast-and-slow", q: "Kahneman's own admission: his classic study was built on a fallacy. A scientist correcting himself in his last chapter. Respect.", n: "Petra", s: "moss", d: "2026-08-08" },
   { b: "thinking-fast-and-slow", q: "Planning fallacy: we make plans that are best case. Add 40% to every estimate. You're welcome.", n: "Owen", s: "paper", d: "2026-09-08" },
   { b: "thinking-fast-and-slow", q: "Peak-end rule: we remember the peak and the ending, not the average. I've been designing endings ever since.", n: "Rosa", s: "midnight", d: "2026-10-08" },
-  { b: "thinking-fast-and-slow", q: "The illusion of validity — confidence is not evidence. Interview panels, take note.", n: "Priya", s: "moss", d: "2026-10-18" },
+  { b: "thinking-fast-and-slow", q: "The illusion of validity, confidence is not evidence. Interview panels, take note.", n: "Priya", s: "moss", d: "2026-10-18" },
   { b: "thinking-fast-and-slow", q: "Carried out of it: slow is a superpower you can rent by the hour. I rent it before replying.", n: "Karim", s: "paper", d: "2026-10-26" },
 
   // Quiet
   { b: "quiet", q: "Introversion isn't a flaw to fix. It's a depth to visit, and I live there.", n: "Rosa", s: "paper", d: "2026-07-04" },
   { b: "quiet", q: "There's zero correlation between being the best talker and having the best ideas. Cain said it; every meeting room denied it.", n: "Ilan", s: "midnight", d: "2026-03-10" },
-  { b: "quiet", q: "Solitude is a catalyst for innovation. Darwin, Dr. Seuss, Steve Wozniak — the list is a quiet room.", n: "Grace", s: "moss", d: "2026-04-10" },
+  { b: "quiet", q: "Solitude is a catalyst for innovation. Darwin, Dr. Seuss, Steve Wozniak, the list is a quiet room.", n: "Grace", s: "moss", d: "2026-04-10" },
   { b: "quiet", q: "The extrovert ideal is a cultural invention, about a hundred years old. It has an off switch. Use it.", n: "Wren", s: "paper", d: "2026-05-10" },
   { b: "quiet", q: "Free trait theory: act out of character for core projects, then rest in your own nature. Scheduling authenticity.", n: "Priya", s: "midnight", d: "2026-06-10" },
   { b: "quiet", q: "High-reactive infants grow into careful adults, not fearful ones. Sensitivity is processing depth.", n: "Hana", s: "moss", d: "2026-07-10" },
@@ -111,15 +111,15 @@ export const IDEAS: Seed[] = [
   { b: "quiet", q: "Carried out of it: take the stage when it's yours, then go home and think. Both halves are the job.", n: "Rosa", s: "paper", d: "2026-10-25" },
 
   // Sapiens
-  { b: "sapiens", q: "Fictions built the world — money, nations, rights. I choose my fictions on purpose now.", n: "Ada", s: "paper", d: "2026-05-09" },
+  { b: "sapiens", q: "Fictions built the world, money, nations, rights. I choose my fictions on purpose now.", n: "Ada", s: "paper", d: "2026-05-09" },
   { b: "sapiens", q: "Seventy thousand years ago we told better stories than the Neanderthals and here we are. Fiction is a survival technology.", n: "Theo", s: "midnight", d: "2026-03-12" },
   { b: "sapiens", q: "The Agricultural Revolution was history's biggest fraud. Wheat domesticated us; the book proves the paperwork.", n: "Grace", s: "moss", d: "2026-04-12" },
   { b: "sapiens", q: "Imagined orders: hierarchies exist because we all agree to look away. My org chart felt seen.", n: "Petra", s: "paper", d: "2026-06-12" },
   { b: "sapiens", q: "Money is the most universal and most efficient system of mutual trust ever devised. My wallet felt philosophical.", n: "Hana", s: "midnight", d: "2026-07-12" },
   { b: "sapiens", q: "We did not domesticate wheat. It domesticated us. The sentence that rearranged my grocery list.", n: "Owen", s: "moss", d: "2026-08-12" },
-  { b: "sapiens", q: "The luxury trap — every improvement becomes a new necessity. Ironed shirts to inboxes.", n: "Rosa", s: "paper", d: "2026-09-12" },
+  { b: "sapiens", q: "The luxury trap, every improvement becomes a new necessity. Ironed shirts to inboxes.", n: "Rosa", s: "paper", d: "2026-09-12" },
   { b: "sapiens", q: "Happiness doesn't really depend on objective conditions. It's the expectations game, run on biology.", n: "Karim", s: "midnight", d: "2026-10-12" },
-  { b: "sapiens", q: "Cognitive revolution, agricultural revolution, scientific revolution — and the fourth one is us, now, editing life.", n: "Ada", s: "moss", d: "2026-10-19" },
+  { b: "sapiens", q: "Cognitive revolution, agricultural revolution, scientific revolution, and the fourth one is us, now, editing life.", n: "Ada", s: "moss", d: "2026-10-19" },
   { b: "sapiens", q: "Carried out of it: we rule the world because we're the only animal that believes in things that don't exist. Believe carefully.", n: "Ilan", s: "paper", d: "2026-10-27" },
 
   // The Diary of a Young Girl
@@ -138,19 +138,19 @@ export const IDEAS: Seed[] = [
   { b: "when-breath-becomes-air", q: "You don't get to finish the book. You get to finish sentences. Make them good.", n: "Maya", s: "paper", d: "2026-07-11" },
   { b: "when-breath-becomes-air", q: "The future I had imagined collapsed, and I had to build meaning out of a shorter runway. Kalanithi, surgeon to patient.", n: "Grace", s: "midnight", d: "2026-03-16" },
   { b: "when-breath-becomes-air", q: "I can't go on. I'll go on. The epigraph he chose was the review he wrote of his own life.", n: "Ilan", s: "moss", d: "2026-04-16" },
-  { b: "when-breath-becomes-air", q: "Science may have found a cure for most evils, but it has found no remedy for the worst of them all — the apathy of human beings. Helen Keller, quoted mid-book.", n: "Rosa", s: "paper", d: "2026-05-16" },
+  { b: "when-breath-becomes-air", q: "Science may have found a cure for most evils, but it has found no remedy for the worst of them all, the apathy of human beings. Helen Keller, quoted mid-book.", n: "Rosa", s: "paper", d: "2026-05-16" },
   { b: "when-breath-becomes-air", q: "Before operating, he asked what the patient's life would be about after. Medicine as meaning-making.", n: "Amir", s: "midnight", d: "2026-06-16" },
   { b: "when-breath-becomes-air", q: "His daughter Cady: when you come to one of the moments you must give something up, it's okay to be sad. He wrote it to her.", n: "Camila", s: "moss", d: "2026-07-16" },
-  { b: "when-breath-becomes-air", q: "The diagnosis email he sent his colleagues — grammar intact, terror visible. Bravest email in memoir.", n: "Petra", s: "paper", d: "2026-08-16" },
+  { b: "when-breath-becomes-air", q: "The diagnosis email he sent his colleagues, grammar intact, terror visible. Bravest email in memoir.", n: "Petra", s: "paper", d: "2026-08-16" },
   { b: "when-breath-becomes-air", q: "Lucy's epilogue carries the book past his voice. Grief finished the manuscript.", n: "Vera", s: "midnight", d: "2026-09-16" },
-  { b: "when-breath-becomes-air", q: "Even terminally, he went back to surgery. Not denial — vocation.", n: "Hana", s: "moss", d: "2026-10-16" },
+  { b: "when-breath-becomes-air", q: "Even terminally, he went back to surgery. Not denial, vocation.", n: "Hana", s: "moss", d: "2026-10-16" },
   { b: "when-breath-becomes-air", q: "Carried out of it: read it before you need it. It recalibrates your calendar for free.", n: "Maya", s: "paper", d: "2026-10-26" },
 
   // Educated
   { b: "educated", q: "You can love someone and still choose to say goodbye. You can miss a person every day and be glad they're gone.", n: "Grace", s: "paper", d: "2026-03-18" },
   { b: "educated", q: "The decision to become educated was a decision to change myself. Westover's definition, and mine now.", n: "Petra", s: "midnight", d: "2026-04-18" },
   { b: "educated", q: "First, find out what the Holocaust is, said the professor. A girl from a survivalist house asked in good faith.", n: "Ilan", s: "moss", d: "2026-05-18" },
-  { b: "educated", q: "Dad's benzene warnings and the angel Moroni — faith and fear braided so tight you can't tell which is which.", n: "Rosa", s: "paper", d: "2026-06-18" },
+  { b: "educated", q: "Dad's benzene warnings and the angel Moroni, faith and fear braided so tight you can't tell which is which.", n: "Rosa", s: "paper", d: "2026-06-18" },
   { b: "educated", q: "The knife scene with Shawn and the toilet. Some chapters you read through your fingers.", n: "Mira", s: "midnight", d: "2026-07-18" },
   { b: "educated", q: "My life is narrated for me by all those whose voices are louder. Writing this book took the microphone back.", n: "Vera", s: "moss", d: "2026-08-18" },
   { b: "educated", q: "Tyler said: there's a world out there, Tara, and it will look a lot better once Dad is not in your gaze. A brother as a door.", n: "Grace", s: "paper", d: "2026-09-18" },
@@ -159,14 +159,14 @@ export const IDEAS: Seed[] = [
   { b: "educated", q: "Carried out of it: self-invention is legal. Bring your own documents.", n: "Grace", s: "paper", d: "2026-10-27" },
 
   // Born a Crime
-  { b: "born-a-crime", q: "I was born a crime — being mixed in apartheid South Africa meant proving your mother was your mother.", n: "Kofi", s: "paper", d: "2026-03-20" },
+  { b: "born-a-crime", q: "I was born a crime, being mixed in apartheid South Africa meant proving your mother was your mother.", n: "Kofi", s: "paper", d: "2026-03-20" },
   { b: "born-a-crime", q: "My mother raised me as if there were no limitations in the world. Trevor's whole career, explained.", n: "Grace", s: "midnight", d: "2026-04-20" },
   { b: "born-a-crime", q: "Language brings with it an identity and a culture. He spoke six and walked through six worlds.", n: "Amir", s: "moss", d: "2026-05-20" },
-  { b: "born-a-crime", q: "The German mulatto kid who traded CDs — hustle as a curriculum.", n: "Ilan", s: "paper", d: "2026-06-20" },
+  { b: "born-a-crime", q: "The German mulatto kid who traded CDs, hustle as a curriculum.", n: "Ilan", s: "paper", d: "2026-06-20" },
   { b: "born-a-crime", q: "Hitler, the dancer, at a Jewish school assembly. I laughed, then winced, then laughed again.", n: "Rosa", s: "midnight", d: "2026-07-20" },
   { b: "born-a-crime", q: "Abel's jealousy brewed quietly in the garage. The book shows how violence becomes domestic, step by step.", n: "Vera", s: "moss", d: "2026-08-20" },
   { b: "born-a-crime", q: "She ran with me in her arms and laughed: good thing you're fast. Faith as cardio.", n: "Mira", s: "paper", d: "2026-09-20" },
-  { b: "born-a-crime", q: "Learn from your history but don't carry it in your mouth — his grandmother, wiser than the chapter.", n: "Grace", s: "midnight", d: "2026-10-20" },
+  { b: "born-a-crime", q: "Learn from your history but don't carry it in your mouth, his grandmother, wiser than the chapter.", n: "Grace", s: "midnight", d: "2026-10-20" },
   { b: "born-a-crime", q: "The shooting and the next morning's text: don't come to the hospital, we don't want you to see her like this. Family protects even in rubble.", n: "Kofi", s: "moss", d: "2026-10-23" },
   { b: "born-a-crime", q: "Carried out of it: comedy is how the survivors testify. Listen to the laugh lines twice.", n: "Grace", s: "paper", d: "2026-10-28" },
 
@@ -179,6 +179,6 @@ export const IDEAS: Seed[] = [
   { b: "tuesdays-with-morrie", q: "The hibiscus plant by his bed, losing petals on schedule. Death kept perfect time in that room.", n: "Camila", s: "moss", d: "2026-07-11" },
   { b: "tuesdays-with-morrie", q: "Mitch's brother in Spain wouldn't return calls. The book is a reconciliation manual disguised as a goodbye.", n: "Grace", s: "paper", d: "2026-08-11" },
   { b: "tuesdays-with-morrie", q: "Do I wither up and disappear, or do I make the best of my time left? He made the best of it loudly.", n: "Kofi", s: "midnight", d: "2026-09-11" },
-  { b: "tuesdays-with-morrie", q: "The final Tuesday — Mitch finally touched his face without flinching. Fifteen Tuesdays to learn a hug.", n: "Rosa", s: "moss", d: "2026-10-11" },
+  { b: "tuesdays-with-morrie", q: "The final Tuesday, Mitch finally touched his face without flinching. Fifteen Tuesdays to learn a hug.", n: "Rosa", s: "moss", d: "2026-10-11" },
   { b: "tuesdays-with-morrie", q: "Carried out of it: schedule your Tuesdays. The people you love are the elective that matters.", n: "Grace", s: "paper", d: "2026-10-27" },
 ];

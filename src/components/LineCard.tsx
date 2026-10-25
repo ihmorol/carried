@@ -7,7 +7,7 @@ import { StampMark } from "./StampMark";
 import { UnderlineButton } from "./UnderlineButton";
 
 /**
- * The catalog card — the artifact people share. Same design language as
+ * The catalog card, the artifact people share. Same design language as
  * the canvas export and the OG image: double rule, Fraunces italic line,
  * ledger metadata, the ownership stamp, and the underline vote.
  */
@@ -23,7 +23,7 @@ export function LineCard({
   onChange,
 }: {
   payload: LinePayload;
-  /** the id — slug or legacy encoded — used for the accession no + vote target */
+  /** the id, slug or legacy encoded, used for the accession no + vote target */
   id: string;
   size?: "sm" | "lg";
   animateStamp?: boolean;
@@ -33,7 +33,7 @@ export function LineCard({
   votes?: number;
   /** the preview card in the composer hides the vote strip */
   actions?: boolean;
-  /** fired after a vote lands — feeds use it to re-sort */
+  /** fired after a vote lands, feeds use it to re-sort */
   onChange?: (lineId: string, votes: number, voted: boolean) => void;
 }) {
   const ink = INKS[payload.s];

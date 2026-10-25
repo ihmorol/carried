@@ -30,7 +30,7 @@ const TAG_COLORS: Partial<Record<(typeof TAGS)[number], string>> = {
 /**
  * The public shelf: instant search over the curated 110 plus every
  * reader-added book (fetched from the live shelf), and the form that
- * adds missing books — two fields, one click to its page.
+ * adds missing books, two fields, one click to its page.
  */
 export function ShelfExplorer() {
   const router = useRouter();
@@ -54,7 +54,7 @@ export function ShelfExplorer() {
       setLive(data.live);
       setUserBooks(data.books.filter((b) => b.tags.includes("reader-added")));
     } catch {
-      /* offline — curated shelf only */
+      /* offline, curated shelf only */
     }
   }, []);
 
@@ -113,7 +113,7 @@ export function ShelfExplorer() {
       setUserBooks((prev) => [...prev.filter((b) => b.slug !== data.book!.slug), data.book!]);
       router.push(`/b/${data.book.slug}`);
     } catch {
-      setBookError("The live shelf is offline — see README to connect it.");
+      setBookError("The live shelf is offline, see README to connect it.");
     } finally {
       setSaving(false);
     }

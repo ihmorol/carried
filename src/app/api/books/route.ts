@@ -3,7 +3,7 @@ import { getStore, StoreError, checkRate, allBooks } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-/** All books — curated plus reader-added. */
+/** All books, curated plus reader-added. */
 export async function GET() {
   const store = getStore();
   const books = await allBooks();
@@ -13,7 +13,7 @@ export async function GET() {
   );
 }
 
-/** Add a missing book. No account — one per IP per 15 min is plenty. */
+/** Add a missing book. No account, one per IP per 15 min is plenty. */
 export async function POST(req: Request) {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";

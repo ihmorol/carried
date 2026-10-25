@@ -2,7 +2,7 @@
 
 import { useLocale } from "./LocaleProvider";
 
-/** A translated text leaf — usable inside server components. */
+/** A translated text leaf, usable inside server components. */
 export function T({ k, v }: { k: string; v?: Record<string, string | number> }) {
   const { t } = useLocale();
   return <>{t(k, v)}</>;

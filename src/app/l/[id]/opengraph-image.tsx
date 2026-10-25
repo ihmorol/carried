@@ -11,7 +11,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "A carried line";
 
-/** Landscape cut of the catalog card — what X / WhatsApp / iMessage show. */
+/** Landscape cut of the catalog card, what X / WhatsApp / iMessage show. */
 export default async function OgImage({
   params,
 }: {

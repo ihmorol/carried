@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const book = await findBook(p.b);
   const short = p.q.length > 110 ? `${p.q.slice(0, 110).trimEnd()}…` : p.q;
   return {
-    title: `“${short}” — carried by ${p.n}`,
+    title: `“${short}”, carried by ${p.n}`,
     description: `A line carried out of ${book?.title ?? "a book"}, by ${p.n}. What did it leave in you?`,
     robots: { index: false },
   };
@@ -61,7 +61,7 @@ export default async function LinePage({ params }: Props) {
           </div>
         </section>
 
-        {/* the loop — every visitor is invited to carry their own */}
+        {/* the loop, every visitor is invited to carry their own */}
         <section
           className="border-y py-16"
           style={{ borderColor: "var(--color-rule)" }}

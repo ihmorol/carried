@@ -27,7 +27,7 @@ export default function ShelfPage() {
         <h1 className="font-serif text-4xl font-semibold sm:text-5xl">My lines</h1>
         <p className="mt-4 max-w-lg font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
           The lines you&rsquo;ve carried, kept on this device only. No account
-          exists — this shelf is yours alone.
+          exists, this shelf is yours alone.
         </p>
 
         {lines === null ? null : lines.length === 0 ? (
@@ -35,7 +35,7 @@ export default function ShelfPage() {
             <p className="font-serif text-2xl italic">Your shelf is waiting.</p>
             <p className="mx-auto mt-3 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
               Pick a book, write the line it left in you, and it will be
-              stamped here — and everywhere you share it.
+              stamped here, and everywhere you share it.
             </p>
             <Link
               href="/#shelf"

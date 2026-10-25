@@ -1,6 +1,6 @@
 /**
  * The anonymous reader identity: a random id persisted on the device.
- * No accounts, no cookies beyond localStorage — it exists so a vote can
+ * No accounts, no cookies beyond localStorage, it exists so a vote can
  * be unique per reader, and it never leaves the device except as this
  * meaningless token.
  */
@@ -20,7 +20,7 @@ export function getVoterId(): string {
     }
     return id;
   } catch {
-    // storage blocked — session-scoped identity is better than none
+    // storage blocked, session-scoped identity is better than none
     return `sess-${Math.random().toString(36).slice(2, 12)}`;
   }
 }

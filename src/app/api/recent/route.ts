@@ -3,7 +3,7 @@ import { getStore } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-/** The freshest lines across the whole shelf — home page ticker. */
+/** The freshest lines across the whole shelf, home page ticker. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const limit = Math.min(Number(url.searchParams.get("limit") ?? 40) || 40, 100);

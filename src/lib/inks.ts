@@ -1,5 +1,5 @@
 /**
- * The three card "inks" — shared by the DOM card, the canvas export
+ * The three card "inks", shared by the DOM card, the canvas export
  * and the satori OG renderer so all three always agree.
  */
 export type InkId = "paper" | "midnight" | "moss";

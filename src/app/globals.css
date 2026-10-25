@@ -80,7 +80,7 @@ body {
   border-radius: 1px;
 }
 
-/* Paper grain — a fixed overlay, always on top, never interactive */
+/* Paper grain: a fixed overlay, always on top, never interactive */
 .grain {
   position: fixed;
   inset: 0;
@@ -136,7 +136,7 @@ body {
   text-decoration-color: var(--color-stamp);
 }
 
-/* Drop cap for book-page prose — a little print, a little church */
+/* Drop cap for book-page prose, a little print, a little church */
 .drop-cap::first-letter {
   font-family: var(--font-serif);
   font-weight: 600;
@@ -148,7 +148,7 @@ body {
   color: var(--color-stamp);
 }
 
-/* Ink band — the dark rhythm sections */
+/* Ink band, the dark rhythm sections */
 .band-ink {
   background: var(--color-night);
   color: var(--color-paper);

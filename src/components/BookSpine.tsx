@@ -1,7 +1,7 @@
 import { SPINE_COLORS, originalName, type Book, spineHeight } from "@/lib/books";
 
 /**
- * A book drawn as a book-cloth spine — top-to-bottom title, author at the foot.
+ * A book drawn as a book-cloth spine, top-to-bottom title, author at the foot.
  * Pure CSS, so the whole shelf renders instantly and nothing can 404.
  */
 export function BookSpine({

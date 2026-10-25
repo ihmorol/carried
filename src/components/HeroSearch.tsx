@@ -9,7 +9,7 @@ import { useLocale } from "./LocaleProvider";
 /**
  * The hero's real CTA: type a book you love, land on its margin in one
  * action. Instant suggestions, Enter takes the first hit, and "surprise
- * me" drops you into a random shelf — the fastest path to a rabbit hole.
+ * me" drops you into a random shelf, the fastest path to a rabbit hole.
  */
 export function HeroSearch() {
   const router = useRouter();

@@ -4,7 +4,7 @@ import { accessionNo, formatStampDate, formatStampDateBn, isBengali, type LinePa
 import { SITE_NAME } from "./site";
 
 /**
- * Renders the catalog card to a 1080×1350 PNG (4:5 — feeds crop it well).
+ * Renders the catalog card to a 1080×1350 PNG (4:5, feeds crop it well).
  * Mirrors LineCard exactly: same inks, same type, same stamp.
  * Fonts are loaded from /fonts so the export never depends on OS fonts.
  */
@@ -88,7 +88,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   ctx.textAlign = "left";
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
 
-  // the line — size steps down as it grows; Bangla script gets its own serif
+  // the line, size steps down as it grows; Bangla script gets its own serif
   const len = payload.q.length;
   const bn = isBengali(payload.q);
   const quoteSize = Math.round(
@@ -102,7 +102,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   const quoteLH = quoteSize * (bn ? 1.75 : 1.42);
   let y = M + 96;
 
-  // oversized open-quote mark (latin cards only — Bangla has no quote glyph style here)
+  // oversized open-quote mark (latin cards only, Bangla has no quote glyph style here)
   ctx.fillStyle = ink.rule;
   ctx.font = 'italic 500 150px "Fraunces Export"';
   if (!bn) ctx.fillText("\u201C", M - 10, y - 18);
@@ -182,7 +182,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   ctx.font = '400 19px "Plex Export"';
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "4px";
   ctx.fillText(
-    `${SITE_NAME.toUpperCase()} — THE LINE A BOOK LEFT IN YOU`,
+    `${SITE_NAME.toUpperCase()}, THE LINE A BOOK LEFT IN YOU`,
     M,
     H - M + 26,
   );

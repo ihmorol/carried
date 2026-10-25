@@ -50,7 +50,7 @@ export function seedLinesFor(slug: string): SeedLine[] {
   return SEED_LINES.filter((l) => l.b === slug);
 }
 
-/** The home ticker — a stable rotation, capped so the marquee stays light. */
+/** The home ticker, a stable rotation, capped so the marquee stays light. */
 export function marqueeLines(): SeedLine[] {
   const picked: SeedLine[] = [];
   const seen = new Set<string>();
@@ -64,7 +64,7 @@ export function marqueeLines(): SeedLine[] {
   return picked;
 }
 
-/** Deterministic pick that changes daily — the home page's front card. */
+/** Deterministic pick that changes daily, the home page's front card. */
 export function lineOfTheDay(): SeedLine {
   const day = Math.floor(Date.now() / 86_400_000);
   return SEED_LINES[day % SEED_LINES.length];

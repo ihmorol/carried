@@ -1,6 +1,6 @@
 /**
  * The shelf. A curated list of books people actually carry lines out of.
- * No cover images by design — every book is drawn as a book-cloth spine,
+ * No cover images by design, every book is drawn as a book-cloth spine,
  * so the wall renders instantly and nothing can ever 404.
  */
 
@@ -16,7 +16,7 @@ export type Book = {
   spine: SpineColor;
 };
 
-/** Book-cloth palette — spines are drawn from these. */
+/** Book-cloth palette, spines are drawn from these. */
 export type SpineColor =
   | "oxblood"
   | "forest"
@@ -244,7 +244,7 @@ export function bookTagline(b: Book): string {
   return `${b.author}, ${b.year < 0 ? `${Math.abs(b.year)} BC` : b.year}`;
 }
 
-/** The name a book is actually known by — Bangla books keep their Bangla title everywhere. */
+/** The name a book is actually known by, Bangla books keep their Bangla title everywhere. */
 export function originalName(b: Book): string {
   return b.titleBn ?? b.title;
 }

@@ -48,7 +48,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     try {
       window.localStorage.setItem(LOCALE_COOKIE, l);
     } catch {
-      /* private mode — session-only locale */
+      /* private mode, session-only locale */
     }
     document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
   }, []);

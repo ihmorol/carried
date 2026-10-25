@@ -9,7 +9,7 @@ import { useLocale } from "./LocaleProvider";
 
 /**
  * The pass-it-on row: copy link, native share (with the rendered PNG when
- * the platform allows it), X and WhatsApp. Every share is an invitation —
+ * the platform allows it), X and WhatsApp. Every share is an invitation,
  * the URL lands on this same card, whose footer asks the visitor to write theirs.
  */
 export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) {
@@ -40,7 +40,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard blocked — user can still select the address bar */
+      /* clipboard blocked, user can still select the address bar */
     }
   }
 
@@ -55,7 +55,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
   }
 
   async function nativeShare() {
-    const text = `“${payload.q}” — carried out of ${title}, by ${payload.n}`;
+    const text = `“${payload.q}”, carried out of ${title}, by ${payload.n}`;
     try {
       const blob = await lineCardBlob(payload, id);
       const file = blob ? new File([blob], `carried-${accessionNo(id).toLowerCase()}.png`, { type: "image/png" }) : null;
@@ -69,7 +69,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
     }
   }
 
-  const shareText = encodeURIComponent(`“${payload.q}” — a line carried out of “${title}”`);
+  const shareText = encodeURIComponent(`“${payload.q}”, a line carried out of “${title}”`);
 
   const btn =
     "rounded-[3px] border px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors";

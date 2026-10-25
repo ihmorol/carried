@@ -22,7 +22,7 @@ function sortRecords(records: FeedRecord[]): FeedRecord[] {
 
 /**
  * The live margin: every line everyone has carried out of this book,
- * sorted by underline count — the best rise, the rest follows in time
+ * sorted by underline count, the best rise, the rest follows in time
  * order. Seeds render immediately; the API feed merges in and keeps
  * polling so new lines and votes appear without a reload.
  */
@@ -52,7 +52,7 @@ export function LinesFeed({ slug, seeds }: { slug: string; seeds: SeedLine[] }) 
         return sortRecords([...byId.values()]);
       });
     } catch {
-      /* offline — the seeds stay on the page */
+      /* offline, the seeds stay on the page */
     }
   }, [slug]);
 

@@ -8,9 +8,9 @@ import { LINE_MAX, NAME_MAX } from "./site";
  * The live shelf: every line, every reader-added book, visible to everyone.
  *
  * Two backends behind one interface:
- *  - RedisStore — Upstash Redis REST (free tier, two env vars). Real, global,
+ *  - RedisStore, Upstash Redis REST (free tier, two env vars). Real, global,
  *    shared. This is what production runs on.
- *  - MemoryStore — per-instance, preseeded with the editorial lines. Dev/demo
+ *  - MemoryStore, per-instance, preseeded with the editorial lines. Dev/demo
  *    fallback so the site still works with zero configuration.
  *
  * A LineRecord pairs a payload with its URL id (the same id the /l/[id]
@@ -26,7 +26,7 @@ export interface Store {
   addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord>;
   /** Resolve a short slug id to its payload. */
   getLineById(id: string): Promise<LinePayload | undefined>;
-  /** Toggle a reader's "underline" on a line — one vote per voter id. */
+  /** Toggle a reader's "underline" on a line, one vote per voter id. */
   toggleVote(lineId: string, voterId: string): Promise<{ votes: number; voted: boolean }>;
   /** Underline counts for a batch of line ids. */
   getVoteCounts(ids: string[]): Promise<Map<string, number>>;
@@ -136,7 +136,7 @@ class RedisStore implements Store {
     const key = `carried:rl:${kind}:${ip}`;
     const n = await this.cmd<number>(...["INCR", key]);
     if (n === 1) await this.cmd("EXPIRE", key, 3600);
-    if (n > max) throw new StoreError("Easy — the shelf will still be here in an hour.", 429);
+    if (n > max) throw new StoreError("Easy, the shelf will still be here in an hour.", 429);
   }
 
   async getLines(slug: string, limit = 200): Promise<LineRecord[]> {
@@ -170,7 +170,7 @@ class RedisStore implements Store {
       d: new Date().toISOString().slice(0, 10),
     };
 
-    // short meaningful id — extend the hash suffix only if a different
+    // short meaningful id, extend the hash suffix only if a different
     // line already claims it (deterministic, so reposts reuse the id)
     let suffixChars = 5;
     let id = lineSlugId(payload, suffixChars);
@@ -424,7 +424,7 @@ export async function checkRate(
 
 /**
  * The one door to /l/[id]. Resolution order:
- *  1. legacy/base64 payload ids — decode straight from the URL (they keep
+ *  1. legacy/base64 payload ids, decode straight from the URL (they keep
  *     working forever, including the offline-mode fallback links)
  *  2. short slug ids stored on the live shelf
  *  3. short slug ids of editorial seed lines (static, need no storage)
@@ -433,7 +433,7 @@ export async function resolveLine(id: string): Promise<LinePayload | undefined> 
   try {
     return decodeLine(id);
   } catch {
-    /* not a payload link — fall through to the shelf */
+    /* not a payload link, fall through to the shelf */
   }
   if (id.length > 64 || !/^[a-z0-9-]+$/.test(id)) return undefined;
   const stored = await getStore().getLineById(id).catch(() => undefined);

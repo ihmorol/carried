@@ -139,7 +139,7 @@ export default async function OgImage({
               What line did it leave in you?
             </span>
             <span style={{ fontFamily: "Plex", fontSize: 22, color: "#6d6354", marginTop: 26 }}>
-              {bookTagline(book)} — write the sentence you&rsquo;d underline.
+              {bookTagline(book)}, write the sentence you&rsquo;d underline.
             </span>
           </div>
           <span style={{ fontFamily: "Plex", fontSize: 19, letterSpacing: 3, color: "#b23c25" }}>

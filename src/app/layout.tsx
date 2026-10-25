@@ -47,8 +47,8 @@ const notoSansBengali = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — the line a book left in you`,
-    template: `%s — ${SITE_NAME}`,
+    default: `${SITE_NAME}, the line a book left in you`,
+    template: `%s, ${SITE_NAME}`,
   },
   description:
     "Pick a book. Write the one line it left in you. Stamp it with your name and pass it on. No account needed.",

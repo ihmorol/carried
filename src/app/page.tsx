@@ -8,7 +8,7 @@ import { T } from "@/components/T";
 import { marqueeLines, lineOfTheDay, SEED_LINES } from "@/lib/seeds";
 import { BOOKS } from "@/lib/books";
 
-// The "front page" pick rotates daily — revalidate keeps it fresh
+// The "front page" pick rotates daily, revalidate keeps it fresh
 // without giving up static speed. The pick itself is computed per render.
 export const revalidate = 3600;
 
@@ -84,7 +84,7 @@ export default function Home() {
           <RecentFeed seeds={marqueeLines()} />
         </section>
 
-        {/* ── How it works — ink band ──────────────────────── */}
+        {/* ── How it works, ink band ──────────────────────── */}
         <section className="band-ink py-20">
           <div className="mx-auto max-w-6xl px-5">
             <h2 className="font-serif text-3xl font-semibold sm:text-4xl">

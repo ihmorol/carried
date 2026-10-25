@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository.
 
 ## What this is
 
-**Carried** — a no-account quote-card site. Readers pick a book, write the one
+**Carried**, a no-account quote-card site. Readers pick a book, write the one
 line it left in them, stamp it with their name, and share a designed card.
 Start with [`CONTEXT.md`](CONTEXT.md) (domain model) and
 [`docs/brand-guidelines.md`](docs/brand-guidelines.md) (identity rules) before
@@ -41,8 +41,8 @@ Single-context: `CONTEXT.md` at the root + `docs/adr/`. See `docs/agents/domain.
 
 ```
 NEXT_PUBLIC_SITE_URL        # canonical origin for share URLs (production)
-UPSTASH_REDIS_REST_URL     # optional — enables the global live shelf
-UPSTASH_REDIS_REST_TOKEN   # optional — pair with the URL above
+UPSTASH_REDIS_REST_URL     # optional, enables the global live shelf
+UPSTASH_REDIS_REST_TOKEN   # optional, pair with the URL above
 ```
 
 Without the Upstash pair the site runs in offline mode (MemoryStore:
@@ -59,7 +59,7 @@ npm run lint    # eslint
 
 - App Router + TypeScript strict. Server components by default; `"use client"`
   only for state (composer, share row, shelf, search).
-- Tailwind v4 theme tokens in `globals.css` (`@theme`) — use tokens
+- Tailwind v4 theme tokens in `globals.css` (`@theme`), use tokens
   (`var(--color-ink)`, `font-serif`, `font-mono`), not raw hexes.
 - Params are Promises in Next 16: `const { slug } = await params;`.
 
@@ -67,8 +67,8 @@ npm run lint    # eslint
 
 ## This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version has breaking changes, APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+This block is written and re-added by `next dev`, verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->

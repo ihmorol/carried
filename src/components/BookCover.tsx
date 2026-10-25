@@ -6,7 +6,7 @@ import type { Book } from "@/lib/books";
 
 /**
  * The real cover from Open Library, with the drawn spine standing in
- * whenever the scan is missing or the archive is unreachable — the book
+ * whenever the scan is missing or the archive is unreachable, the book
  * is never rendered as a broken image.
  */
 export function BookCover({ src, book }: { src: string; book: Book }) {

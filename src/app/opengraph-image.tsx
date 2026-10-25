@@ -5,7 +5,7 @@ import { SITE_NAME } from "@/lib/site";
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Carried — the line a book left in you";
+export const alt = "Carried, the line a book left in you";
 
 export default function OgImage() {
   const fonts = loadOgFonts();

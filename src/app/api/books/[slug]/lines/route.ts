@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ slug: string }> };
 
-/** Everyone's lines for one book — the client polls this for the live feed. */
+/** Everyone's lines for one book, the client polls this for the live feed. */
 export async function GET(req: Request, { params }: Params) {
   const { slug } = await params;
   const url = new URL(req.url);

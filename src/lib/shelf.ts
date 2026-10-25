@@ -1,7 +1,7 @@
 import type { LinePayload } from "./line";
 
 /**
- * "My lines" — the reader's own shelf, local to their device.
+ * "My lines", the reader's own shelf, local to their device.
  * No accounts anywhere on this site; the only memory we keep is theirs.
  */
 
@@ -40,7 +40,7 @@ export function addToShelf(entry: ShelfEntry): void {
   try {
     window.localStorage.setItem(SHELF_KEY, JSON.stringify(shelf.slice(-200)));
   } catch {
-    /* storage full or blocked — the link itself still carries the line */
+    /* storage full or blocked, the link itself still carries the line */
   }
 }
 

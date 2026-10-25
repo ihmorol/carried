@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Poll on an interval while the tab is visible — the simple, sturdy way
+ * Poll on an interval while the tab is visible, the simple, sturdy way
  * to make feeds feel live without websockets.
  */
 export function usePoll(fn: () => void, ms: number, enabled = true): void {

@@ -1,13 +1,13 @@
 import type { Book } from "./books";
 
 /**
- * Free book archives — no API keys anywhere.
+ * Free book archives, no API keys anywhere.
  *
  * Two independent sources, tried in order; both may fail and every caller
  * must fall back to the drawn spine and generic search links:
- *  1. Open Library — clean cover scans + the work page (borrow/preview).
+ *  1. Open Library, clean cover scans + the work page (borrow/preview).
  *     Blocked on some networks, usually fine on hosts like Vercel.
- *  2. Internet Archive — item search (most-downloaded edition wins);
+ *  2. Internet Archive, item search (most-downloaded edition wins);
  *     its thumbnail is the scanned cover, and the item page holds the
  *     free copy when one exists.
  */
@@ -19,14 +19,14 @@ export type BookMeta = {
 
 const TIMEOUT_MS = 5000;
 
-// Server-side: prefer IPv4 — on hosts with broken IPv6 routes, undici's
+// Server-side: prefer IPv4, on hosts with broken IPv6 routes, undici's
 // AAAA-first resolution hangs on exactly these archive hosts.
 if (typeof window === "undefined") {
   try {
     const dns = await import("node:dns");
     dns.setDefaultResultOrder("ipv4first");
   } catch {
-    /* non-node runtime — fetches still work if the network is sane */
+    /* non-node runtime, fetches still work if the network is sane */
   }
 }
 
@@ -42,7 +42,7 @@ async function fromOpenLibrary(book: Book): Promise<BookMeta | null> {
     const res = await fetch(`https://openlibrary.org/search.json?${params}`, {
       headers: { "user-agent": "carried-site/1.0 (book link resolver)" },
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      // one lookup per book per week — covers don't churn
+      // one lookup per book per week, covers don't churn
       next: { revalidate: 604800 },
     });
     if (!res.ok) return null;

@@ -30,7 +30,7 @@ export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
       setLive(data.live);
       setLines(data.lines);
     } catch {
-      /* offline — seeds keep ticking */
+      /* offline, seeds keep ticking */
     }
   }, []);
 
