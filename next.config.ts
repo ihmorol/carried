@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // The satori OG routes read these TTFs from disk at runtime;
+  // make sure the bundler keeps them.
+  outputFileTracingIncludes: {
+    "/l/**": ["./public/fonts/**/*.ttf"],
+    "/b/**": ["./public/fonts/**/*.ttf"],
+    "/": ["./public/fonts/**/*.ttf"],
+  },
   turbopack: {
     rules: {
       "*.css": {
