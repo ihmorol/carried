@@ -5,9 +5,19 @@ import { CANON_2 } from "./canon-2";
 import { MODERN_1 } from "./modern-1";
 import { MORE } from "./more";
 import { IDEAS } from "./ideas";
+import { BANGLA_1 } from "./bangla-1";
+import { BANGLA_2 } from "./bangla-2";
 
 /** All editorial seed lines across the shelf. */
-export const SEEDS: Seed[] = [...CANON_1, ...CANON_2, ...MODERN_1, ...MORE, ...IDEAS];
+export const SEEDS: Seed[] = [
+  ...CANON_1,
+  ...CANON_2,
+  ...MODERN_1,
+  ...MORE,
+  ...IDEAS,
+  ...BANGLA_1,
+  ...BANGLA_2,
+];
 
 /** A few hand-written dates roll over the month; normalize deterministically. */
 function normalizeDate(d: string): string {

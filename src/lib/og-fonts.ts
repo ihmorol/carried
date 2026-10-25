@@ -4,7 +4,7 @@ import { join } from "node:path";
 export type FontData = {
   name: string;
   data: Buffer;
-  weight: 400 | 500 | 600;
+  weight: 400 | 500 | 600 | 700;
   style: "normal" | "italic";
 };
 
@@ -19,5 +19,11 @@ export function loadOgFonts(): FontData[] {
     { name: "Plex", data: file("IBMPlexMono-400.ttf"), weight: 400, style: "normal" },
     { name: "Plex", data: file("IBMPlexMono-500.ttf"), weight: 500, style: "normal" },
     { name: "Plex", data: file("IBMPlexMono-600.ttf"), weight: 600, style: "normal" },
+    { name: "Noto Serif Bengali", data: file("NotoSerifBengali-500.ttf"), weight: 500, style: "normal" },
+    { name: "Noto Serif Bengali", data: file("NotoSerifBengali-600.ttf"), weight: 600, style: "normal" },
+    { name: "Noto Serif Bengali", data: file("NotoSerifBengali-700.ttf"), weight: 700, style: "normal" },
+    { name: "Noto Sans Bengali", data: file("NotoSansBengali-400.ttf"), weight: 400, style: "normal" },
+    { name: "Noto Sans Bengali", data: file("NotoSansBengali-500.ttf"), weight: 500, style: "normal" },
+    { name: "Noto Sans Bengali", data: file("NotoSansBengali-600.ttf"), weight: 600, style: "normal" },
   ];
 }

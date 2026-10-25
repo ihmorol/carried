@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BOOKS, searchBooks, type Book } from "@/lib/books";
 import { BookSpine } from "./BookSpine";
+import { useLocale } from "./LocaleProvider";
 
 /**
  * The hero's real CTA: type a book you love, land on its margin in one
@@ -12,6 +13,7 @@ import { BookSpine } from "./BookSpine";
  */
 export function HeroSearch() {
   const router = useRouter();
+  const { t } = useLocale();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -67,7 +69,7 @@ export function HeroSearch() {
         role="search"
       >
         <label htmlFor="hero-search" className="sr-only">
-          Type a book you love
+          {t("hero.searchLabel")}
         </label>
         <div className="flex">
           <input
@@ -81,7 +83,7 @@ export function HeroSearch() {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={onKeyDown}
-            placeholder="Type a book you love…"
+            placeholder={t("hero.searchPlaceholder")}
             autoComplete="off"
             role="combobox"
             aria-expanded={showList}
@@ -94,7 +96,7 @@ export function HeroSearch() {
             type="submit"
             className="btn-press shrink-0 rounded-r-[3px] bg-[var(--color-stamp)] px-5 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper-raised)] hover:opacity-85"
           >
-            Find my line
+            {t("hero.searchCta")}
           </button>
         </div>
       </form>
@@ -103,13 +105,14 @@ export function HeroSearch() {
         <ul
           id="hero-results"
           role="listbox"
-          aria-label="Book suggestions"
+          aria-label={t("shelf.searchLabel")}
           className="card-rule absolute z-20 mt-2 w-full overflow-hidden rounded-[4px] bg-[var(--color-paper-raised)] shadow-[0_14px_34px_rgba(28,22,12,0.18)]"
         >
           {results.length === 0 ? (
             <li className="px-5 py-4 font-mono text-xs text-[var(--color-ink-soft)]">
-              Not on the shelf — <button type="button" onClick={surprise} className="link-ledger text-[var(--color-stamp)]">try a surprise book</button> or{" "}
-              <a href="#shelf" className="link-ledger">add it yourself</a>.
+              {t("shelf.missing")}{" "}
+              <button type="button" onClick={surprise} className="link-ledger text-[var(--color-stamp)]">{t("hero.surprise")}</button>{" "}
+              <a href="#shelf" className="link-ledger">…</a>
             </li>
           ) : (
             results.map((b, i) => (
@@ -148,15 +151,15 @@ export function HeroSearch() {
       )}
 
       <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]">
-        No idea?{" "}
+        {t("hero.noIdea")}{" "}
         <button
           type="button"
           onClick={surprise}
           className="link-ledger text-[var(--color-ink)]"
         >
-          Surprise me
-        </button>{" "}
-        — a random shelf, one click.
+          {t("hero.surprise")}
+        </button>
+        {t("hero.surpriseNote")}
       </p>
     </div>
   );

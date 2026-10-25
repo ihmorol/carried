@@ -5,6 +5,7 @@ import { getBook } from "@/lib/books";
 import { accessionNo, type LinePayload } from "@/lib/line";
 import { downloadLineCard, lineCardBlob } from "@/lib/canvas";
 import { SITE_URL } from "@/lib/site";
+import { useLocale } from "./LocaleProvider";
 
 /**
  * The pass-it-on row: copy link, native share (with the rendered PNG when
@@ -12,6 +13,7 @@ import { SITE_URL } from "@/lib/site";
  * the URL lands on this same card, whose footer asks the visitor to write theirs.
  */
 export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) {
+  const { t } = useLocale();
   const [url, setUrl] = useState(`${SITE_URL}/l/${id}`);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -80,7 +82,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
         disabled={saving}
         className={`${btn} border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] hover:opacity-85 disabled:opacity-50`}
       >
-        {saving ? "Printing…" : "Save the card"}
+        {saving ? t("share.saving") : t("share.save")}
       </button>
       <button
         type="button"
@@ -88,7 +90,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
         aria-live="polite"
         className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
       >
-        {copied ? "Copied ✓" : "Copy link"}
+        {copied ? t("share.copied") : t("share.copy")}
       </button>
       {canShare && (
         <button
@@ -96,7 +98,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
           onClick={nativeShare}
           className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
         >
-          Share…
+          {t("share.share")}
         </button>
       )}
       <a
@@ -105,7 +107,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
         rel="noopener noreferrer"
         className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
       >
-        Post on X
+        {t("share.x")}
       </a>
       <a
         href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`}
@@ -113,7 +115,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
         rel="noopener noreferrer"
         className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
       >
-        WhatsApp
+        {t("share.wa")}
       </a>
     </div>
   );

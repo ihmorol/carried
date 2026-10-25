@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
 import { ShareRow } from "@/components/ShareRow";
+import { T } from "@/components/T";
 import { seedLinesFor } from "@/lib/seeds";
 import { findBook, getStore, resolveLine } from "@/lib/store";
 
@@ -42,7 +43,7 @@ export default async function LinePage({ params }: Props) {
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-5 pb-10 pt-12 text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-            This line is yours now
+            <T k="card.kicker" />
           </p>
         </section>
 
@@ -54,8 +55,7 @@ export default async function LinePage({ params }: Props) {
           <div className="mx-auto mt-12 flex max-w-2xl flex-col items-center gap-8">
             <ShareRow payload={payload} id={id} />
             <p className="max-w-md text-center font-mono text-[11px] leading-relaxed text-[var(--color-ink-faint)]">
-              The card travels with your name in the print. Whoever it reaches
-              is one book further along.
+              <T k="card.travel" />
             </p>
           </div>
         </section>
@@ -67,17 +67,16 @@ export default async function LinePage({ params }: Props) {
         >
           <div className="mx-auto max-w-2xl px-5 text-center">
             <h2 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
-              What did <span className="italic">{book.title}</span> leave in&nbsp;you?
+              <T k="card.loop.h" v={{ title: book.titleBn ?? book.title }} />
             </h2>
             <p className="mx-auto mt-4 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
-              {payload.n} carried one line out. There&rsquo;s at least one more in
-              there with your name on it.
+              <T k="card.loop.sub" v={{ n: payload.n }} />
             </p>
             <Link
               href={`/b/${book.slug}#write`}
               className="mt-8 inline-block rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85"
             >
-              Write your line
+              <T k="card.loop.cta" />
             </Link>
           </div>
         </section>
@@ -85,7 +84,7 @@ export default async function LinePage({ params }: Props) {
         {others.length > 0 && (
           <section className="mx-auto max-w-6xl px-5 py-16">
             <h3 className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-              More lines carried out of {book.title}
+              <T k="card.more" v={{ title: book.titleBn ?? book.title }} />
             </h3>
             <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((l) => (

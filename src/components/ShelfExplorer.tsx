@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { BOOKS, searchBooks, type Book } from "@/lib/books";
 import { BookSpine } from "./BookSpine";
 import { usePoll } from "@/lib/use-poll";
+import { useLocale } from "./LocaleProvider";
+import { numFor } from "@/lib/i18n";
 
-const TAGS = ["all", "fiction", "classic", "philosophy", "psychology", "poetry", "fantasy", "scifi", "memoir", "self", "money", "play", "reader-added"] as const;
+const TAGS = ["all", "fiction", "classic", "philosophy", "psychology", "poetry", "fantasy", "scifi", "memoir", "self", "money", "play", "bangla", "reader-added"] as const;
 
 /** Muted book-cloth hues so each filter reads as its own shelf. */
 const TAG_COLORS: Partial<Record<(typeof TAGS)[number], string>> = {
@@ -21,6 +23,7 @@ const TAG_COLORS: Partial<Record<(typeof TAGS)[number], string>> = {
   self: "#5a6b4a",
   money: "#6b5a2a",
   play: "#5a3a50",
+  bangla: "#1f6b46",
   "reader-added": "#b23c25",
 };
 
@@ -31,6 +34,7 @@ const TAG_COLORS: Partial<Record<(typeof TAGS)[number], string>> = {
  */
 export function ShelfExplorer() {
   const router = useRouter();
+  const { t, locale } = useLocale();
   const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [live, setLive] = useState(false);
   const [query, setQuery] = useState("");
@@ -123,14 +127,14 @@ export function ShelfExplorer() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <label htmlFor="shelf-search" className="sr-only">
-            Search the shelf
+            {t("shelf.searchLabel")}
           </label>
           <input
             id="shelf-search"
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search a title, an author, a feeling…"
+            placeholder={t("shelf.placeholder")}
             autoComplete="off"
             className="w-full rounded-[3px] border bg-[var(--color-paper-raised)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:outline-none"
             style={{ borderColor: "var(--color-rule)" }}
@@ -146,7 +150,7 @@ export function ShelfExplorer() {
               : "border-[var(--color-stamp)] text-[var(--color-stamp)] hover:opacity-80"
           }`}
         >
-          {adding ? "Close" : "+ Add a book"}
+          {adding ? t("shelf.close") : t("shelf.add")}
         </button>
       </div>
 
@@ -156,27 +160,27 @@ export function ShelfExplorer() {
           className="card-rule mt-4 rounded-[4px] bg-[var(--color-paper-raised)] p-5"
         >
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-soft)]">
-            Missing from the shelf? Put it there.
+            {t("shelf.missing")}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_110px_auto]">
             <div>
-              <label htmlFor="nb-title" className="sr-only">Title</label>
-              <input id="nb-title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className={field} maxLength={90} />
+              <label htmlFor="nb-title" className="sr-only">{t("shelf.fTitle")}</label>
+              <input id="nb-title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("shelf.fTitle")} className={field} maxLength={90} />
             </div>
             <div>
-              <label htmlFor="nb-author" className="sr-only">Author</label>
-              <input id="nb-author" required value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Author" className={field} maxLength={60} />
+              <label htmlFor="nb-author" className="sr-only">{t("shelf.fAuthor")}</label>
+              <input id="nb-author" required value={author} onChange={(e) => setAuthor(e.target.value)} placeholder={t("shelf.fAuthor")} className={field} maxLength={60} />
             </div>
             <div>
-              <label htmlFor="nb-year" className="sr-only">Year (optional)</label>
-              <input id="nb-year" inputMode="numeric" value={year} onChange={(e) => setYear(e.target.value.replace(/[^0-9-]/g, ""))} placeholder="Year" className={field} maxLength={5} />
+              <label htmlFor="nb-year" className="sr-only">{t("shelf.fYear")}</label>
+              <input id="nb-year" inputMode="numeric" value={year} onChange={(e) => setYear(e.target.value.replace(/[^0-9-]/g, ""))} placeholder={t("shelf.fYear")} className={field} maxLength={5} />
             </div>
             <button
               type="submit"
               disabled={saving}
               className="rounded-[3px] bg-[var(--color-ink)] px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper)] transition-opacity hover:opacity-85 disabled:opacity-40"
             >
-              {saving ? "Shelving…" : "Shelve it"}
+              {saving ? t("shelf.shelving") : t("shelf.shelve")}
             </button>
           </div>
           {bookError && (
@@ -188,9 +192,9 @@ export function ShelfExplorer() {
       )}
 
       <div className="mt-4 flex flex-wrap gap-1.5" role="group" aria-label="Filter by kind">
-        {TAGS.map((t) => {
-          const active = tag === t && !query.trim();
-          const color = TAG_COLORS[t];
+        {TAGS.map((tagId) => {
+          const active = tag === tagId && !query.trim();
+          const color = TAG_COLORS[tagId];
           const style = active
             ? undefined
             : color
@@ -198,10 +202,10 @@ export function ShelfExplorer() {
               : { borderColor: "var(--color-rule)", color: "var(--color-ink-soft)" };
           return (
             <button
-              key={t}
+              key={tagId}
               type="button"
               onClick={() => {
-                setTag(t);
+                setTag(tagId);
                 setQuery("");
               }}
               aria-pressed={active}
@@ -212,21 +216,21 @@ export function ShelfExplorer() {
                   : "hover:brightness-75"
               }`}
             >
-              {t === "reader-added" ? "by readers" : t}
+              {t(`tag.${tagId}`)}
             </button>
           );
         })}
       </div>
 
       <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-soft)]" aria-live="polite">
-        {results.length} {results.length === 1 ? "book" : "books"}
-        {query.trim() ? ` for “${query.trim()}”` : ""}
-        {live ? "" : " · live shelf offline"}
+        {t("shelf.count.many", { n: numFor(results.length, locale) })}
+        {query.trim() ? t("shelf.for", { q: query.trim() }) : ""}
+        {live ? "" : t("shelf.offline")}
       </p>
 
       {results.length === 0 ? (
         <div className="card-rule mt-6 rounded-[4px] bg-[var(--color-paper-raised)] p-10 text-center">
-          <p className="font-serif text-xl italic">Not on this shelf yet.</p>
+          <p className="font-serif text-xl italic">{t("shelf.empty.title")}</p>
           <button
             type="button"
             onClick={() => {
@@ -235,7 +239,7 @@ export function ShelfExplorer() {
             }}
             className="link-ledger mt-2 font-mono text-xs uppercase tracking-[0.14em]"
           >
-            Add “{query.trim()}” yourself
+            {t("shelf.empty.cta", { q: query.trim() })}
           </button>
         </div>
       ) : (

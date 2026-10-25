@@ -142,9 +142,14 @@ describe("line slug ids", () => {
     expect(lineSlugId(otherLine)).not.toBe(lineSlugId(payload));
   });
 
-  it("drops stopwords and survives quote-only lines", () => {
-    expect(lineSlugId({ ...payload, q: "The it and the of" }).startsWith("line-")).toBe(true);
+  it("drops stopwords and falls back to the book slug for non-latin lines", () => {
+    expect(lineSlugId({ ...payload, q: "The it and the of" }).startsWith("the-alchemist-")).toBe(true);
     expect(lineSlugId({ ...payload, q: "To be, or not to be — that is the question" }).startsWith("question")).toBe(true);
+    // a Bangla line keeps its link meaningful via the book slug
+    const bnLine = { ...payload, q: "বইটা আমাকে যা শিখিয়েছে" };
+    const id = lineSlugId(bnLine);
+    expect(id.startsWith("the-alchemist-")).toBe(true);
+    expect(id.length).toBeLessThan(40);
   });
 
   it("every seed has a unique short id resolvable without storage", () => {

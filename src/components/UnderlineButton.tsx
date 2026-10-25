@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getVoterId } from "@/lib/voter";
+import { useLocale } from "./LocaleProvider";
 
 /**
  * The vote: "underline this line." One toggle per anonymous reader,
@@ -18,6 +19,7 @@ export function UnderlineButton({
   initialVoted?: boolean;
   onChange?: (lineId: string, votes: number, voted: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [votes, setVotes] = useState(initialVotes);
   const [voted, setVoted] = useState(initialVoted);
   const [busy, setBusy] = useState(false);
@@ -58,7 +60,7 @@ export function UnderlineButton({
       type="button"
       onClick={toggle}
       aria-pressed={voted}
-      aria-label={voted ? `Underlined by ${votes} readers — click to remove` : `Underline — ${votes} readers`}
+      aria-label={voted ? `${t("vote.underlined")} · ${votes}` : `${t("vote.underline")} · ${votes}`}
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors ${
         voted
           ? "border-[var(--color-stamp)] bg-[var(--color-stamp)] text-[var(--color-paper-raised)]"
@@ -67,7 +69,7 @@ export function UnderlineButton({
       disabled={busy}
     >
       <span aria-hidden="true">⁂</span>
-      {voted ? "Underlined" : "Underline"}
+      {voted ? t("vote.underlined") : t("vote.underline")}
       <span className="tabular-nums opacity-80">· {votes}</span>
     </button>
   );

@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useLocale } from "./LocaleProvider";
+import { LocaleToggle } from "./T";
 import { SITE_NAME } from "@/lib/site";
 
 export function Header() {
+  const { t } = useLocale();
   return (
     <header
       className="border-b"
@@ -19,23 +24,24 @@ export function Header() {
           >
             {SITE_NAME.toUpperCase()}
           </span>
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-soft)] sm:inline">
-            the line a book left in you
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-soft)] lg:inline">
+            {t("brand.tagline")}
           </span>
         </Link>
-        <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.14em]">
+        <nav className="flex items-center gap-4 font-mono text-xs uppercase tracking-[0.14em]">
           <Link href="/#shelf" className="link-ledger hidden text-[var(--color-ink)] sm:inline">
-            The shelf
+            {t("nav.shelf")}
           </Link>
           <Link href="/shelf" className="link-ledger text-[var(--color-ink)]">
-            My lines
+            {t("nav.myLines")}
           </Link>
           <Link
             href="/#shelf"
             className="btn-press hidden rounded-[3px] bg-[var(--color-ink)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-paper)] hover:opacity-85 md:inline-block"
           >
-            Write your line
+            {t("nav.write")}
           </Link>
+          <LocaleToggle />
         </nav>
       </div>
     </header>
@@ -43,21 +49,20 @@ export function Header() {
 }
 
 export function Footer() {
+  const { t } = useLocale();
   return (
     <footer
       className="mt-24 border-t"
       style={{ borderColor: "var(--color-rule)" }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-soft)] sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          {SITE_NAME} — every book leaves a line in you. Pass yours on.
-        </p>
+        <p>{t("footer.tag")}</p>
         <p className="flex gap-5">
           <Link href="/#shelf" className="link-ledger">
-            Pick a book
+            {t("footer.pick")}
           </Link>
           <Link href="/shelf" className="link-ledger">
-            My lines
+            {t("footer.mine")}
           </Link>
           <a
             href="https://github.com/ihmorol/carried"
@@ -65,7 +70,7 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Source
+            {t("footer.source")}
           </a>
         </p>
       </div>

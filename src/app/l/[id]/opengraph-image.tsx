@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getBook } from "@/lib/books";
-import { accessionNo, formatStampDate } from "@/lib/line";
+import { accessionNo, formatStampDate, formatStampDateBn, isBengali } from "@/lib/line";
 import { INKS } from "@/lib/inks";
 import { loadOgFonts } from "@/lib/og-fonts";
 import { SITE_NAME } from "@/lib/site";
@@ -27,7 +27,15 @@ export default async function OgImage({
   const ink = INKS[payload.s];
   const book = getBook(payload.b);
   const len = payload.q.length;
-  const quoteSize = len > 170 ? 42 : len > 110 ? 50 : len > 60 ? 58 : 64;
+  const bn = isBengali(payload.q);
+  const quoteSize = Math.round((len > 170 ? 42 : len > 110 ? 50 : len > 60 ? 58 : 64) * (bn ? 0.88 : 1));
+  const quoteFont = bn
+    ? { fontFamily: "Noto Serif Bengali", fontWeight: 500 }
+    : { fontFamily: "Fraunces", fontStyle: "italic" as const, fontWeight: 500 };
+  const stampDate = bn ? formatStampDateBn(payload.d) : formatStampDate(payload.d);
+  const nameFont = isBengali(payload.n) || bn
+    ? { fontFamily: "Noto Serif Bengali", fontWeight: 600 }
+    : { fontFamily: "Fraunces", fontWeight: 600 };
 
   return new ImageResponse(
     (
@@ -70,11 +78,9 @@ export default async function OgImage({
           >
             <p
               style={{
-                fontFamily: "Fraunces",
-                fontStyle: "italic",
-                fontWeight: 500,
+                ...quoteFont,
                 fontSize: quoteSize,
-                lineHeight: 1.35,
+                lineHeight: bn ? 1.75 : 1.35,
                 color: ink.text,
                 margin: 0,
               }}
@@ -111,11 +117,11 @@ export default async function OgImage({
               <span style={{ fontFamily: "Plex", fontWeight: 600, fontSize: 15, letterSpacing: 6 }}>
                 CARRIED BY
               </span>
-              <span style={{ fontFamily: "Fraunces", fontWeight: 600, fontSize: 34, marginTop: 6 }}>
+              <span style={{ ...nameFont, fontSize: 34, marginTop: 6 }}>
                 {payload.n}
               </span>
               <span style={{ fontFamily: "Plex", fontWeight: 500, fontSize: 14, letterSpacing: 4, marginTop: 6 }}>
-                {formatStampDate(payload.d)}
+                {stampDate}
               </span>
             </div>
           </div>

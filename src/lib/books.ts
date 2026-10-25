@@ -7,7 +7,10 @@
 export type Book = {
   slug: string;
   title: string;
+  /** Bangla title, shown alongside the romanized one */
+  titleBn?: string;
   author: string;
+  authorBn?: string;
   year: number;
   tags: string[];
   spine: SpineColor;
@@ -26,7 +29,10 @@ export type SpineColor =
   | "teal"
   | "rust"
   | "olive"
-  | "charcoal";
+  | "charcoal"
+  | "saffron"
+  | "rose"
+  | "denim";
 
 export const SPINE_COLORS: Record<SpineColor, { bg: string; text: string; deep: string }> = {
   oxblood:    { bg: "#6e2b25", text: "#f2ecdd", deep: "#571f1a" },
@@ -41,6 +47,9 @@ export const SPINE_COLORS: Record<SpineColor, { bg: string; text: string; deep: 
   rust:       { bg: "#9c4a2f", text: "#f2ecdd", deep: "#7d3a24" },
   olive:      { bg: "#6b6b3a", text: "#f2ecdd", deep: "#54542d" },
   charcoal:   { bg: "#33302c", text: "#f2ecdd", deep: "#262421" },
+  saffron:    { bg: "#d1912f", text: "#211d17", deep: "#b37724" },
+  rose:       { bg: "#b4838e", text: "#211d17", deep: "#9a6d78" },
+  denim:      { bg: "#40597a", text: "#f2ecdd", deep: "#334761" },
 };
 
 const B = (
@@ -51,6 +60,18 @@ const B = (
   tags: string[],
   spine: SpineColor,
 ): Book => ({ slug, title, author, year, tags, spine });
+
+/** Bangla-shelf entry with native script fields. */
+const BB = (
+  slug: string,
+  title: string,
+  titleBn: string,
+  author: string,
+  authorBn: string,
+  year: number,
+  tags: string[],
+  spine: SpineColor,
+): Book => ({ slug, title, titleBn, author, authorBn, year, tags, spine });
 
 export const BOOKS: Book[] = [
   // ── Fiction: the canon everyone quotes ──────────────────────
@@ -174,6 +195,41 @@ export const BOOKS: Book[] = [
   B("hamlet", "Hamlet", "William Shakespeare", 1600, ["play", "classic"], "charcoal"),
   B("romeo-and-juliet", "Romeo and Juliet", "William Shakespeare", 1597, ["play", "classic"], "oxblood"),
   B("macbeth", "Macbeth", "William Shakespeare", 1606, ["play", "classic"], "forest"),
+
+  // ── The Bangla shelf: Bangladesh & Bengali literature ───────
+  BB("gitanjali", "Gitanjali", "গীতাঞ্জলি", "Rabindranath Tagore", "রবীন্দ্রনাথ ঠাকুর", 1910, ["bangla", "poetry", "classic"], "saffron"),
+  BB("gora", "Gora", "গোরা", "Rabindranath Tagore", "রবীন্দ্রনাথ ঠাকুর", 1910, ["bangla", "classic"], "forest"),
+  BB("ghare-baire", "The Home and the World", "ঘরে বাইরে", "Rabindranath Tagore", "রবীন্দ্রনাথ ঠাকুর", 1916, ["bangla", "classic"], "olive"),
+  BB("chokher-bali", "Chokher Bali", "চোখের বালি", "Rabindranath Tagore", "রবীন্দ্রনাথ ঠাকুর", 1903, ["bangla", "classic"], "plum"),
+  BB("shesher-kobita", "Shesher Kobita", "শেষের কবিতা", "Rabindranath Tagore", "রবীন্দ্রনাথ ঠাকুর", 1929, ["bangla", "classic"], "terracotta"),
+  BB("devdas", "Devdas", "দেবদাস", "Sarat Chandra Chattopadhyay", "শরৎচন্দ্র চট্টোপাধ্যায়", 1917, ["bangla", "classic"], "oxblood"),
+  BB("parineeta", "Parineeta", "পরিণীতা", "Sarat Chandra Chattopadhyay", "শরৎচন্দ্র চট্টোপাধ্যায়", 1914, ["bangla", "classic"], "rose"),
+  BB("srikanta", "Srikanta", "শ্রীকান্ত", "Sarat Chandra Chattopadhyay", "শরৎচন্দ্র চট্টোপাধ্যায়", 1917, ["bangla", "classic"], "teal"),
+  BB("anandamath", "Anandamath", "আনন্দমঠ", "Bankim Chandra Chattopadhyay", "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", 1882, ["bangla", "classic"], "mustard"),
+  BB("pather-panchali", "Pather Panchali", "পথের পাঁচালী", "Bibhutibhushan Bandyopadhyay", "বিভূতিভূষণ বন্দ্যোপাধ্যায়", 1929, ["bangla", "classic"], "cream"),
+  BB("aranyak", "Aranyak", "আরণ্যক", "Bibhutibhushan Bandyopadhyay", "বিভূতিভূষণ বন্দ্যোপাধ্যায়", 1939, ["bangla", "nature"], "forest"),
+  BB("chander-pahar", "Chander Pahar", "চাঁদের পাহাড়", "Bibhutibhushan Bandyopadhyay", "বিভূতিভূষণ বন্দ্যোপাধ্যায়", 1937, ["bangla", "adventure"], "navy"),
+  BB("padma-nadir-majhi", "Padma Nadir Majhi", "পদ্মা নদীর মাঝি", "Manik Bandopadhyay", "মানিক বন্দ্যোপাধ্যায়", 1936, ["bangla", "classic"], "denim"),
+  BB("putul-nacher-itikotha", "Putul Nacher Itikotha", "পুতুলনাচের ইতিকথা", "Manik Bandopadhyay", "মানিক বন্দ্যোপাধ্যায়", 1936, ["bangla", "classic"], "slate"),
+  BB("hajabarala", "HaJaBaRaLa", "হযবরল", "Sukumar Ray", "সুকুমার রায়", 1925, ["bangla", "humor"], "mustard"),
+  BB("abol-tabol", "Abol Tabol", "আবোল তাবোল", "Sukumar Ray", "সুকুমার রায়", 1923, ["bangla", "poetry"], "teal"),
+  BB("sultanas-dream", "Sultana's Dream", "সুলতানার স্বপ্ন", "Begum Rokeya", "বেগম রোকেয়া", 1905, ["bangla", "scifi"], "plum"),
+  BB("bidrohi", "Bidrohi (The Rebel)", "বিদ্রোহী", "Kazi Nazrul Islam", "কাজী নজরুল ইসলাম", 1922, ["bangla", "poetry"], "charcoal"),
+  BB("nakshi-kanthar-math", "Nakshi Kanthar Math", "নকশী কাঁথার মাঠ", "Jasim Uddin", "জসীম উদ্দীন", 1929, ["bangla", "poetry"], "olive"),
+  BB("banalata-sen", "Banalata Sen", "বনলতা সেন", "Jibanananda Das", "জীবনানন্দ দাশ", 1935, ["bangla", "poetry"], "slate"),
+  BB("lalsalu", "Lalsalu", "লালসালু", "Syed Waliullah", "সৈয়দ ওয়ালীউল্লাহ", 1948, ["bangla", "classic"], "oxblood"),
+  BB("sangshaptak", "Sangshaptak", "সংশপ্তক", "Shahidullah Kaiser", "শহীদুল্লা কায়সার", 1965, ["bangla", "classic"], "rust"),
+  BB("shongkhosil-karagar", "Shongkhosil Karagar", "শঙ্খনিল কারাগার", "Zahir Raihan", "জহির রায়হান", 1963, ["bangla", "classic"], "navy"),
+  BB("chilekothar-sepai", "Chilekothar Sepai", "চিলেকোঠার সৈকত", "Akhtaruzzaman Elias", "আখতারুজ্জামান ইলিয়াস", 1987, ["bangla", "classic"], "teal"),
+  BB("khowabnama", "Khowabnama", "খোয়াবনামা", "Akhtaruzzaman Elias", "আখতারুজ্জামান ইলিয়াস", 1996, ["bangla", "classic"], "forest"),
+  BB("agunpakhi", "Agunpakhi", "অগ্নিপুরখী", "Hasan Azizul Haque", "হাসান আজিজুল হক", 2006, ["bangla", "memoir"], "terracotta"),
+  BB("himu", "Himu", "হিমু", "Humayun Ahmed", "হুমায়ূন আহমেদ", 1990, ["bangla"], "plum"),
+  BB("debi", "Debi", "দেবী", "Humayun Ahmed", "হুমায়ূন আহমেদ", 1987, ["bangla"], "charcoal"),
+  BB("maa", "Maa", "মা", "Anisul Hoque", "আনিসুল হক", 2004, ["bangla", "memoir"], "rust"),
+  BB("hangor-nodi-grenade", "Hangor Nodi Grenade", "হাঙর নদী গ্রেনেড", "Selina Hossain", "সেলিনা হোসেন", 1976, ["bangla", "classic"], "olive"),
+  BB("deshe-bideshe", "Deshe Bideshe", "দেশে বিদেশে", "Syed Mujtaba Ali", "সৈয়দ মুজতবা আলী", 1948, ["bangla", "humor"], "slate"),
+  BB("kaler-kalosh", "Kaler Kalosh", "কালের কলস", "Al Mahmud", "আল মাহমুদ", 1973, ["bangla", "poetry"], "terracotta"),
+  BB("amar-bondhu-rashed", "Amar Bondhu Rashed", "আমার বন্ধু রাশেদ", "Muhammed Zafar Iqbal", "মুহম্মদ জাফর ইকবাল", 2010, ["bangla"], "denim"),
 ];
 
 export const BOOKS_BY_SLUG: ReadonlyMap<string, Book> = new Map(

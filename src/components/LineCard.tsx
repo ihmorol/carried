@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getBook } from "@/lib/books";
-import { accessionNo } from "@/lib/line";
+import { accessionNo, isBengali, formatStampDate, formatStampDateBn } from "@/lib/line";
 import { INKS } from "@/lib/inks";
 import type { LinePayload } from "@/lib/line";
 import { StampMark } from "./StampMark";
@@ -42,6 +42,7 @@ export function LineCard({
 
   const s = size === "lg" ? 1.3 : 1;
   const len = payload.q.length;
+  const bn = isBengali(payload.q);
   const quoteSize = (len > 170 ? 15 : len > 110 ? 17 : len > 60 ? 19 : 21) * s;
 
   const head = (
@@ -70,11 +71,12 @@ export function LineCard({
         &ldquo;
       </span>
       <p
-        className="relative font-serif italic"
+        className="relative font-serif"
         style={{
           fontSize: quoteSize,
-          lineHeight: 1.5,
+          lineHeight: bn ? 1.7 : 1.5,
           paddingTop: 14 * s,
+          fontStyle: bn ? "normal" : "italic",
           textWrap: "pretty",
         }}
       >
@@ -118,14 +120,20 @@ export function LineCard({
         className="font-mono uppercase"
         style={{ fontSize: 8 * s, letterSpacing: "0.2em", color: ink.soft }}
       >
-        {votedLabel(votes)}
+        {votedLabel(payload.q, votes)}
       </span>
     </div>
   ) : null;
 
   const stamp = (
     <div className="flex justify-center" style={{ marginTop: 14 * s }}>
-      <StampMark name={payload.n} date={payload.d} ink={ink} animate={animateStamp} scale={s * 0.92} />
+      <StampMark
+        name={payload.n}
+        date={bn ? formatStampDateBn(payload.d) : formatStampDate(payload.d)}
+        ink={ink}
+        animate={animateStamp}
+        scale={s * 0.92}
+      />
     </div>
   );
 
@@ -181,8 +189,9 @@ export function LineCard({
   );
 }
 
-function votedLabel(votes: number): string {
-  if (votes === 0) return "not yet underlined";
-  if (votes === 1) return "underlined once";
-  return `underlined ×${votes}`;
+function votedLabel(q: string, votes: number): string {
+  const bn = isBengali(q);
+  if (votes === 0) return bn ? "এখনো আন্ডারলাইন নেই" : "not yet underlined";
+  if (votes === 1) return bn ? "একবার আন্ডারলাইন" : "underlined once";
+  return bn ? `আন্ডারলাইন ×${votes}` : `underlined ×${votes}`;
 }

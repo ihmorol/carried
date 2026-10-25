@@ -1,6 +1,6 @@
 import { INKS } from "./inks";
 import { getBook, bookTagline } from "./books";
-import { accessionNo, formatStampDate, type LinePayload } from "./line";
+import { accessionNo, formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
 import { SITE_NAME } from "./site";
 
 /**
@@ -50,6 +50,12 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
     loadFont("Plex Export", "IBMPlexMono-400.ttf", "400", "normal"),
     loadFont("Plex Export", "IBMPlexMono-500.ttf", "500", "normal"),
     loadFont("Plex Export", "IBMPlexMono-600.ttf", "600", "normal"),
+    loadFont("Noto Serif Bengali Export", "NotoSerifBengali-500.ttf", "500", "normal"),
+    loadFont("Noto Serif Bengali Export", "NotoSerifBengali-600.ttf", "600", "normal"),
+    loadFont("Noto Serif Bengali Export", "NotoSerifBengali-700.ttf", "700", "normal"),
+    loadFont("Noto Sans Bengali Export", "NotoSansBengali-400.ttf", "400", "normal"),
+    loadFont("Noto Sans Bengali Export", "NotoSansBengali-500.ttf", "500", "normal"),
+    loadFont("Noto Sans Bengali Export", "NotoSansBengali-600.ttf", "600", "normal"),
   ]);
   await document.fonts.ready;
 
@@ -82,21 +88,27 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   ctx.textAlign = "left";
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
 
-  // the line — size steps down as it grows
+  // the line — size steps down as it grows; Bangla script gets its own serif
   const len = payload.q.length;
-  const quoteSize = len > 170 ? 44 : len > 110 ? 50 : len > 60 ? 56 : 62;
-  ctx.font = `italic 500 ${quoteSize}px "Fraunces Export"`;
+  const bn = isBengali(payload.q);
+  const quoteSize = Math.round(
+    (len > 170 ? 44 : len > 110 ? 50 : len > 60 ? 56 : 62) * (bn ? 0.88 : 1),
+  );
+  const quoteFont = bn
+    ? `500 ${quoteSize}px "Noto Serif Bengali Export"`
+    : `italic 500 ${quoteSize}px "Fraunces Export"`;
+  ctx.font = quoteFont;
   const quoteLines = wrap(ctx, payload.q, W - 2 * M);
-  const quoteLH = quoteSize * 1.42;
+  const quoteLH = quoteSize * (bn ? 1.75 : 1.42);
   let y = M + 96;
 
-  // oversized open-quote mark
+  // oversized open-quote mark (latin cards only — Bangla has no quote glyph style here)
   ctx.fillStyle = ink.rule;
   ctx.font = 'italic 500 150px "Fraunces Export"';
-  ctx.fillText("\u201C", M - 10, y - 18);
+  if (!bn) ctx.fillText("\u201C", M - 10, y - 18);
 
   ctx.fillStyle = ink.text;
-  ctx.font = `italic 500 ${quoteSize}px "Fraunces Export"`;
+  ctx.font = quoteFont;
   for (const line of quoteLines) {
     ctx.fillText(line, M, y);
     y += quoteLH;
@@ -126,6 +138,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   ctx.fillText(bookTagline(book), M, provY + 152);
 
   // the stamp
+  const bnName = isBengali(payload.n);
   const stamp = {
     w: 380,
     h: 170,
@@ -145,11 +158,13 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "6px";
   ctx.fillText("CARRIED BY", 0, -34);
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
-  ctx.font = '600 52px "Fraunces Export"';
+  ctx.font = bnName
+    ? '600 46px "Noto Serif Bengali Export"'
+    : '600 52px "Fraunces Export"';
   ctx.fillText(payload.n, 0, 22);
   ctx.font = '500 16px "Plex Export"';
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "5px";
-  ctx.fillText(formatStampDate(payload.d), 0, 56);
+  ctx.fillText(bnName ? formatStampDateBn(payload.d) : formatStampDate(payload.d), 0, 56);
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
   ctx.restore();
   ctx.textAlign = "left";

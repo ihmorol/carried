@@ -109,7 +109,9 @@ export function lineSlugId(payload: LinePayload, suffixChars = 5): string {
     .split(/\s+/)
     .filter((w) => w && !STOPWORDS.has(w));
   let base = words.slice(0, 4).join("-").slice(0, 28).replace(/-+$/, "");
-  if (!base) base = "line";
+  // Bangla (and other non-Latin) lines have no latin words — the book's
+  // slug keeps the link meaningful instead of a bare "line"
+  if (!base) base = payload.b;
   const suffix = payloadHash(payload).toString(36).padStart(suffixChars, "0").slice(0, suffixChars);
   return `${base}-${suffix}`;
 }
@@ -153,4 +155,26 @@ export function formatStampDate(iso: string): string {
   const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   if (!y || !m || !d) return iso;
   return `${String(d).padStart(2, "0")} ${months[m - 1]} ${y}`;
+}
+
+/** Bengali script detection — used to pick the right typography everywhere. */
+export function isBengali(text: string): boolean {
+  return /[\u0980-\u09FF]/.test(text);
+}
+
+const BN_MONTHS = [
+  "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+  "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+];
+const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
+
+function toBnDigits(s: string): string {
+  return s.replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
+}
+
+/** Stamp date in Bangla — for cards whose line is written in Bangla. */
+export function formatStampDateBn(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return `${toBnDigits(String(d).padStart(2, "0"))} ${BN_MONTHS[m - 1]} ${toBnDigits(String(y))}`;
 }

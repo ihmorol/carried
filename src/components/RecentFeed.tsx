@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { LineCard } from "./LineCard";
 import { usePoll } from "@/lib/use-poll";
+import { useLocale } from "./LocaleProvider";
 import type { LineRecord } from "@/lib/store";
 import type { SeedLine } from "@/lib/seeds";
 
@@ -14,6 +15,7 @@ type FeedRecord = LineRecord & { votes: number };
  * seamless loop; pauses on hover.
  */
 export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
+  const { t } = useLocale();
   const [lines, setLines] = useState<FeedRecord[]>(() =>
     seeds.map((s) => ({ id: s.id, payload: s, t: 0, votes: 0 })),
   );
@@ -58,12 +60,12 @@ export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
     <div>
       <div className="mx-auto mb-8 flex max-w-6xl items-baseline justify-between px-5">
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-          Fresh from the margins
+          {t("feed.fresh")}
         </h2>
         {live && (
           <p className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-stamp)]">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-stamp)]" aria-hidden="true" />
-            live — just carried
+            {t("feed.live")}
           </p>
         )}
       </div>

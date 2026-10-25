@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { LocaleProvider } from "@/components/LocaleProvider";
 
 const fraunces = localFont({
   src: [
@@ -20,6 +21,26 @@ const plex = localFont({
     { path: "../../public/fonts/IBMPlexMono-600.ttf", weight: "600", style: "normal" },
   ],
   variable: "--font-plex",
+  display: "swap",
+});
+
+const notoSerifBengali = localFont({
+  src: [
+    { path: "../../public/fonts/NotoSerifBengali-500.ttf", weight: "500", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-600.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-700.ttf", weight: "700", style: "normal" },
+  ],
+  variable: "--font-noto-serif-bengali",
+  display: "swap",
+});
+
+const notoSansBengali = localFont({
+  src: [
+    { path: "../../public/fonts/NotoSansBengali-400.ttf", weight: "400", style: "normal" },
+    { path: "../../public/fonts/NotoSansBengali-500.ttf", weight: "500", style: "normal" },
+    { path: "../../public/fonts/NotoSansBengali-600.ttf", weight: "600", style: "normal" },
+  ],
+  variable: "--font-noto-sans-bengali",
   display: "swap",
 });
 
@@ -45,10 +66,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${plex.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${plex.variable} ${notoSerifBengali.variable} ${notoSansBengali.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <LocaleProvider>{children}</LocaleProvider>
         <div className="grain" aria-hidden="true" />
       </body>
     </html>

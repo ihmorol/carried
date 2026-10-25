@@ -8,6 +8,7 @@ import type { Book } from "@/lib/books";
 import { addToShelf, getRememberedName, rememberName } from "@/lib/shelf";
 import { LINE_MAX, NAME_MAX } from "@/lib/site";
 import { LineCard } from "./LineCard";
+import { useLocale } from "./LocaleProvider";
 
 /**
  * Write the line, sign it, stamp it. Posts to the live shelf when it's
@@ -16,6 +17,7 @@ import { LineCard } from "./LineCard";
  */
 export function Composer({ book }: { book: Book }) {
   const router = useRouter();
+  const { t } = useLocale();
   const [text, setText] = useState("");
   const [name, setName] = useState("");
   const [ink, setInk] = useState<InkId>("paper");
@@ -57,7 +59,21 @@ export function Composer({ book }: { book: Book }) {
     try {
       encodeLine({ bookSlug: book.slug, text, name, ink, date: today });
     } catch (err) {
-      setError(err instanceof LineError ? err.message : "Something smudged. Try again.");
+      if (err instanceof LineError) {
+        const msg = err.message;
+        const key = msg.includes("line") && msg.includes("first")
+          ? "err.line"
+          : msg.toLowerCase().includes("sign")
+            ? "err.name"
+            : msg.includes("220")
+              ? "err.length"
+              : msg.includes("24")
+                ? "err.nameLength"
+                : null;
+        setError(key ? t(key) : t("err.generic"));
+      } else {
+        setError(t("err.generic"));
+      }
       return;
     }
 
@@ -104,7 +120,7 @@ export function Composer({ book }: { book: Book }) {
             htmlFor="line"
             className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-soft)]"
           >
-            01 — The line it left in you
+            {t("c.1")}
           </label>
           <textarea
             id="line"
@@ -113,7 +129,7 @@ export function Composer({ book }: { book: Book }) {
             rows={4}
             required
             className={`${field} mt-3 resize-y leading-relaxed`}
-            placeholder="Not a summary. The sentence you'd underline, in your own hand…"
+            placeholder={t("c.1.ph")}
             aria-describedby="line-counter"
           />
           <p
@@ -132,7 +148,7 @@ export function Composer({ book }: { book: Book }) {
             htmlFor="name"
             className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-soft)]"
           >
-            02 — Sign it
+            {t("c.2")}
           </label>
           <input
             id="name"
@@ -142,19 +158,19 @@ export function Composer({ book }: { book: Book }) {
             maxLength={NAME_MAX}
             required
             className={`${field} mt-3`}
-            placeholder="The name as it should appear in print"
+            placeholder={t("c.2.ph")}
             autoComplete="name"
           />
           <p className="mt-2 font-mono text-[11px] text-[var(--color-ink-faint)]">
-            No account. Your name is remembered on this device only.
+            {t("c.2.note")}
           </p>
         </div>
 
         <fieldset className="mt-8">
           <legend className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-soft)]">
-            03 — Choose the ink
+            {t("c.3")}
           </legend>
-          <div className="mt-3 flex gap-2" role="radiogroup" aria-label="Card ink">
+          <div className="mt-3 flex gap-2" role="radiogroup" aria-label={t("c.3")}>
             {INK_IDS.map((id) => {
               const active = ink === id;
               return (
@@ -178,7 +194,7 @@ export function Composer({ book }: { book: Book }) {
                     }}
                     aria-hidden="true"
                   />
-                  {INKS[id].label}
+                  {t(`ink.${id}`)}
                 </button>
               );
             })}
@@ -199,16 +215,16 @@ export function Composer({ book }: { book: Book }) {
           disabled={busy || over}
           className="mt-10 rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {busy ? "Stamping…" : "Stamp it & pass it on"}
+          {busy ? t("c.stamping") : t("c.submit")}
         </button>
         <p className="mt-4 font-mono text-[11px] text-[var(--color-ink-faint)]">
-          No account, ever. Your line joins the public margin under your name.
+          {t("c.note")}
         </p>
       </form>
 
       <div className="lg:sticky lg:top-10 lg:self-start">
         <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--color-ink-soft)]">
-          Live proof
+          {t("c.proof")}
         </p>
         <div className="w-[320px] max-w-full">
           <LineCard payload={preview} id="preview-preview" actions={false} />

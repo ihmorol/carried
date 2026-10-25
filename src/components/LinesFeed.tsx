@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { LineCard } from "./LineCard";
 import { usePoll } from "@/lib/use-poll";
+import { useLocale } from "./LocaleProvider";
+import { numFor } from "@/lib/i18n";
 import type { LineRecord } from "@/lib/store";
 import type { SeedLine } from "@/lib/seeds";
 
@@ -25,6 +27,7 @@ function sortRecords(records: FeedRecord[]): FeedRecord[] {
  * polling so new lines and votes appear without a reload.
  */
 export function LinesFeed({ slug, seeds }: { slug: string; seeds: SeedLine[] }) {
+  const { t, locale } = useLocale();
   const [records, setRecords] = useState<FeedRecord[]>(() =>
     seeds.map((s) => ({ id: s.id, payload: s, t: seedTime(s.d), votes: 0 })),
   );
@@ -73,29 +76,31 @@ export function LinesFeed({ slug, seeds }: { slug: string; seeds: SeedLine[] }) 
 
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-4">
         <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-          From the margins
+          {t("feed.margins")}
         </h2>
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)]">
-          {records.length} {records.length === 1 ? "line" : "lines"} · sorted by underlines ·{" "}
-          {live ? (
-            <span className="inline-flex items-center gap-1.5 text-[var(--color-stamp)]">
+          {t("feed.count", {
+            n: numFor(records.length, locale),
+            lines: records.length === 1 ? t("feed.line") : t("feed.lines"),
+            sort: t("feed.sorted"),
+            state: live ? t("feed.liveShort") : t("feed.offline"),
+          })}
+          {live && (
+            <span className="ml-2 inline-flex items-center gap-1.5 text-[var(--color-stamp)]">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-stamp)]" aria-hidden="true" />
-              live
+              {t("feed.liveShort")}
             </span>
-          ) : (
-            "offline shelf"
           )}
         </p>
       </div>
 
       {records.length === 0 ? (
         <div className="card-rule mt-8 rounded-[4px] bg-[var(--color-paper-raised)] p-12 text-center">
-          <p className="font-serif text-2xl italic">No lines yet.</p>
+          <p className="font-serif text-2xl italic">{t("feed.empty.title")}</p>
           <p className="mx-auto mt-3 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
-            This one&rsquo;s margins are still clean. Yours could be the first
-            sentence ever filed here.
+            {t("feed.empty.sub")}
           </p>
         </div>
       ) : (
