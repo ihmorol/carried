@@ -26,6 +26,10 @@ export interface Store {
   addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord>;
   /** Resolve a short slug id to its payload. */
   getLineById(id: string): Promise<LinePayload | undefined>;
+  /** Toggle a reader's "underline" on a line — one vote per voter id. */
+  toggleVote(lineId: string, voterId: string): Promise<{ votes: number; voted: boolean }>;
+  /** Underline counts for a batch of line ids. */
+  getVoteCounts(ids: string[]): Promise<Map<string, number>>;
   addBook(input: { title: string; author: string; year?: number }): Promise<Book>;
   getUserBooks(): Promise<Book[]>;
   getUserBook(slug: string): Promise<Book | undefined>;
@@ -34,6 +38,11 @@ export interface Store {
 
 function samePayload(a: LinePayload, b: LinePayload): boolean {
   return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d;
+}
+
+/** Voters identify themselves with an anonymous, persistent device id. */
+export function isValidVoterId(v: string): boolean {
+  return typeof v === "string" && /^[A-Za-z0-9-]{8,64}$/.test(v);
 }
 
 export class StoreError extends Error {
@@ -108,7 +117,22 @@ class RedisStore implements Store {
     return json.result as T;
   }
 
-  async limit(kind: "line" | "book", ip: string, max: number): Promise<void> {
+  private async pipeline<T = unknown>(cmds: (string | number)[][]): Promise<T[]> {
+    const res = await fetch(`${this.url}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(cmds.map((c) => ({ command: c.map(String) }))),
+      cache: "no-store",
+    });
+    if (!res.ok) throw new StoreError("The live shelf is unreachable.", 502);
+    const json = (await res.json()) as Array<{ result?: T; error?: string }>;
+    return json.map((j) => (j.error ? (undefined as T) : (j.result as T)));
+  }
+
+  async limit(kind: "line" | "book" | "vote", ip: string, max: number): Promise<void> {
     const key = `carried:rl:${kind}:${ip}`;
     const n = await this.cmd<number>(...["INCR", key]);
     if (n === 1) await this.cmd("EXPIRE", key, 3600);
@@ -167,6 +191,28 @@ class RedisStore implements Store {
     return record;
   }
 
+  async toggleVote(lineId: string, voterId: string): Promise<{ votes: number; voted: boolean }> {
+    const key = `carried:votes:${lineId}`;
+    const already = await this.cmd<number>("SISMEMBER", key, voterId);
+    if (already) {
+      await this.cmd("SREM", key, voterId);
+    } else {
+      await this.cmd("SADD", key, voterId);
+    }
+    const votes = await this.cmd<number>("SCARD", key);
+    return { votes, voted: !already };
+  }
+
+  async getVoteCounts(ids: string[]): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    if (ids.length === 0) return map;
+    const res = await this.pipeline<number>(
+      ids.map((id) => ["SCARD", `carried:votes:${id}`]),
+    );
+    ids.forEach((id, i) => map.set(id, res[i] ?? 0));
+    return map;
+  }
+
   async getLineById(id: string): Promise<LinePayload | undefined> {
     if (id.length > 64) return undefined;
     const raw = await this.cmd<string | null>("GET", `carried:line:${id}`);
@@ -213,6 +259,7 @@ export class MemoryStore implements Store {
   private recent: LineRecord[] = [];
   private books = new Map<string, Book>();
   private byId = new Map<string, LinePayload>();
+  private votes = new Map<string, Set<string>>();
 
   constructor() {
     for (const seed of SEED_LINES) {
@@ -275,6 +322,26 @@ export class MemoryStore implements Store {
   async getLineById(id: string): Promise<LinePayload | undefined> {
     if (id.length > 64) return undefined;
     return this.byId.get(id);
+  }
+
+  async toggleVote(lineId: string, voterId: string): Promise<{ votes: number; voted: boolean }> {
+    let set = this.votes.get(lineId);
+    if (!set) {
+      set = new Set();
+      this.votes.set(lineId, set);
+    }
+    if (set.has(voterId)) {
+      set.delete(voterId);
+    } else {
+      set.add(voterId);
+    }
+    return { votes: set.size, voted: set.has(voterId) };
+  }
+
+  async getVoteCounts(ids: string[]): Promise<Map<string, number>> {
+    const map = new Map<string, number>();
+    for (const id of ids) map.set(id, this.votes.get(id)?.size ?? 0);
+    return map;
   }
 
   async addBook(input: { title: string; author: string; year?: number }): Promise<Book> {
@@ -342,7 +409,11 @@ export async function findBook(slug: string): Promise<Book | undefined> {
 }
 
 /** Basic per-IP limiter for the API routes. */
-export async function checkRate(kind: "line" | "book", ip: string, limit: number): Promise<void> {
+export async function checkRate(
+  kind: "line" | "book" | "vote",
+  ip: string,
+  limit: number,
+): Promise<void> {
   const store = getStore();
   if (store instanceof RedisStore) {
     await store.limit(kind, ip, limit);

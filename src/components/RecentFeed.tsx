@@ -6,14 +6,16 @@ import { usePoll } from "@/lib/use-poll";
 import type { LineRecord } from "@/lib/store";
 import type { SeedLine } from "@/lib/seeds";
 
+type FeedRecord = LineRecord & { votes: number };
+
 /**
  * The home ticker, live: starts with the editorial seeds, then the global
  * recent-lines feed flows in and keeps refreshing. Duplicated track for a
  * seamless loop; pauses on hover.
  */
 export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
-  const [lines, setLines] = useState<LineRecord[]>(() =>
-    seeds.map((s) => ({ id: s.id, payload: s, t: 0 })),
+  const [lines, setLines] = useState<FeedRecord[]>(() =>
+    seeds.map((s) => ({ id: s.id, payload: s, t: 0, votes: 0 })),
   );
   const [live, setLive] = useState(false);
 
@@ -21,7 +23,7 @@ export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
     try {
       const res = await fetch("/api/recent?limit=24", { cache: "no-store" });
       if (!res.ok) return;
-      const data = (await res.json()) as { lines: LineRecord[]; live: boolean };
+      const data = (await res.json()) as { lines: FeedRecord[]; live: boolean };
       if (!Array.isArray(data.lines) || data.lines.length === 0) return;
       setLive(data.live);
       setLines(data.lines);
@@ -46,7 +48,7 @@ export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
     <ul className="flex shrink-0 gap-7 pr-7" aria-hidden={ariaHidden || undefined}>
       {lines.map((r) => (
         <li key={r.id} className="w-[290px] shrink-0">
-          <LineCard payload={r.payload} id={r.id} asLink className="h-full" />
+          <LineCard payload={r.payload} id={r.id} votes={r.votes} asLink className="h-full" />
         </li>
       ))}
     </ul>

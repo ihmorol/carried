@@ -211,7 +211,7 @@ export function Composer({ book }: { book: Book }) {
           Live proof
         </p>
         <div className="w-[320px] max-w-full">
-          <LineCard payload={preview} id="preview-preview" />
+          <LineCard payload={preview} id="preview-preview" actions={false} />
         </div>
       </div>
     </div>

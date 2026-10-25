@@ -10,8 +10,12 @@ export async function GET(req: Request) {
   try {
     const store = getStore();
     const lines = await store.getRecent(limit);
+    const counts = await store
+      .getVoteCounts(lines.map((l) => l.id))
+      .catch(() => new Map<string, number>());
+    const withVotes = lines.map((l) => ({ ...l, votes: counts.get(l.id) ?? 0 }));
     return NextResponse.json(
-      { lines, live: store.kind === "redis" },
+      { lines: withVotes, live: store.kind === "redis" },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {

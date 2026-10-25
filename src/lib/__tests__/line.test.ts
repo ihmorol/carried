@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { encodeLine, decodeLine, encodePayload, lineSlugId, accessionNo, LineError } from "@/lib/line";
 import { searchBooks, getBook, BOOKS, normalize } from "@/lib/books";
-import { slugifyTitle, validateLineInput, validateBookInput, StoreError, MemoryStore } from "@/lib/store";
+import { slugifyTitle, validateLineInput, validateBookInput, StoreError, MemoryStore, isValidVoterId } from "@/lib/store";
 import { SEED_LINES, SEED_LINE_BY_ID } from "@/lib/seeds";
 
 describe("line codec", () => {
@@ -205,5 +205,49 @@ describe("memory store", () => {
     const resolved = await store.getLineById(seedId);
     expect(resolved).toBeDefined();
     expect(resolved?.n.length).toBeGreaterThan(0);
+  });
+
+  it("toggles underlines — one vote per voter, counted per line", async () => {
+    const store = new MemoryStore();
+    const rec = await store.addLine("the-alchemist", { q: "Vote on me.", n: "T", s: "paper" });
+
+    const first = await store.toggleVote(rec.id, "voter-aaa");
+    expect(first).toEqual({ votes: 1, voted: true });
+
+    // same voter again → toggle off, not a second vote
+    const off = await store.toggleVote(rec.id, "voter-aaa");
+    expect(off).toEqual({ votes: 0, voted: false });
+    const back = await store.toggleVote(rec.id, "voter-aaa");
+    expect(back.votes).toBe(1);
+
+    // second voter stacks
+    const second = await store.toggleVote(rec.id, "voter-bbb");
+    expect(second.votes).toBe(2);
+
+    // seeds are votable too
+    const [seedId] = [...SEED_LINE_BY_ID.keys()];
+    await store.toggleVote(seedId, "voter-ccc");
+    expect((await store.getVoteCounts([seedId, rec.id])).get(seedId)).toBe(1);
+  });
+
+  it("batch-counts underlines", async () => {
+    const store = new MemoryStore();
+    const a = await store.addLine("the-alchemist", { q: "A.", n: "T", s: "paper" });
+    const b = await store.addLine("the-alchemist", { q: "B.", n: "T", s: "moss" });
+    await store.toggleVote(a.id, "v1");
+    await store.toggleVote(a.id, "v2");
+    await store.toggleVote(a.id, "v3");
+    await store.toggleVote(b.id, "v1");
+    const counts = await store.getVoteCounts([a.id, b.id, "unknown-id"]);
+    expect(counts.get(a.id)).toBe(3);
+    expect(counts.get(b.id)).toBe(1);
+    expect(counts.get("unknown-id")).toBe(0);
+  });
+
+  it("validates voter ids", () => {
+    expect(isValidVoterId("abcd1234-ef56-7890-abcd-ef1234567890")).toBe(true);
+    expect(isValidVoterId("short")).toBe(false);
+    expect(isValidVoterId("has spaces here!")).toBe(false);
+    expect(isValidVoterId("")).toBe(false);
   });
 });

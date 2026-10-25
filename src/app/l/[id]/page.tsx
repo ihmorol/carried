@@ -5,7 +5,7 @@ import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
 import { ShareRow } from "@/components/ShareRow";
 import { seedLinesFor } from "@/lib/seeds";
-import { findBook, resolveLine } from "@/lib/store";
+import { findBook, getStore, resolveLine } from "@/lib/store";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -32,6 +32,9 @@ export default async function LinePage({ params }: Props) {
   if (!book) notFound();
 
   const others = seedLinesFor(payload.b).filter((l) => l.q !== payload.q).slice(0, 3);
+  const counts = await getStore()
+    .getVoteCounts([id, ...others.map((o) => o.id)])
+    .catch(() => new Map<string, number>());
 
   return (
     <>
@@ -45,7 +48,7 @@ export default async function LinePage({ params }: Props) {
 
         <section className="mx-auto max-w-6xl px-5 pb-12">
           <div className="mx-auto w-[420px] max-w-full">
-            <LineCard payload={payload} id={id} size="lg" animateStamp />
+            <LineCard payload={payload} id={id} size="lg" animateStamp votes={counts.get(id) ?? 0} />
           </div>
 
           <div className="mx-auto mt-12 flex max-w-2xl flex-col items-center gap-8">
@@ -87,7 +90,7 @@ export default async function LinePage({ params }: Props) {
             <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((l) => (
                 <li key={l.id} className="max-w-[360px]">
-                  <LineCard payload={l} id={l.id} asLink className="h-full" />
+                  <LineCard payload={l} id={l.id} asLink votes={counts.get(l.id) ?? 0} className="h-full" />
                 </li>
               ))}
             </ul>

@@ -36,9 +36,16 @@ the shelf can grow without invalidating old links. Consequences:
   Choose by env var presence (`getStore()`); the site is fully functional offline
   (URL-carried lines + local shelf) and goes global when Redis is connected.
 
-**LineRecord** — `{ id, payload, t }`: a payload with its URL id and timestamp,
-the currency of every feed (book page `LinesFeed`, home `RecentFeed`). Feeds
-poll the API every 6–8 s while the tab is visible (`usePoll`).
+**LineRecord** — `{ id, payload, t, votes? }`: a payload with its URL id,
+timestamp, and (in API responses) underline count — the currency of every
+feed. Feeds poll the API every 6–8 s while the tab is visible (`usePoll`).
+
+**Votes** ("underlines") — one toggle per anonymous device id
+(`lib/voter.ts`, localStorage UUID) stored as unique-voter sets
+(`carried:votes:{id}` in Redis; Map in MemoryStore). `POST /api/lines/[id]/vote`
+toggles; `getVoteCounts` batch-reads. Book-page margins sort by count desc,
+newest-first on ties. Trade-off accepted: a determined user can rotate device
+ids — the IP rate limit (240/h) is the second layer, not a hard guarantee.
 
 **Ink** (`lib/inks.ts`) — one of three card color schemes: `paper | midnight | moss`.
 The single source of truth for the DOM card (`LineCard`), the canvas export

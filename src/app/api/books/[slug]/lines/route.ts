@@ -22,8 +22,12 @@ export async function GET(req: Request, { params }: Params) {
       store.getLines(slug, limit),
       store.countLines(slug),
     ]);
+    const counts = await store
+      .getVoteCounts(lines.map((l) => l.id))
+      .catch(() => new Map<string, number>());
+    const withVotes = lines.map((l) => ({ ...l, votes: counts.get(l.id) ?? 0 }));
     return NextResponse.json(
-      { lines, total, live: store.kind === "redis" },
+      { lines: withVotes, total, live: store.kind === "redis" },
       { headers: { "cache-control": "no-store" } },
     );
   } catch {
