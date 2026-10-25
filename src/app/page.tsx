@@ -6,9 +6,12 @@ import { ShelfExplorer } from "@/components/ShelfExplorer";
 import { marqueeLines, lineOfTheDay, SEED_LINES } from "@/lib/seeds";
 import { BOOKS } from "@/lib/books";
 
-const FEATURED = lineOfTheDay();
+// The "front page" pick rotates daily — revalidate keeps it fresh
+// without giving up static speed. The pick itself is computed per render.
+export const revalidate = 3600;
 
 export default function Home() {
+  const FEATURED = lineOfTheDay();
   return (
     <>
       <Header />
