@@ -3,6 +3,7 @@ import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
 import { LineCard } from "@/components/LineCard";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
+import { HeroSearch } from "@/components/HeroSearch";
 import { marqueeLines, lineOfTheDay, SEED_LINES } from "@/lib/seeds";
 import { BOOKS } from "@/lib/books";
 
@@ -21,35 +22,25 @@ export default function Home() {
           <div className="grid items-center gap-14 lg:grid-cols-[1.15fr_1fr]">
             <div className="animate-rise-in">
               <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-                No account · No app · Just a line
+                Every book leaves a line in you
               </p>
-              <h1 className="mt-5 font-serif text-6xl font-semibold leading-[1.02] tracking-[-0.01em] sm:text-7xl">
-                Every book leaves<br />
-                a <span className="italic text-[var(--color-stamp)]">line</span> in you.
+              <h1 className="mt-5 font-serif text-5xl font-semibold leading-[1.04] tracking-[-0.01em] sm:text-6xl">
+                What did your favorite book leave in{" "}
+                <span className="italic text-[var(--color-stamp)]">you</span>?
               </h1>
-              <p className="mt-7 max-w-md font-mono text-sm leading-relaxed text-[var(--color-ink-soft)]">
-                Not a review. Not a rating. The one sentence you&rsquo;d underline —
-                written in your hand, stamped with your name, printed as a card
-                worth passing on.
+              <p className="mt-6 max-w-md font-mono text-sm leading-relaxed text-[var(--color-ink-soft)]">
+                One sentence. Your name in the print. A card worth passing on —
+                no account, no app, nothing between you and the margin.
               </p>
-              <div className="mt-9 flex flex-wrap items-center gap-4">
-                <Link
-                  href="#shelf"
-                  className="btn-press rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] hover:opacity-85"
-                >
-                  Pick a book
-                </Link>
-                <Link
-                  href={`/l/${FEATURED.id}`}
-                  className="link-ledger font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-ink)]"
-                >
-                  See today&rsquo;s line, first
-                </Link>
+
+              <div className="mt-8">
+                <HeroSearch />
               </div>
+
               <p className="mt-10 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)]">
                 <span><strong className="font-semibold text-[var(--color-ink)]">{BOOKS.length}</strong> books</span>
-                <span><strong className="font-semibold text-[var(--color-ink)]">{SEED_LINES.length}+</strong> lines carried</span>
-                <span><strong className="font-semibold text-[var(--color-ink)]">0</strong> accounts</span>
+                <span><strong className="font-semibold text-[var(--color-ink)]">{SEED_LINES.length}+</strong> lines in the margins</span>
+                <span className="text-[var(--color-stamp)]">yours is next</span>
               </p>
             </div>
 
@@ -68,7 +59,15 @@ export default function Home() {
                 <LineCard payload={FEATURED} id={FEATURED.id} size="lg" animateStamp />
               </div>
               <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--color-ink-faint)]">
-                Today&rsquo;s front page
+                Today&rsquo;s front page — carried by {FEATURED.n}
+              </p>
+              <p className="mt-3 text-center">
+                <Link
+                  href={`/b/${FEATURED.b}#write`}
+                  className="link-ledger font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-ink)]"
+                >
+                  What would <span className="italic text-[var(--color-stamp)]">your</span> line say? →
+                </Link>
               </p>
             </div>
           </div>
@@ -146,8 +145,11 @@ export default function Home() {
             href="#shelf"
             className="btn-press mt-10 inline-block rounded-[3px] bg-[var(--color-stamp)] px-8 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper-raised)] hover:opacity-85"
           >
-            Carry yours out
+            Stamp your name on one
           </Link>
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)]">
+            Free, forever, no account — the margin is open.
+          </p>
         </section>
       </main>
       <Footer />

@@ -24,11 +24,17 @@ export function Header() {
           </span>
         </Link>
         <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.14em]">
-          <Link href="/#shelf" className="link-ledger text-[var(--color-ink)]">
+          <Link href="/#shelf" className="link-ledger hidden text-[var(--color-ink)] sm:inline">
             The shelf
           </Link>
           <Link href="/shelf" className="link-ledger text-[var(--color-ink)]">
             My lines
+          </Link>
+          <Link
+            href="/#shelf"
+            className="btn-press hidden rounded-[3px] bg-[var(--color-ink)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-paper)] hover:opacity-85 md:inline-block"
+          >
+            Write your line
           </Link>
         </nav>
       </div>
