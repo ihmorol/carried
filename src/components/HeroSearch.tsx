@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BOOKS, searchBooks, type Book } from "@/lib/books";
+import { BOOKS, originalName, searchBooks, type Book } from "@/lib/books";
 import { BookSpine } from "./BookSpine";
 import { useLocale } from "./LocaleProvider";
 
@@ -131,7 +131,7 @@ export function HeroSearch() {
                   <BookSpine book={b} height={56} compact className="shrink-0" />
                   <span className="min-w-0">
                     <span className="block truncate font-serif text-base font-semibold text-[var(--color-ink)]">
-                      {b.title}
+                      {originalName(b)}
                     </span>
                     <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
                       {b.author} · {b.year < 0 ? `${Math.abs(b.year)} BC` : b.year}

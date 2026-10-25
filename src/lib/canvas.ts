@@ -1,5 +1,5 @@
 import { INKS } from "./inks";
-import { getBook, bookTagline } from "./books";
+import { getBook, originalName } from "./books";
 import { accessionNo, formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
 import { SITE_NAME } from "./site";
 
@@ -130,12 +130,20 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
 
   ctx.fillStyle = ink.text;
-  ctx.font = '600 40px "Fraunces Export"';
-  ctx.fillText(book.title, M, provY + 112);
+  const provTitle = originalName(book);
+  const provTitleBn = isBengali(provTitle);
+  ctx.font = provTitleBn
+    ? '600 34px "Noto Serif Bengali Export"'
+    : '600 40px "Fraunces Export"';
+  ctx.fillText(provTitle, M, provY + 112);
 
   ctx.fillStyle = ink.soft;
   ctx.font = '400 24px "Plex Export"';
-  ctx.fillText(bookTagline(book), M, provY + 152);
+  ctx.fillText(
+    `${book.author} · ${book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}`,
+    M,
+    provY + 152,
+  );
 
   // the stamp
   const bnName = isBengali(payload.n);

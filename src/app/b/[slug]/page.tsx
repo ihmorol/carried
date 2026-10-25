@@ -8,7 +8,7 @@ import { BookLinks } from "@/components/BookLinks";
 import { LinesFeed } from "@/components/LinesFeed";
 import { Composer } from "@/components/Composer";
 import { T } from "@/components/T";
-import { BOOKS } from "@/lib/books";
+import { BOOKS, originalName } from "@/lib/books";
 import { seedLinesFor } from "@/lib/seeds";
 import { SPINE_COLORS } from "@/lib/books";
 import { findBook } from "@/lib/store";
@@ -78,11 +78,11 @@ export default async function BookPage({
               ))}
             </p>
             <h1 className="mt-4 font-serif text-5xl font-semibold leading-[1.05]">
-              {book.title}
+              {originalName(book)}
             </h1>
             {book.titleBn && (
               <p className="mt-2 font-serif text-2xl font-semibold text-[var(--color-ink-soft)]">
-                {book.titleBn}
+                {book.title}
               </p>
             )}
             <p className="mt-4 font-mono text-sm text-[var(--color-ink-soft)]">
@@ -113,7 +113,7 @@ export default async function BookPage({
           style={{ borderColor: "var(--color-rule)" }}
         >
           <h2 className="max-w-2xl font-serif text-3xl font-semibold leading-tight sm:text-4xl">
-            <T k="book.writeQ" v={{ title: book.titleBn ?? book.title }} />
+            <T k="book.writeQ" v={{ title: originalName(book) }} />
           </h2>
           <p className="mt-3 max-w-xl font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
             <T k="book.writeSub" />

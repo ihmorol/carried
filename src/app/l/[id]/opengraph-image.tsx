@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getBook } from "@/lib/books";
+import { getBook, originalName } from "@/lib/books";
 import { accessionNo, formatStampDate, formatStampDateBn, isBengali } from "@/lib/line";
 import { INKS } from "@/lib/inks";
 import { loadOgFonts } from "@/lib/og-fonts";
@@ -26,6 +26,8 @@ export default async function OgImage({
 
   const ink = INKS[payload.s];
   const book = getBook(payload.b);
+  const origTitle = book ? originalName(book) : "";
+  const titleBn = isBengali(origTitle);
   const len = payload.q.length;
   const bn = isBengali(payload.q);
   const quoteSize = Math.round((len > 170 ? 42 : len > 110 ? 50 : len > 60 ? 58 : 64) * (bn ? 0.88 : 1));
@@ -36,6 +38,9 @@ export default async function OgImage({
   const nameFont = isBengali(payload.n) || bn
     ? { fontFamily: "Noto Serif Bengali", fontWeight: 600 }
     : { fontFamily: "Fraunces", fontWeight: 600 };
+  const titleFont = titleBn
+    ? { fontFamily: "Noto Serif Bengali", fontWeight: 600, fontSize: 32 }
+    : { fontFamily: "Fraunces", fontWeight: 600, fontSize: 38 };
 
   return new ImageResponse(
     (
@@ -95,8 +100,8 @@ export default async function OgImage({
               <span style={{ fontFamily: "Plex", fontWeight: 600, fontSize: 17, letterSpacing: 6, color: ink.soft }}>
                 CARRIED OUT OF
               </span>
-              <span style={{ fontFamily: "Fraunces", fontWeight: 600, fontSize: 38, color: ink.text, marginTop: 10 }}>
-                {book?.title}
+              <span style={{ ...titleFont, color: ink.text, marginTop: 10 }}>
+                {origTitle}
               </span>
               <span style={{ fontFamily: "Plex", fontSize: 19, color: ink.soft, marginTop: 8 }}>
                 {book ? `${book.author} · ${book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}` : ""}

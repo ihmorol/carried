@@ -244,6 +244,11 @@ export function bookTagline(b: Book): string {
   return `${b.author}, ${b.year < 0 ? `${Math.abs(b.year)} BC` : b.year}`;
 }
 
+/** The name a book is actually known by — Bangla books keep their Bangla title everywhere. */
+export function originalName(b: Book): string {
+  return b.titleBn ?? b.title;
+}
+
 /** Strip diacritics + lowercase so "Brontë" matches "bronte". */
 export function normalize(s: string): string {
   return s
@@ -252,17 +257,18 @@ export function normalize(s: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-/** Client-side instant search over title, author and tags. */
+/** Client-side instant search over title, original title, author and tags. */
 export function searchBooks(query: string, limit = 40): Book[] {
   const q = normalize(query.trim());
   if (!q) return [];
   const scored: Array<{ b: Book; s: number }> = [];
   for (const b of BOOKS) {
     const t = normalize(b.title);
+    const tb = normalize(b.titleBn ?? "");
     const a = normalize(b.author);
     let s = 0;
-    if (t.startsWith(q)) s = 3;
-    else if (t.includes(q)) s = 2;
+    if (t.startsWith(q) || (tb && tb.startsWith(q))) s = 3;
+    else if (t.includes(q) || (tb && tb.includes(q))) s = 2;
     else if (a.startsWith(q)) s = 2;
     else if (a.includes(q)) s = 1.5;
     else if (b.tags.some((tag) => tag.startsWith(q) || normalize(tag).includes(q))) s = 1;

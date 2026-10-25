@@ -6,6 +6,7 @@ import { LineCard } from "@/components/LineCard";
 import { ShareRow } from "@/components/ShareRow";
 import { T } from "@/components/T";
 import { seedLinesFor } from "@/lib/seeds";
+import { originalName } from "@/lib/books";
 import { findBook, getStore, resolveLine } from "@/lib/store";
 
 type Props = { params: Promise<{ id: string }> };
@@ -67,7 +68,7 @@ export default async function LinePage({ params }: Props) {
         >
           <div className="mx-auto max-w-2xl px-5 text-center">
             <h2 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
-              <T k="card.loop.h" v={{ title: book.titleBn ?? book.title }} />
+              <T k="card.loop.h" v={{ title: originalName(book) }} />
             </h2>
             <p className="mx-auto mt-4 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
               <T k="card.loop.sub" v={{ n: payload.n }} />
@@ -84,7 +85,7 @@ export default async function LinePage({ params }: Props) {
         {others.length > 0 && (
           <section className="mx-auto max-w-6xl px-5 py-16">
             <h3 className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-              <T k="card.more" v={{ title: book.titleBn ?? book.title }} />
+              <T k="card.more" v={{ title: originalName(book) }} />
             </h3>
             <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((l) => (

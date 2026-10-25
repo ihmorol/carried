@@ -1,4 +1,4 @@
-import { SPINE_COLORS, type Book, spineHeight } from "@/lib/books";
+import { SPINE_COLORS, originalName, type Book, spineHeight } from "@/lib/books";
 
 /**
  * A book drawn as a book-cloth spine — top-to-bottom title, author at the foot.
@@ -40,7 +40,7 @@ export function BookSpine({
             className="font-serif font-semibold leading-none"
             style={{ fontSize: 9.5, letterSpacing: "0.02em", maxWidth: h - 10 }}
           >
-            {book.title}
+            {originalName(book)}
           </span>
         </div>
       ) : (
@@ -58,7 +58,7 @@ export function BookSpine({
               className="font-serif font-semibold leading-none"
               style={{ fontSize: 15, letterSpacing: "0.02em" }}
             >
-              {book.title}
+              {originalName(book)}
             </span>
           </div>
           <span
