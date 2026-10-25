@@ -75,6 +75,45 @@ export function encodePayload(payload: LinePayload): string {
   return toBase64Url(bytes);
 }
 
+/**
+ * Short, meaningful, unique line ids: the first significant words of the
+ * line plus a deterministic 5-char hash of the exact payload.
+ *   "Sheep follow. The boy chooses." + name/ink/date → sheep-follow-chooses-k3f2
+ * Deterministic, so the same line always maps to the same URL — reposts
+ * dedupe naturally — and different lines never share one.
+ */
+const STOPWORDS = new Set([
+  "the", "a", "an", "and", "or", "of", "to", "in", "is", "it", "its", "it's",
+  "that", "this", "these", "those", "i", "me", "my", "we", "our", "you", "your",
+  "he", "she", "his", "her", "him", "they", "them", "their", "was", "were",
+  "be", "been", "am", "are", "so", "but", "for", "on", "at", "with", "as",
+  "if", "not", "no", "do", "did", "done", "just", "all", "out", "up",
+]);
+
+function payloadHash(payload: LinePayload): number {
+  const s = JSON.stringify(payload);
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+
+export function lineSlugId(payload: LinePayload, suffixChars = 5): string {
+  const words = payload.q
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w && !STOPWORDS.has(w));
+  let base = words.slice(0, 4).join("-").slice(0, 28).replace(/-+$/, "");
+  if (!base) base = "line";
+  const suffix = payloadHash(payload).toString(36).padStart(suffixChars, "0").slice(0, suffixChars);
+  return `${base}-${suffix}`;
+}
+
 export function decodeLine(id: string): LinePayload {
   if (id.length > 1024) throw new LineError("Line too long.");
   let raw: string;

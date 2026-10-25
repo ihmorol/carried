@@ -1,11 +1,10 @@
 import { ImageResponse } from "next/og";
 import { getBook } from "@/lib/books";
-import { accessionNo, decodeLine } from "@/lib/line";
+import { accessionNo, formatStampDate } from "@/lib/line";
 import { INKS } from "@/lib/inks";
 import { loadOgFonts } from "@/lib/og-fonts";
-import { formatStampDate } from "@/lib/line";
 import { SITE_NAME } from "@/lib/site";
-import { findBook } from "@/lib/store";
+import { findBook, resolveLine } from "@/lib/store";
 
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
@@ -20,12 +19,7 @@ export default async function OgImage({
 }) {
   const { id } = await params;
   const fonts = loadOgFonts();
-  let payload;
-  try {
-    payload = decodeLine(id);
-  } catch {
-    payload = undefined;
-  }
+  const payload = await resolveLine(id);
   if (!payload || !(await findBook(payload.b))) {
     return new ImageResponse(<Unreadable />, { ...size, fonts });
   }

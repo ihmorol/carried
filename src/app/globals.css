@@ -136,6 +136,44 @@ body {
   text-decoration-color: var(--color-stamp);
 }
 
+/* Drop cap for book-page prose — a little print, a little church */
+.drop-cap::first-letter {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 3.1em;
+  line-height: 0.82;
+  float: left;
+  padding-right: 0.09em;
+  padding-top: 0.06em;
+  color: var(--color-stamp);
+}
+
+/* Ink band — the dark rhythm sections */
+.band-ink {
+  background: var(--color-night);
+  color: var(--color-paper);
+}
+.band-ink .soft {
+  color: #a2977f;
+}
+.band-ink ::selection {
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+}
+
+/* Buttons: a small physical press */
+.btn-press {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+.btn-press:hover {
+  transform: translateY(-1px);
+}
+.btn-press:active {
+  transform: translateY(1px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

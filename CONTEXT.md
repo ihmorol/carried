@@ -6,9 +6,12 @@ Carried is a no-account, no-backend quote-card site. This is the domain model.
 
 **Book** (`lib/books.ts`) — static, curated: `slug, title, author, year, tags, spine`.
 110 entries, prerendered at build (`/b/[slug]`). Books are *drawn* as spines
-(`BookSpine` + `SPINE_COLORS`), never fetched as images. Readers can add books
-(see Store); those live in Redis, resolve at request time via `findBook`,
-and carry the `reader-added` tag.
+(`BookSpine` + `SPINE_COLORS`), and book pages layer real cover scans on top
+(`lib/bookmeta.ts`: Open Library search → Internet Archive item → drawn spine
+fallback; plus free archive links — Open Library work page, Internet Archive,
+Bookshop, WorldCat — no API keys). Readers can add books (see Store); those
+live in Redis, resolve at request time via `findBook`, and carry the
+`reader-added` tag.
 
 **Line** (`lib/line.ts`) — the core entity. A reader's takeaway: `b` (book slug),
 `q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1).
@@ -18,7 +21,10 @@ the shelf can grow without invalidating old links. Consequences:
 
 - `decodeLine` is the door to `/l/[id]`; structural failure → 404. The page then
   checks `findBook(payload.b)` for existence.
-- IDs are stable for identical payloads — seed lines therefore have permanent URLs.
+- `lineSlugId` mints short, meaningful ids — first significant words of the
+  line + a 5-char payload hash (`sheep-follow-chooses-k3f2`). Deterministic:
+  identical payloads always share one URL; `resolveLine` resolves legacy
+  base64 ids, store-stored slug ids, then seed slugs.
 
 **Store** (`lib/store.ts`) — the live, shared shelf behind `lib/Store`:
 
@@ -39,9 +45,12 @@ The single source of truth for the DOM card (`LineCard`), the canvas export
 (`lib/canvas.ts`) and the satori OG renderers. Add a fourth nowhere without
 changing all three surfaces + `isInkId`.
 
-**Seed lines** (`lib/seeds.ts`) — editorial examples (original reader takeaways,
-**not** book excerpts) with fixed dates so IDs stay stable across builds. They
-populate book pages, the home marquee, and the sitemap.
+**Seed lines** (`lib/seeds/`) — editorial corpus: **ten original reader-voice
+lines per book** (~1,100 total, across canon/modern/more/ideas data files),
+written in-house. They are reactions to books, **not excerpts from them** —
+no scraped or quoted user content, so they're safe to ship. Fixed fields keep
+ids stable; a coverage test (`npm test`) enforces 10 per book. They populate
+book pages, the home ticker (capped rotation), and the daily front-page pick.
 
 **Shelf** (`lib/shelf.ts`) — the visitor's own lines, localStorage only
 (`carried.shelf.v1`, name in `carried.name.v1`). No server ever sees it.

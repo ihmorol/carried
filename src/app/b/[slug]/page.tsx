@@ -3,12 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/Chrome";
 import { BookSpine } from "@/components/BookSpine";
+import { BookCover } from "@/components/BookCover";
+import { BookLinks } from "@/components/BookLinks";
 import { LinesFeed } from "@/components/LinesFeed";
 import { Composer } from "@/components/Composer";
 import { BOOKS, bookTagline } from "@/lib/books";
 import { seedLinesFor } from "@/lib/seeds";
 import { SPINE_COLORS } from "@/lib/books";
 import { findBook } from "@/lib/store";
+import { fetchBookMeta } from "@/lib/bookmeta";
 
 export function generateStaticParams() {
   return BOOKS.map((b) => ({ slug: b.slug }));
@@ -40,6 +43,7 @@ export default async function BookPage({
 
   const seeds = seedLinesFor(slug);
   const spine = SPINE_COLORS[book.spine];
+  const meta = await fetchBookMeta(book).catch(() => null);
 
   return (
     <>
@@ -55,9 +59,13 @@ export default async function BookPage({
 
         <section className="mx-auto grid max-w-6xl gap-12 px-5 py-12 sm:grid-cols-[auto_1fr] sm:gap-16">
           <div className="justify-self-center sm:justify-self-start">
-            <div style={{ transform: "rotate(-1.5deg)" }}>
-              <BookSpine book={book} height={300} />
-            </div>
+            {meta ? (
+              <BookCover src={meta.coverUrl} book={book} />
+            ) : (
+              <div style={{ transform: "rotate(-1.5deg)" }}>
+                <BookSpine book={book} height={300} />
+              </div>
+            )}
           </div>
           <div className="max-w-2xl">
             <p className="font-mono text-[11px] uppercase tracking-[0.24em]" style={{ color: spine.bg }}>
@@ -69,17 +77,20 @@ export default async function BookPage({
             <p className="mt-4 font-mono text-sm text-[var(--color-ink-soft)]">
               {bookTagline(book)}
             </p>
-            <p className="mt-6 font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
+            <p className="drop-cap mt-6 font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
               Skip the plot. Everyone can find that. What readers keep here is
               the residue — the sentence that survived after the cover closed.
             </p>
-            <div className="mt-9">
+            <div className="mt-9 flex flex-wrap gap-4">
               <a
                 href="#write"
                 className="rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85"
               >
                 Write your line
               </a>
+            </div>
+            <div className="mt-8 max-w-sm">
+              <BookLinks book={book} workUrl={meta?.workUrl ?? null} />
             </div>
           </div>
         </section>

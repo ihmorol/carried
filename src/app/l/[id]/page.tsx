@@ -4,38 +4,29 @@ import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
 import { ShareRow } from "@/components/ShareRow";
-import { decodeLine, LineError } from "@/lib/line";
 import { seedLinesFor } from "@/lib/seeds";
-import { findBook } from "@/lib/store";
+import { findBook, resolveLine } from "@/lib/store";
 
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  try {
-    const p = decodeLine(id);
-    const book = await findBook(p.b);
-    const short = p.q.length > 110 ? `${p.q.slice(0, 110).trimEnd()}…` : p.q;
-    return {
-      title: `“${short}” — carried by ${p.n}`,
-      description: `A line carried out of ${book?.title ?? "a book"}, by ${p.n}. What did it leave in you?`,
-      robots: { index: false },
-    };
-  } catch {
-    return { title: "A line, unreadable", robots: { index: false } };
-  }
+  const p = await resolveLine(id);
+  if (!p) return { title: "A line, unreadable", robots: { index: false } };
+  const book = await findBook(p.b);
+  const short = p.q.length > 110 ? `${p.q.slice(0, 110).trimEnd()}…` : p.q;
+  return {
+    title: `“${short}” — carried by ${p.n}`,
+    description: `A line carried out of ${book?.title ?? "a book"}, by ${p.n}. What did it leave in you?`,
+    robots: { index: false },
+  };
 }
 
 export default async function LinePage({ params }: Props) {
   const { id } = await params;
 
-  let payload;
-  try {
-    payload = decodeLine(id);
-  } catch (err) {
-    if (err instanceof LineError) notFound();
-    throw err;
-  }
+  const payload = await resolveLine(id);
+  if (!payload) notFound();
 
   const book = await findBook(payload.b);
   if (!book) notFound();

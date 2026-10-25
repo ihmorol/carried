@@ -1,6 +1,6 @@
 import { BOOKS, getBook, SPINE_COLORS, type Book, type SpineColor } from "./books";
-import { encodePayload, type LinePayload } from "./line";
-import { SEED_LINES } from "./seeds";
+import { decodeLine, lineSlugId, type LinePayload } from "./line";
+import { SEED_LINES, SEED_LINE_BY_ID } from "./seeds";
 import { isInkId, type InkId } from "./inks";
 import { LINE_MAX, NAME_MAX } from "./site";
 
@@ -24,10 +24,16 @@ export interface Store {
   getLines(slug: string, limit?: number): Promise<LineRecord[]>;
   countLines(slug: string): Promise<number>;
   addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord>;
+  /** Resolve a short slug id to its payload. */
+  getLineById(id: string): Promise<LinePayload | undefined>;
   addBook(input: { title: string; author: string; year?: number }): Promise<Book>;
   getUserBooks(): Promise<Book[]>;
   getUserBook(slug: string): Promise<Book | undefined>;
   getRecent(limit: number): Promise<LineRecord[]>;
+}
+
+function samePayload(a: LinePayload, b: LinePayload): boolean {
+  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d;
 }
 
 export class StoreError extends Error {
@@ -139,13 +145,32 @@ class RedisStore implements Store {
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
     };
-    const record: LineRecord = { id: encodePayload(payload), payload, t: Date.now() };
+
+    // short meaningful id — extend the hash suffix only if a different
+    // line already claims it (deterministic, so reposts reuse the id)
+    let suffixChars = 5;
+    let id = lineSlugId(payload, suffixChars);
+    let claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
+    while (claimed && !samePayload(safeParse<LinePayload>(claimed)!, payload)) {
+      suffixChars++;
+      id = lineSlugId(payload, suffixChars);
+      claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
+    }
+    await this.cmd("SET", `carried:line:${id}`, JSON.stringify(payload));
+
+    const record: LineRecord = { id, payload, t: Date.now() };
     const body = JSON.stringify(record);
     await this.cmd("LPUSH", `carried:lines:${slug}`, body);
     await this.cmd("LTRIM", `carried:lines:${slug}`, "0", "499");
     await this.cmd("LPUSH", "carried:recent", body);
     await this.cmd("LTRIM", "carried:recent", "0", "199");
     return record;
+  }
+
+  async getLineById(id: string): Promise<LinePayload | undefined> {
+    if (id.length > 64) return undefined;
+    const raw = await this.cmd<string | null>("GET", `carried:line:${id}`);
+    return raw ? safeParse<LinePayload>(raw) ?? undefined : undefined;
   }
 
   async addBook(input: { title: string; author: string; year?: number }): Promise<Book> {
@@ -182,17 +207,19 @@ class RedisStore implements Store {
 
 /* ── in-memory fallback (dev / zero-config demo) ── */
 
-class MemoryStore implements Store {
+export class MemoryStore implements Store {
   readonly kind = "memory" as const;
   private lines = new Map<string, LineRecord[]>();
   private recent: LineRecord[] = [];
   private books = new Map<string, Book>();
+  private byId = new Map<string, LinePayload>();
 
   constructor() {
     for (const seed of SEED_LINES) {
       const rec: LineRecord = { id: seed.id, payload: seed, t: new Date(`${seed.d}T12:00:00Z`).getTime() };
       this.push(`carried:lines:${seed.b}`, rec);
       this.recent.push(rec);
+      this.byId.set(seed.id, seed);
     }
     this.recent.reverse();
   }
@@ -222,14 +249,32 @@ class MemoryStore implements Store {
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
     };
-    const id = encodePayload(payload);
-    const dup = (this.lines.get(`carried:lines:${slug}`) ?? []).find((r) => r.id === id);
-    if (dup) return dup;
+
+    let suffixChars = 5;
+    let id = lineSlugId(payload, suffixChars);
+    while (this.byId.has(id) && !samePayload(this.byId.get(id)!, payload)) {
+      suffixChars++;
+      id = lineSlugId(payload, suffixChars);
+    }
+    const dup = this.byId.get(id);
+    if (dup) {
+      const existing = (this.lines.get(`carried:lines:${slug}`) ?? []).find((r) => r.id === id);
+      if (existing) return existing;
+      const record: LineRecord = { id, payload, t: Date.now() };
+      this.push(`carried:lines:${slug}`, record);
+      return record;
+    }
+    this.byId.set(id, payload);
     const record: LineRecord = { id, payload, t: Date.now() };
     this.push(`carried:lines:${slug}`, record);
     this.recent.unshift(record);
     this.recent = this.recent.slice(0, 200);
     return record;
+  }
+
+  async getLineById(id: string): Promise<LinePayload | undefined> {
+    if (id.length > 64) return undefined;
+    return this.byId.get(id);
   }
 
   async addBook(input: { title: string; author: string; year?: number }): Promise<Book> {
@@ -304,4 +349,23 @@ export async function checkRate(kind: "line" | "book", ip: string, limit: number
     return;
   }
   // dev: no limiting needed
+}
+
+/**
+ * The one door to /l/[id]. Resolution order:
+ *  1. legacy/base64 payload ids — decode straight from the URL (they keep
+ *     working forever, including the offline-mode fallback links)
+ *  2. short slug ids stored on the live shelf
+ *  3. short slug ids of editorial seed lines (static, need no storage)
+ */
+export async function resolveLine(id: string): Promise<LinePayload | undefined> {
+  try {
+    return decodeLine(id);
+  } catch {
+    /* not a payload link — fall through to the shelf */
+  }
+  if (id.length > 64 || !/^[a-z0-9-]+$/.test(id)) return undefined;
+  const stored = await getStore().getLineById(id).catch(() => undefined);
+  if (stored) return stored;
+  return SEED_LINE_BY_ID.get(id);
 }

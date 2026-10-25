@@ -8,6 +8,22 @@ import { usePoll } from "@/lib/use-poll";
 
 const TAGS = ["all", "fiction", "classic", "philosophy", "psychology", "poetry", "fantasy", "scifi", "memoir", "self", "money", "play", "reader-added"] as const;
 
+/** Muted book-cloth hues so each filter reads as its own shelf. */
+const TAG_COLORS: Partial<Record<(typeof TAGS)[number], string>> = {
+  fiction: "#8a5a44",
+  classic: "#6d6354",
+  philosophy: "#3f6b62",
+  psychology: "#7a5a6e",
+  poetry: "#8a6d3b",
+  fantasy: "#3f5a3a",
+  scifi: "#40597a",
+  memoir: "#8a4a3b",
+  self: "#5a6b4a",
+  money: "#6b5a2a",
+  play: "#5a3a50",
+  "reader-added": "#b23c25",
+};
+
 /**
  * The public shelf: instant search over the curated 110 plus every
  * reader-added book (fetched from the live shelf), and the form that
@@ -172,24 +188,34 @@ export function ShelfExplorer() {
       )}
 
       <div className="mt-4 flex flex-wrap gap-1.5" role="group" aria-label="Filter by kind">
-        {TAGS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => {
-              setTag(t);
-              setQuery("");
-            }}
-            aria-pressed={tag === t && !query.trim()}
-            className={`rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
-              tag === t && !query.trim()
-                ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)]"
-                : "border-[var(--color-rule)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]"
-            }`}
-          >
-            {t === "reader-added" ? "by readers" : t}
-          </button>
-        ))}
+        {TAGS.map((t) => {
+          const active = tag === t && !query.trim();
+          const color = TAG_COLORS[t];
+          const style = active
+            ? undefined
+            : color
+              ? { borderColor: `${color}99`, color }
+              : { borderColor: "var(--color-rule)", color: "var(--color-ink-soft)" };
+          return (
+            <button
+              key={t}
+              type="button"
+              onClick={() => {
+                setTag(t);
+                setQuery("");
+              }}
+              aria-pressed={active}
+              style={style}
+              className={`rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition-colors ${
+                active
+                  ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)]"
+                  : "hover:brightness-75"
+              }`}
+            >
+              {t === "reader-added" ? "by readers" : t}
+            </button>
+          );
+        })}
       </div>
 
       <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-soft)]" aria-live="polite">

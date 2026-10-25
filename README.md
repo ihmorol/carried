@@ -20,11 +20,13 @@ Not a review. Not a rating. You pick a book, write the one sentence you'd underl
 ```
 
 - **Everything is live.** Lines land on the book page and the home ticker in real time (6–8 s polling, no reload). No accounts anywhere: your name rides with the line.
+- **Short, meaningful links.** Every line gets a slug cut from its own words plus a hash suffix: `carried.site/l/sheep-follow-the-boy-chooses-k3f2`. Deterministic, so the same line always keeps the same URL; legacy base64 links keep resolving too.
 - **Readers add the books.** Missing from the shelf? Two fields and it's there, with a generated book-cloth spine, ready for everyone's lines.
+- **Real covers, free archives.** Book pages pull cover scans from Open Library, falling back to Internet Archive item scans, falling back to the designed spine — the book is never a broken image. A "Find the book" row links Open Library (read/borrow), Internet Archive (free copies & audio), Bookshop.org (buy), and WorldCat (libraries). No API keys anywhere.
+- **A shelf that's never empty.** 1,100 editorial seed lines — ten per book, written in reader voice — so every book page has a live-feeling margin from day one. New reader lines flow in above them in real time.
 - **Two storage modes.** With Upstash Redis (free tier, 2 env vars) the shelf is global and shared. Without it, the app still works in offline mode: the link itself carries the line (base64url JSON payload), seeds fill the pages, and your lines live on your device.
 - **Rich link previews.** `/l/[id]/opengraph-image` renders the exact catalog card with satori, so X, WhatsApp, and iMessage show the card, not a bare URL.
 - **Save the card.** The same design is re-drawn on a 1080×1350 canvas client-side — a PNG with your name in the print.
-- **Every book is drawn, not downloaded.** The shelf renders as pure-CSS book-cloth spines — instant, and nothing can 404.
 
 ## The virality playbook
 
@@ -76,8 +78,8 @@ Push to GitHub → import in [Vercel](https://vercel.com/new) → set the env va
 ```
 src/
 ├── app/
-│   ├── page.tsx                     # hero, live ticker, how-it-works, the shelf
-│   ├── b/[slug]/page.tsx            # book page: spine, inline composer, live lines
+│   ├── page.tsx                     # hero, live ticker, ink band, the shelf
+│   ├── b/[slug]/page.tsx            # book page: cover, inline composer, live lines
 │   ├── l/[id]/page.tsx              # the card page — every share lands here
 │   ├── l/[id]/opengraph-image.tsx   # satori card (X/WhatsApp preview)
 │   ├── b/[slug]/opengraph-image.tsx # book OG (spine + invitation)
@@ -87,16 +89,19 @@ src/
 │   │   └── recent/route.ts          # GET freshest lines across the shelf
 │   ├── shelf/page.tsx               # "my lines" — local, private
 │   └── sitemap.ts / robots.ts       # SEO plumbing
-├── components/                      # LineCard, BookSpine, StampMark, Composer,
-│                                    # LinesFeed, RecentFeed, ShelfExplorer, ShareRow…
+├── components/                      # LineCard, BookSpine, BookCover, BookLinks,
+│                                    # StampMark, Composer, LinesFeed, RecentFeed,
+│                                    # ShelfExplorer, ShareRow…
 └── lib/
     ├── books.ts                     # 110-book dataset + instant search
     ├── store.ts                     # Store interface: RedisStore (Upstash REST) +
     │                                #   MemoryStore (offline dev) + rate limiting
-    ├── line.ts                      # payload codec — structure validation + base64url
+    ├── line.ts                      # payload codec + lineSlugId (short link ids)
+    ├── bookmeta.ts                  # free-archive resolver: Open Library →
+    │                                #   Internet Archive → drawn spine fallback
     ├── inks.ts                      # the three card inks (paper/midnight/moss)
     ├── canvas.ts                    # 1080×1350 PNG export
-    ├── seeds.ts                     # editorial seed lines (stable ids)
+    ├── seeds/                       # 1,100 editorial seed lines — ten per book
     └── use-poll.ts                  # visibility-aware polling hook
 public/fonts/                        # Fraunces + IBM Plex Mono TTFs (canvas + satori)
 ```
