@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
 import { getShelf } from "@/lib/shelf";
+import { tiltFor } from "@/lib/tilt";
 import type { ShelfEntry } from "@/lib/shelf";
 
 export default function ShelfPage() {
@@ -46,8 +47,17 @@ export default function ShelfPage() {
           </div>
         ) : (
           <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {lines.map((e) => (
-              <li key={e.id} className="max-w-[360px]">
+            {lines.map((e, i) => (
+              <li
+                key={e.id}
+                className="toss max-w-[360px] animate-rise-in"
+                style={
+                  {
+                    "--tilt": `${tiltFor(e.id)}deg`,
+                    animationDelay: `${Math.min(i, 8) * 55}ms`,
+                  } as React.CSSProperties
+                }
+              >
                 <LineCard payload={e.payload} id={e.id} asLink className="h-full" />
               </li>
             ))}

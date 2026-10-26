@@ -14,7 +14,7 @@ export function BookCover({ src, book }: { src: string; book: Book }) {
 
   if (failed) {
     return (
-      <div style={{ transform: "rotate(-1.5deg)" }}>
+      <div className="spine-hover" style={{ transform: "rotate(-1.5deg)" }}>
         <BookSpine book={book} height={300} />
       </div>
     );

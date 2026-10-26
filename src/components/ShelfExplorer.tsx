@@ -248,13 +248,10 @@ export function ShelfExplorer() {
             <li key={b.slug}>
               <a
                 href={`/b/${b.slug}`}
-                className="group block transition-transform duration-200 hover:-translate-y-1.5 focus-visible:-translate-y-1.5"
+                className="spine-hover block"
                 aria-label={`${b.title} by ${b.author}`}
               >
-                <BookSpine
-                  book={b}
-                  className="transition-shadow duration-200 group-hover:shadow-[0_14px_28px_rgba(28,22,12,0.28)]"
-                />
+                <BookSpine book={b} />
               </a>
             </li>
           ))}

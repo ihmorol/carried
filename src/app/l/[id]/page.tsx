@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
+import { TiltCard } from "@/components/TiltCard";
 import { ShareRow } from "@/components/ShareRow";
 import { T } from "@/components/T";
 import { seedLinesFor } from "@/lib/seeds";
@@ -50,7 +51,9 @@ export default async function LinePage({ params }: Props) {
 
         <section className="mx-auto max-w-6xl px-5 pb-12">
           <div className="mx-auto w-[420px] max-w-full">
-            <LineCard payload={payload} id={id} size="lg" animateStamp votes={counts.get(id) ?? 0} />
+            <TiltCard max={6}>
+              <LineCard payload={payload} id={id} size="lg" animateStamp votes={counts.get(id) ?? 0} />
+            </TiltCard>
           </div>
 
           <div className="mx-auto mt-12 flex max-w-2xl flex-col items-center gap-8">

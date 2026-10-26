@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { LineCard } from "./LineCard";
 import { usePoll } from "@/lib/use-poll";
 import { useLocale } from "./LocaleProvider";
+import { tiltFor } from "@/lib/tilt";
 import type { LineRecord } from "@/lib/store";
 import type { SeedLine } from "@/lib/seeds";
 
@@ -47,9 +48,19 @@ export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
   usePoll(poll, 8000);
 
   const track = (ariaHidden: boolean) => (
-    <ul className="flex shrink-0 gap-7 pr-7" aria-hidden={ariaHidden || undefined}>
+    <ul
+      className="flex shrink-0 gap-7 pr-7"
+      aria-hidden={ariaHidden || undefined}
+      // The duplicate half of the loop is decoration: inert keeps it
+      // out of the tab order and away from screen readers entirely.
+      inert={ariaHidden || undefined}
+    >
       {lines.map((r) => (
-        <li key={r.id} className="w-[290px] shrink-0">
+        <li
+          key={r.id}
+          className="toss w-[290px] shrink-0"
+          style={{ "--tilt": `${tiltFor(r.id)}deg` } as React.CSSProperties}
+        >
           <LineCard payload={r.payload} id={r.id} votes={r.votes} asLink className="h-full" />
         </li>
       ))}

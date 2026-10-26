@@ -168,7 +168,10 @@ export function LineCard({
         backgroundColor: ink.bg,
         color: ink.text,
         borderColor: ink.rule,
-        boxShadow: `inset 0 0 0 4px ${ink.bg}, inset 0 0 0 5px ${ink.rule}b3, 0 8px 24px rgba(28,22,12,0.10)`,
+        // The drop shadow is page dressing: the canvas export and the
+        // OG image render the card edge to edge, no shadow, and that
+        // is the artifact people download and share.
+        boxShadow: `inset 0 0 0 4px ${ink.bg}, inset 0 0 0 5px ${ink.rule}b3, 0 1px 2px rgba(28,22,12,0.10), 0 18px 36px -18px rgba(28,22,12,0.28)`,
         padding: 22 * s,
       }}
     >
@@ -179,9 +182,7 @@ export function LineCard({
   return (
     <div
       className={`${className} ${
-        asLink
-          ? "block transition-transform duration-200 hover:-translate-y-1 focus-within:-translate-y-1"
-          : ""
+        asLink ? "lift block" : ""
       }`}
     >
       {card}
