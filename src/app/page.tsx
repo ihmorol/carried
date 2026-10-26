@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
-import { LineCard } from "@/components/LineCard";
+import { HeroStage } from "@/components/HeroStage";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
 import { HeroSearch } from "@/components/HeroSearch";
 import { T } from "@/components/T";
@@ -21,7 +21,7 @@ export default function Home() {
       <main className="flex-1">
         {/* ── Hero ─────────────────────────────────────────── */}
         <section className="mx-auto max-w-6xl px-5 pb-20 pt-14 sm:pt-20">
-          <div className="grid items-center gap-14 lg:grid-cols-[1.15fr_1fr]">
+          <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
             <div className="animate-rise-in">
               <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
                 <T k="hero.kicker" />
@@ -46,21 +46,9 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="relative mx-auto w-[340px] max-w-full lg:justify-self-end">
-              <div
-                aria-hidden="true"
-                className="absolute -left-9 top-8 h-full w-full rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-raised)]"
-                style={{ transform: "rotate(-4.5deg)" }}
-              />
-              <div
-                aria-hidden="true"
-                className="absolute -right-4 top-2 h-full w-full rounded-[4px] border border-[var(--color-rule)] bg-[var(--color-paper-raised)] opacity-70"
-                style={{ transform: "rotate(5deg)" }}
-              />
-              <div className="relative" style={{ transform: "rotate(2deg)" }}>
-                <LineCard payload={FEATURED} id={FEATURED.id} size="lg" animateStamp />
-              </div>
-              <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--color-ink-faint)]">
+            <div className="mx-auto w-[340px] min-w-0 max-w-full lg:justify-self-end">
+              <HeroStage payload={FEATURED} id={FEATURED.id} />
+              <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--color-ink-faint)]">
                 <T k="hero.today" v={{ n: FEATURED.n }} />
               </p>
               <p className="mt-3 text-center">
@@ -90,13 +78,13 @@ export default function Home() {
             <h2 className="font-serif text-3xl font-semibold sm:text-4xl">
               <T k="band.title" />
             </h2>
-            <ol className="mt-12 grid gap-10 sm:grid-cols-3">
+            <ol className="mt-12 grid items-start gap-10 sm:grid-cols-3">
               {[
                 { n: "01", t: "band.1.t", d: "band.1.d" },
                 { n: "02", t: "band.2.t", d: "band.2.d" },
                 { n: "03", t: "band.3.t", d: "band.3.d" },
-              ].map((s) => (
-                <li key={s.n}>
+              ].map((s, i) => (
+                <li key={s.n} className={i === 1 ? "lg:mt-12" : i === 2 ? "lg:mt-24" : undefined}>
                   <span className="font-serif text-5xl italic text-[var(--color-stamp-soft)]">{s.n}</span>
                   <h3 className="mt-4 font-serif text-2xl font-semibold"><T k={s.t} /></h3>
                   <p className="soft mt-3 font-mono text-xs leading-relaxed"><T k={s.d} /></p>
