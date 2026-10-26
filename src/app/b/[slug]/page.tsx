@@ -63,7 +63,7 @@ export default async function BookPage({
             {meta ? (
               <BookCover src={meta.coverUrl} book={book} />
             ) : (
-              <div style={{ transform: "rotate(-1.5deg)" }}>
+              <div className="spine-hover" style={{ transform: "rotate(-1.5deg)" }}>
                 <BookSpine book={book} height={300} />
               </div>
             )}
