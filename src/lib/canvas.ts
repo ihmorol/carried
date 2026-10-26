@@ -5,7 +5,10 @@ import { SITE_NAME } from "./site";
 
 /**
  * Renders the catalog card to a 1080×1350 PNG (4:5, feeds crop it well).
- * Mirrors LineCard exactly: same inks, same type, same stamp.
+ * Mirrors LineCard exactly: same inks, same type, same stamp. The card
+ * fills the frame edge to edge, the PNG is the artifact itself, so the
+ * drop shadow around DOM cards is LineCard page dressing and has no
+ * equivalent here.
  * Fonts are loaded from /fonts so the export never depends on OS fonts.
  */
 

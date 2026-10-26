@@ -8,8 +8,9 @@ import type { LinePayload } from "@/lib/line";
  * The hero pile: today's card floats above two filed-away ones, all in
  * one perspective. The mouse drifts the pile by depth with a little
  * inertia; on touch devices and reduced-motion it rests as a still
- * pile. Presentation only, the card inside is the same artifact the
- * canvas export and OG image render.
+ * pile, and toggling either settles it back home. Presentation only,
+ * the card inside is the same artifact the canvas export and OG image
+ * render.
  */
 export function HeroStage({
   payload,
@@ -23,8 +24,8 @@ export function HeroStage({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let tx = 0;
     let ty = 0;
@@ -54,6 +55,7 @@ export function HeroStage({
     };
 
     const onMove = (e: PointerEvent) => {
+      if (!fine.matches || calm.matches) return;
       const r = el.getBoundingClientRect();
       tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
       ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
@@ -64,13 +66,26 @@ export function HeroStage({
       ty = 0;
       wake();
     };
+    // Live gate: reduced-motion or a pointer change settles the pile
+    // home instead of freezing it mid-drift.
+    const sync = () => {
+      if (!fine.matches || calm.matches) {
+        tx = 0;
+        ty = 0;
+        wake();
+      }
+    };
 
     el.addEventListener("pointermove", onMove);
     el.addEventListener("pointerleave", onLeave);
+    fine.addEventListener("change", sync);
+    calm.addEventListener("change", sync);
     wake();
     return () => {
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
+      fine.removeEventListener("change", sync);
+      calm.removeEventListener("change", sync);
       cancelAnimationFrame(raf);
     };
   }, []);

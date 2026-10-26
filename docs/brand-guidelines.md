@@ -46,6 +46,8 @@ must come from `lib/inks.ts`, never re-derived.
 
 Quiet, mechanical, satisfying: the stamp thumps in (scale 1.7 → overshoot → rest, 550ms), sections rise 14px on load, the marquee drifts slowly and pauses on hover. `prefers-reduced-motion` disables all of it. Nothing bounces for fun.
 
+Depth works the same way. Cards toss with a small hand-laid lean and straighten when a reader reaches for them, the hero pile drifts a few pixels with the pointer and settles when it lets go, books stand slightly off square and pull off the shelf on approach. The slow idle drift belongs to the hero's background ghosts only, under fine pointers; the card being read never bounces on its own. Touch devices and `prefers-reduced-motion` get the still poses.
+
 ## Do / Don't
 
 - **Do** keep the wordmark small; the reader's name is the loudest thing on the card.

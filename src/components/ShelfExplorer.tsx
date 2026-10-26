@@ -248,7 +248,7 @@ export function ShelfExplorer() {
             <li key={b.slug}>
               <a
                 href={`/b/${b.slug}`}
-                className="spine-hover group block"
+                className="spine-hover block"
                 aria-label={`${b.title} by ${b.author}`}
               >
                 <BookSpine book={b} />

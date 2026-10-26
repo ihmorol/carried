@@ -48,7 +48,13 @@ export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
   usePoll(poll, 8000);
 
   const track = (ariaHidden: boolean) => (
-    <ul className="flex shrink-0 gap-7 pr-7" aria-hidden={ariaHidden || undefined}>
+    <ul
+      className="flex shrink-0 gap-7 pr-7"
+      aria-hidden={ariaHidden || undefined}
+      // The duplicate half of the loop is decoration: inert keeps it
+      // out of the tab order and away from screen readers entirely.
+      inert={ariaHidden || undefined}
+    >
       {lines.map((r) => (
         <li
           key={r.id}

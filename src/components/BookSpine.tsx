@@ -21,18 +21,23 @@ export function BookSpine({
 }) {
   const c = SPINE_COLORS[book.spine];
   const h = height ?? spineHeight(book);
+  // Book-cloth shading, the brand doc's sanctioned edge lighting, is
+  // one definition so both spine sizes can never drift apart.
+  const cloth = {
+    backgroundColor: c.bg,
+    color: c.text,
+    backgroundImage:
+      "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 9%, rgba(255,255,255,0.10) 26%, rgba(255,255,255,0) 60%, rgba(0,0,0,0.22) 100%)",
+  };
 
   if (compact) {
     return (
       <div
         className={`relative flex flex-col items-center justify-between overflow-hidden rounded-[3px] ${className}`}
         style={{
-          backgroundColor: c.bg,
-          color: c.text,
+          ...cloth,
           height: h,
           width: 26,
-          backgroundImage:
-            "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 9%, rgba(255,255,255,0.10) 26%, rgba(255,255,255,0) 60%, rgba(0,0,0,0.22) 100%)",
           boxShadow: "inset 0 -6px 0 rgba(0,0,0,0.18), 0 1px 2px rgba(28,22,12,0.25)",
         }}
         aria-hidden="true"
@@ -57,12 +62,9 @@ export function BookSpine({
       className={`spine-3d relative flex flex-col items-center justify-between overflow-hidden rounded-[3px] ${className}`}
       style={
         {
-          backgroundColor: c.bg,
-          color: c.text,
+          ...cloth,
           height: h,
           width: 96,
-          backgroundImage:
-            "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 9%, rgba(255,255,255,0.10) 26%, rgba(255,255,255,0) 60%, rgba(0,0,0,0.22) 100%)",
           boxShadow:
             "inset 0 -6px 0 rgba(0,0,0,0.18), 0 2px 3px rgba(28,22,12,0.22), 0 16px 26px -12px rgba(28,22,12,0.30)",
           "--ry": `${ryFor(book.slug)}deg`,

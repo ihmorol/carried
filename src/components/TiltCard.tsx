@@ -29,8 +29,19 @@ export function TiltCard({
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
-    enabled.current = fine.matches && !calm.matches;
+    const sync = () => {
+      enabled.current = fine.matches && !calm.matches;
+      if (!enabled.current && ref.current) {
+        cancelAnimationFrame(raf.current);
+        ref.current.style.transform = "";
+      }
+    };
+    sync();
+    fine.addEventListener("change", sync);
+    calm.addEventListener("change", sync);
     return () => {
+      fine.removeEventListener("change", sync);
+      calm.removeEventListener("change", sync);
       enabled.current = false;
       cancelAnimationFrame(raf.current);
     };
