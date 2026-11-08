@@ -19,7 +19,8 @@ type Params = { params: Promise<{ id: string }> };
 export async function POST(req: Request, { params }: Params) {
   const { id } = await params;
   try {
-    if (id.length > 512) {
+    // matches decodeLine's own ceiling; URL-carried ids with book meta are long
+    if (id.length > 1024) {
       return NextResponse.json({ error: "Unknown line." }, { status: 404 });
     }
     const line = await resolveLine(id);

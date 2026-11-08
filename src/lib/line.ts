@@ -23,11 +23,26 @@ export type LinePayload = {
   s: InkId;
   /** date the line was stamped, YYYY-MM-DD */
   d: string;
+  /**
+   * Optional book metadata, present only when the book is NOT on the
+   * curated shelf (reader-added). Carried in the URL so the card renders
+   * with zero server state, the shelf can stay stateless. Always written
+   * as a unit: all three or none.
+   */
+  bt?: string;
+  ba?: string;
+  by?: number;
 };
 
 export class LineError extends Error {}
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Caps mirror validateBookInput; kept here so the codec stays standalone. */
+export const BOOK_TITLE_MAX = 90;
+export const BOOK_AUTHOR_MAX = 60;
+const BOOK_YEAR_MIN = -3000;
+const BOOK_YEAR_MAX = 3000;
 
 function toBase64Url(bytes: Uint8Array): string {
   let bin = "";
@@ -50,6 +65,8 @@ export function encodeLine(input: {
   name: string;
   ink: InkId;
   date?: string;
+  /** book meta, carried in the URL for books the curated shelf doesn't know */
+  book?: { title: string; author: string; year: number };
 }): { id: string; payload: LinePayload } {
   const text = input.text.trim().replace(/\s+/g, " ");
   const name = input.name.trim().replace(/\s+/g, " ");
@@ -65,6 +82,19 @@ export function encodeLine(input: {
     s: input.ink,
     d: input.date ?? new Date().toISOString().slice(0, 10),
   };
+  if (input.book) {
+    const bt = input.book.title.trim().replace(/\s+/g, " ");
+    const ba = input.book.author.trim().replace(/\s+/g, " ");
+    if (!bt || bt.length > BOOK_TITLE_MAX) throw new LineError("That book title reads wrong.");
+    if (!ba || ba.length > BOOK_AUTHOR_MAX) throw new LineError("That book author reads wrong.");
+    const by = Math.trunc(input.book.year);
+    if (!Number.isFinite(by) || by < BOOK_YEAR_MIN || by > BOOK_YEAR_MAX) {
+      throw new LineError("That book year reads wrong.");
+    }
+    payload.bt = bt;
+    payload.ba = ba;
+    payload.by = by;
+  }
   return { id: encodePayload(payload), payload };
 }
 
@@ -137,7 +167,24 @@ export function decodeLine(id: string): LinePayload {
   if (typeof p.n !== "string" || !p.n.trim() || p.n.length > NAME_MAX) throw new LineError("This line has no readable signature.");
   if (typeof p.s !== "string" || !isInkId(p.s)) throw new LineError("This line uses an unknown ink.");
   if (typeof p.d !== "string" || !DATE_RE.test(p.d)) throw new LineError("This line lost its date.");
-  return { v: 1, b: p.b, q: p.q.trim(), n: p.n.trim(), s: p.s, d: p.d };
+  const out: LinePayload = { v: 1, b: p.b, q: p.q.trim(), n: p.n.trim(), s: p.s, d: p.d };
+  // book meta is a unit: all three fields or none, each within its cap
+  const hasMeta = p.bt !== undefined || p.ba !== undefined || p.by !== undefined;
+  if (hasMeta) {
+    if (typeof p.bt !== "string" || !p.bt.trim() || p.bt.length > BOOK_TITLE_MAX) {
+      throw new LineError("The book on this line is smudged.");
+    }
+    if (typeof p.ba !== "string" || !p.ba.trim() || p.ba.length > BOOK_AUTHOR_MAX) {
+      throw new LineError("The book on this line is smudged.");
+    }
+    if (typeof p.by !== "number" || !Number.isInteger(p.by) || p.by < BOOK_YEAR_MIN || p.by > BOOK_YEAR_MAX) {
+      throw new LineError("The book on this line is smudged.");
+    }
+    out.bt = p.bt.trim();
+    out.ba = p.ba.trim();
+    out.by = p.by;
+  }
+  return out;
 }
 
 /** FNV-1a over the encoded payload → short accession number, ledger style. */

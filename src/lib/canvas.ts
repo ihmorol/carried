@@ -1,5 +1,5 @@
 import { INKS } from "./inks";
-import { getBook, originalName } from "./books";
+import { bookForPayload, originalName } from "./books";
 import { accessionNo, formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
 import { SITE_NAME } from "./site";
 
@@ -43,7 +43,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): st
 
 export async function exportLineCard(payload: LinePayload, id: string): Promise<Blob> {
   const ink = INKS[payload.s];
-  const book = getBook(payload.b);
+  const book = bookForPayload(payload);
   if (!book) throw new Error("Book not found");
 
   await Promise.all([

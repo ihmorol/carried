@@ -240,6 +240,37 @@ export function getBook(slug: string): Book | undefined {
   return BOOKS_BY_SLUG.get(slug);
 }
 
+/** Deterministic spine color from the slug, so reader-added books get cloth too. */
+export function spineForSlug(slug: string): SpineColor {
+  const keys = Object.keys(SPINE_COLORS) as SpineColor[];
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 33 + slug.charCodeAt(i)) >>> 0;
+  return keys[h % keys.length];
+}
+
+/** The book-bearing slice of a line payload. */
+export type BookRef = { b: string; bt?: string; ba?: string; by?: number };
+
+/**
+ * Resolve the book behind a line: the curated shelf answers first, then
+ * the metadata carried inside the payload itself (reader-added books
+ * travel in their URLs, so cards render with zero server state), then
+ * nothing and the caller decides.
+ */
+export function bookForPayload(p: BookRef): Book | undefined {
+  const known = getBook(p.b);
+  if (known) return known;
+  if (!p.bt) return undefined;
+  return {
+    slug: p.b,
+    title: p.bt,
+    author: p.ba ?? "",
+    year: p.by ?? new Date().getFullYear(),
+    tags: ["reader-added"],
+    spine: spineForSlug(p.b),
+  };
+}
+
 export function bookTagline(b: Book): string {
   return `${b.author}, ${b.year < 0 ? `${Math.abs(b.year)} BC` : b.year}`;
 }

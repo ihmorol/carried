@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getBook } from "@/lib/books";
+import { bookForPayload } from "@/lib/books";
 import { accessionNo, isBengali, formatStampDate, formatStampDateBn } from "@/lib/line";
 import { INKS } from "@/lib/inks";
 import type { LinePayload } from "@/lib/line";
@@ -37,7 +37,8 @@ export function LineCard({
   onChange?: (lineId: string, votes: number, voted: boolean) => void;
 }) {
   const ink = INKS[payload.s];
-  const book = getBook(payload.b);
+  // the curated shelf answers first, then the book carried in the URL
+  const book = bookForPayload(payload);
   if (!book) return null;
 
   const s = size === "lg" ? 1.3 : 1;

@@ -36,7 +36,7 @@ export function ShelfExplorer() {
   const router = useRouter();
   const { t, locale } = useLocale();
   const [userBooks, setUserBooks] = useState<Book[]>([]);
-  const [live, setLive] = useState(false);
+  const [live, setLive] = useState<boolean | null>(null);
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState<(typeof TAGS)[number]>("all");
   const [adding, setAdding] = useState(false);
@@ -154,7 +154,7 @@ export function ShelfExplorer() {
         </button>
       </div>
 
-      {adding && (
+      {adding && live !== false && (
         <form
           onSubmit={addBook}
           className="card-rule mt-4 rounded-[4px] bg-[var(--color-paper-raised)] p-5"
@@ -191,6 +191,17 @@ export function ShelfExplorer() {
         </form>
       )}
 
+      {adding && live === false && (
+        <div role="note" className="card-rule mt-4 rounded-[4px] bg-[var(--color-paper-raised)] p-5">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-stamp)]">
+            {t("shelf.offline.title")}
+          </p>
+          <p className="mt-2 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
+            {t("shelf.offline.body")}
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap gap-1.5" role="group" aria-label="Filter by kind">
         {TAGS.map((tagId) => {
           const active = tag === tagId && !query.trim();
@@ -225,7 +236,7 @@ export function ShelfExplorer() {
       <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-soft)]" aria-live="polite">
         {t("shelf.count.many", { n: numFor(results.length, locale) })}
         {query.trim() ? t("shelf.for", { q: query.trim() }) : ""}
-        {live ? "" : t("shelf.offline")}
+        {live === false ? t("shelf.offline") : ""}
       </p>
 
       {results.length === 0 ? (

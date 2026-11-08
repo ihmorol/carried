@@ -14,17 +14,24 @@ live in Redis, resolve at request time via `findBook`, and carry the
 `reader-added` tag.
 
 **Line** (`lib/line.ts`), the core entity. A reader's takeaway: `b` (book slug),
-`q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1).
-The codec (`encodeLine` / `decodeLine` / `encodePayload`) validates **structure only**,
-whether the book exists is decided by `findBook` against the current shelf, so
-the shelf can grow without invalidating old links. Consequences:
+`q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1),
+plus optional `bt/ba/by` (book title/author/year) carried **only** for reader-added
+books, so their cards render with zero server state (see
+`docs/adr/0001-line-payload-carries-reader-added-book.md`). The codec
+(`encodeLine` / `decodeLine` / `encodePayload`) validates **structure only**,
+whether the book exists is decided by the caller: the curated shelf via
+`getBook`, then the payload's own meta via `bookForPayload`, then the live
+shelf via `findBook`, so the shelf can grow without invalidating old links.
+Consequences:
 
 - `decodeLine` is the door to `/l/[id]`; structural failure → 404. The page then
-  checks `findBook(payload.b)` for existence.
+  resolves the book (live shelf → payload meta) and 404s only when neither knows it.
 - `lineSlugId` mints short, meaningful ids, first significant words of the
   line + a 5-char payload hash (`sheep-follow-chooses-k3f2`). Deterministic:
   identical payloads always share one URL; `resolveLine` resolves legacy
-  base64 ids, store-stored slug ids, then seed slugs.
+  base64 ids, store-stored slug ids, then seed slugs. When the store isn't
+  live (`live: false` in the POST response), the composer skips store ids
+  and carries the whole payload in the URL instead.
 
 **Store** (`lib/store.ts`), the live, shared shelf behind `lib/Store`:
 

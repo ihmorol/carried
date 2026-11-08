@@ -1,4 +1,4 @@
-import { BOOKS, getBook, SPINE_COLORS, type Book, type SpineColor } from "./books";
+import { BOOKS, getBook, spineForSlug, type Book } from "./books";
 import { decodeLine, lineSlugId, type LinePayload } from "./line";
 import { SEED_LINES, SEED_LINE_BY_ID } from "./seeds";
 import { isInkId, type InkId } from "./inks";
@@ -92,13 +92,6 @@ export function slugifyTitle(title: string): string {
     .replace(/-+$/g, "");
 }
 
-function spineFor(slug: string): SpineColor {
-  const keys = Object.keys(SPINE_COLORS) as SpineColor[];
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) h = (h * 33 + slug.charCodeAt(i)) >>> 0;
-  return keys[h % keys.length];
-}
-
 /* ── Upstash Redis REST ── */
 
 class RedisStore implements Store {
@@ -169,6 +162,13 @@ class RedisStore implements Store {
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
     };
+    // reader-added books travel inside their lines: the metadata rides on
+    // every stored payload, so cards render even with no store behind them
+    if (!getBook(slug) && book) {
+      payload.bt = book.title;
+      payload.ba = book.author;
+      payload.by = book.year;
+    }
 
     // short meaningful id, extend the hash suffix only if a different
     // line already claims it (deterministic, so reposts reuse the id)
@@ -227,7 +227,7 @@ class RedisStore implements Store {
       slug = authorWord && !slug.includes(authorWord) ? `${slug}-${authorWord}` : `${slug}-2`;
       if (getBook(slug) || (await this.getUserBook(slug))) throw new StoreError("That book is already on the shelf.", 409);
     }
-    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineFor(slug) };
+    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineForSlug(slug) };
     await this.cmd("HSET", "carried:books:user", slug, JSON.stringify(book));
     return book;
   }
@@ -296,6 +296,13 @@ export class MemoryStore implements Store {
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
     };
+    // reader-added books travel inside their lines (mirror of RedisStore)
+    const local = getBook(slug) ? undefined : this.books.get(slug);
+    if (local) {
+      payload.bt = local.title;
+      payload.ba = local.author;
+      payload.by = local.year;
+    }
 
     let suffixChars = 5;
     let id = lineSlugId(payload, suffixChars);
@@ -349,7 +356,7 @@ export class MemoryStore implements Store {
     let slug = slugifyTitle(title) || "untitled";
     if (getBook(slug) || this.books.has(slug)) slug = `${slug}-2`;
     if (getBook(slug) || this.books.has(slug)) throw new StoreError("That book is already on the shelf.", 409);
-    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineFor(slug) };
+    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineForSlug(slug) };
     this.books.set(slug, book);
     return book;
   }

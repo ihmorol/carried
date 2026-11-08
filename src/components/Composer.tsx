@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { encodeLine, LineError, type LinePayload } from "@/lib/line";
+import { getBook } from "@/lib/books";
 import { INKS, INK_IDS, type InkId } from "@/lib/inks";
 import type { Book } from "@/lib/books";
 import { addToShelf, getRememberedName, rememberName } from "@/lib/shelf";
@@ -11,9 +12,9 @@ import { LineCard } from "./LineCard";
 import { useLocale } from "./LocaleProvider";
 
 /**
- * Write the line, sign it, stamp it. Posts to the live shelf when it's
- * connected; when it isn't, the line travels in its URL instead, either
- * way the reader lands on their card.
+ * Write the line, sign it, stamp it. The live shelf keeps the line when
+ * it's connected; when it isn't, the line travels in its URL instead,
+ * either way the reader lands on their card.
  */
 export function Composer({ book }: { book: Book }) {
   const router = useRouter();
@@ -85,22 +86,45 @@ export function Composer({ book }: { book: Book }) {
         body: JSON.stringify({ q: text, n: name, s: ink }),
       });
       if (res.ok) {
-        const record = (await res.json()) as { id: string; payload: LinePayload };
-        finish(record.id, record.payload);
+        const data = (await res.json()) as { id: string; payload: LinePayload; live?: boolean };
+        if (data.live) {
+          finish(data.id, data.payload);
+          return;
+        }
+        // a stateless store answered: its id lives only in that one
+        // instance, so the line travels in its URL instead
+        finishCarried();
         return;
       }
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
-      if (data?.error && res.status !== 502 && res.status !== 503) {
-        setError(data.error);
+      const err = (await res.json().catch(() => null)) as { error?: string } | null;
+      if (err?.error && res.status !== 502 && res.status !== 503) {
+        setError(err.error);
         setBusy(false);
         return;
       }
       throw new Error("live shelf unreachable");
     } catch {
-      // live shelf offline, the URL still carries the whole line
-      const { id, payload } = encodeLine({ bookSlug: book.slug, text, name, ink, date: today });
-      finish(id, payload);
+      finishCarried();
     }
+  }
+
+  /**
+   * No live shelf behind this line: the URL carries the whole payload,
+   * including the book for reader-added books, so the card renders
+   * anywhere, on any stateless server, forever.
+   */
+  function finishCarried() {
+    const { id, payload } = encodeLine({
+      bookSlug: book.slug,
+      text,
+      name,
+      ink,
+      date: today,
+      book: getBook(book.slug)
+        ? undefined
+        : { title: book.title, author: book.author, year: book.year },
+    });
+    finish(id, payload);
   }
 
   function finish(id: string, payload: LinePayload) {

@@ -82,6 +82,9 @@ const EN: Dict = {
   "shelf.count.many": "{n} books",
   "shelf.for": " for “{q}”",
   "shelf.offline": " · live shelf offline",
+  "shelf.offline.title": "The live shelf is offline",
+  "shelf.offline.body":
+    "Adding books waits for the live shelf to connect. Your lines still travel: every card carries its own book inside its link.",
   "shelf.empty.title": "Not on this shelf yet.",
   "shelf.empty.cta": "Add “{q}” yourself",
 
@@ -237,6 +240,9 @@ const BN: Dict = {
   "shelf.count.many": "{n} বই",
   "shelf.for": ", “{q}”",
   "shelf.offline": " · লাইভ শেলফ অফলাইন",
+  "shelf.offline.title": "লাইভ শেলফ এখন অফলাইন",
+  "shelf.offline.body":
+    "বই যোগ করা যাবে লাইভ শেলফ জুড়লে। তবে তোমার লাইনগুলো তবু ভ্রমণ করবে: প্রতিটি কার্ড নিজের বইকে নিজের লিংকেই বহন করে।",
   "shelf.empty.title": "শেলফে নেই এখনো।",
   "shelf.empty.cta": "“{q}” নিজেই যোগ করো",
 

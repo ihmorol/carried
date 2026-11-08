@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { encodeLine, decodeLine, encodePayload, lineSlugId, accessionNo, LineError } from "@/lib/line";
-import { searchBooks, getBook, BOOKS, normalize } from "@/lib/books";
+import { searchBooks, getBook, bookForPayload, BOOKS, normalize } from "@/lib/books";
 import { slugifyTitle, validateLineInput, validateBookInput, StoreError, MemoryStore, isValidVoterId } from "@/lib/store";
 import { SEED_LINES, SEED_LINE_BY_ID } from "@/lib/seeds";
 
@@ -56,6 +56,61 @@ describe("line codec", () => {
     const { id } = encodeLine(base);
     expect(accessionNo(id)).toMatch(/^[0-9A-Z]{6}$/);
     expect(accessionNo(id)).toBe(accessionNo(id));
+  });
+
+  it("carries reader-added book meta through the URL, all three fields as a unit", () => {
+    const { id, payload } = encodeLine({
+      ...base,
+      bookSlug: "debug-probe-book",
+      book: { title: "Debug Probe Book", author: "Flow Test", year: 2024 },
+    });
+    expect(payload.bt).toBe("Debug Probe Book");
+    expect(payload.ba).toBe("Flow Test");
+    expect(payload.by).toBe(2024);
+    expect(decodeLine(id)).toEqual(payload);
+    // curated books travel light, no meta
+    expect(encodeLine(base).payload.bt).toBeUndefined();
+  });
+
+  it("rejects malformed book meta", () => {
+    expect(() =>
+      encodeLine({ ...base, book: { title: "", author: "A", year: 2020 } }),
+    ).toThrow(LineError);
+    expect(() =>
+      encodeLine({ ...base, book: { title: "x".repeat(91), author: "A", year: 2020 } }),
+    ).toThrow(LineError);
+    expect(() =>
+      encodeLine({ ...base, book: { title: "T", author: "A", year: 9999 } }),
+    ).toThrow(LineError);
+  });
+
+  it("decodes meta strictly: partial or out-of-bounds meta is smudged", () => {
+    const good = {
+      v: 1 as const,
+      b: "reader-added-book",
+      q: "A line that carries its own book.",
+      n: "Sami",
+      s: "moss" as const,
+      d: "2026-11-08",
+      bt: "A Reader's Book",
+      ba: "Some Reader",
+      by: 2024,
+    };
+    expect(decodeLine(encodePayload(good))).toEqual(good);
+
+    // partial meta → rejected
+    const strip = <K extends keyof typeof good>(k: K) => {
+      const c: Record<string, unknown> = { ...good };
+      delete c[k];
+      return c;
+    };
+    expect(() => decodeLine(encodePayload(strip("bt") as typeof good))).toThrow(LineError);
+    expect(() => decodeLine(encodePayload(strip("by") as typeof good))).toThrow(LineError);
+    // bad title length → rejected
+    expect(() => decodeLine(encodePayload({ ...good, bt: "x".repeat(91) }))).toThrow(LineError);
+    // non-integer or out-of-range year → rejected
+    expect(() => decodeLine(encodePayload({ ...good, by: 2024.5 }))).toThrow(LineError);
+    expect(() => decodeLine(encodePayload({ ...good, by: -4000 }))).toThrow(LineError);
   });
 });
 
@@ -114,6 +169,34 @@ describe("store validation", () => {
       d: "2026-10-25",
     };
     expect(decodeLine(encodePayload(payload))).toEqual(payload);
+  });
+});
+
+describe("book resolution for payloads", () => {
+  it("the curated shelf answers first", () => {
+    expect(bookForPayload({ b: "the-alchemist" })).toEqual(getBook("the-alchemist"));
+    // meta is ignored for curated books, the shelf copy wins
+    const shelf = bookForPayload({ b: "the-alchemist", bt: "Fake Title", ba: "X", by: 1 });
+    expect(shelf?.title).toBe("The Alchemist");
+  });
+
+  it("synthesizes a reader-added book from the meta carried in the URL", () => {
+    const book = bookForPayload({ b: "debug-probe-book", bt: "Debug Probe Book", ba: "Flow Test", by: 2024 });
+    expect(book).toEqual({
+      slug: "debug-probe-book",
+      title: "Debug Probe Book",
+      author: "Flow Test",
+      year: 2024,
+      tags: ["reader-added"],
+      spine: book?.spine,
+    });
+    expect(book?.spine).toBeDefined();
+    // deterministic spine from the slug
+    expect(bookForPayload({ b: "debug-probe-book", bt: "Debug Probe Book", ba: "F", by: 2024 })?.spine).toBe(book?.spine);
+  });
+
+  it("returns nothing when the shelf doesn't know the book and the URL carries nothing", () => {
+    expect(bookForPayload({ b: "never-heard-of-it" })).toBeUndefined();
   });
 });
 
@@ -254,5 +337,20 @@ describe("memory store", () => {
     expect(isValidVoterId("short")).toBe(false);
     expect(isValidVoterId("has spaces here!")).toBe(false);
     expect(isValidVoterId("")).toBe(false);
+  });
+
+  it("stamps reader-added book meta onto stored lines, curated lines stay light", async () => {
+    const store = new MemoryStore();
+    const book = await store.addBook({ title: "Debug Probe Book", author: "Flow Test", year: 2024 });
+    const rec = await store.addLine(book.slug, { q: "A line off a reader-added book.", n: "T", s: "paper" });
+    expect(rec.payload.bt).toBe("Debug Probe Book");
+    expect(rec.payload.ba).toBe("Flow Test");
+    expect(rec.payload.by).toBe(2024);
+    // the stored payload survives a stateless re-render: bookForPayload resolves it
+    expect(bookForPayload(rec.payload)?.title).toBe("Debug Probe Book");
+
+    const curated = await store.addLine("the-alchemist", { q: "Curated stays light.", n: "T", s: "paper" });
+    expect(curated.payload.bt).toBeUndefined();
+    expect(bookForPayload(curated.payload)?.title).toBe("The Alchemist");
   });
 });

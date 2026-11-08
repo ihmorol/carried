@@ -7,7 +7,7 @@ import { TiltCard } from "@/components/TiltCard";
 import { ShareRow } from "@/components/ShareRow";
 import { T } from "@/components/T";
 import { seedLinesFor } from "@/lib/seeds";
-import { originalName } from "@/lib/books";
+import { bookForPayload, originalName } from "@/lib/books";
 import { findBook, getStore, resolveLine } from "@/lib/store";
 
 type Props = { params: Promise<{ id: string }> };
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const p = await resolveLine(id);
   if (!p) return { title: "A line, unreadable", robots: { index: false } };
-  const book = await findBook(p.b);
+  const book = (await findBook(p.b)) ?? bookForPayload(p);
   const short = p.q.length > 110 ? `${p.q.slice(0, 110).trimEnd()}…` : p.q;
   return {
     title: `“${short}”, carried by ${p.n}`,
@@ -31,7 +31,10 @@ export default async function LinePage({ params }: Props) {
   const payload = await resolveLine(id);
   if (!payload) notFound();
 
-  const book = await findBook(payload.b);
+  // the live shelf decides book existence; the URL itself carries the
+  // book for reader-added lines, so the card renders stateless
+  const onShelf = await findBook(payload.b);
+  const book = onShelf ?? bookForPayload(payload);
   if (!book) notFound();
 
   const others = seedLinesFor(payload.b).filter((l) => l.q !== payload.q).slice(0, 3);
@@ -77,7 +80,7 @@ export default async function LinePage({ params }: Props) {
               <T k="card.loop.sub" v={{ n: payload.n }} />
             </p>
             <Link
-              href={`/b/${book.slug}#write`}
+              href={onShelf ? `/b/${book.slug}#write` : "/#shelf"}
               className="mt-8 inline-block rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85"
             >
               <T k="card.loop.cta" />

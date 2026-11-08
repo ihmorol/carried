@@ -49,12 +49,16 @@ export async function POST(req: Request, { params }: Params) {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
     await checkRate("line", ip, 8);
     const body = (await req.json()) as { q?: string; n?: string; s?: InkId };
-    const record = await getStore().addLine(slug, {
+    const store = getStore();
+    const record = await store.addLine(slug, {
       q: String(body.q ?? ""),
       n: String(body.n ?? ""),
       s: (body.s ?? "paper") as InkId,
     });
-    return NextResponse.json(record, { status: 201 });
+    // live tells the client whether the returned id is globally resolvable;
+    // a stateless store's ids live in one instance only, so the composer
+    // carries the line in its URL instead
+    return NextResponse.json({ ...record, live: store.kind === "redis" }, { status: 201 });
   } catch (err) {
     if (err instanceof StoreError) {
       return NextResponse.json({ error: err.message }, { status: err.status });

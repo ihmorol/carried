@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getBook, originalName } from "@/lib/books";
+import { bookForPayload, originalName } from "@/lib/books";
 import { accessionNo, formatStampDate, formatStampDateBn, isBengali } from "@/lib/line";
 import { INKS } from "@/lib/inks";
 import { loadOgFonts } from "@/lib/og-fonts";
@@ -22,13 +22,15 @@ export default async function OgImage({
   const { id } = await params;
   const fonts = loadOgFonts();
   const payload = await resolveLine(id);
-  if (!payload || !(await findBook(payload.b))) {
+  // the live shelf decides book existence; the URL itself carries the
+  // book for reader-added lines, so previews render stateless
+  const book = payload ? (await findBook(payload.b)) ?? bookForPayload(payload) : undefined;
+  if (!payload || !book) {
     return new ImageResponse(<Unreadable />, { ...size, fonts });
   }
 
   const ink = INKS[payload.s];
-  const book = getBook(payload.b);
-  const origTitle = book ? originalName(book) : "";
+  const origTitle = originalName(book);
   const titleBn = isBengali(origTitle);
   const len = payload.q.length;
   const bn = isBengali(payload.q);
@@ -106,7 +108,7 @@ export default async function OgImage({
                 {origTitle}
               </span>
               <span style={{ fontFamily: "Plex", fontSize: 19, color: ink.soft, marginTop: 8 }}>
-                {book ? `${book.author} · ${book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}` : ""}
+                {`${book.author} · ${book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}`}
               </span>
             </div>
             <div

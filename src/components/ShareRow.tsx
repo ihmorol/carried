@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getBook } from "@/lib/books";
+import { bookForPayload } from "@/lib/books";
 import { accessionNo, type LinePayload } from "@/lib/line";
 import { downloadLineCard, lineCardBlob } from "@/lib/canvas";
 import { SITE_URL } from "@/lib/site";
@@ -19,7 +19,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
   const [saving, setSaving] = useState(false);
   const [canShare, setCanShare] = useState(false);
 
-  const book = getBook(payload.b);
+  const book = bookForPayload(payload);
   const title = book?.title ?? "a book";
 
   useEffect(() => {
