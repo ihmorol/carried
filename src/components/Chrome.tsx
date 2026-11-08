@@ -9,7 +9,7 @@ export function Header() {
   const { t } = useLocale();
   return (
     <header
-      className="border-b"
+      className="site-header border-b"
       style={{ borderColor: "var(--color-rule)" }}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
@@ -37,7 +37,7 @@ export function Header() {
           </Link>
           <Link
             href="/#shelf"
-            className="btn-press hidden rounded-[3px] bg-[var(--color-ink)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-paper)] hover:opacity-85 md:inline-block"
+            className="btn-press hidden rounded-[3px] bg-[var(--color-ink)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-paper)] md:inline-block"
           >
             {t("nav.write")}
           </Link>
@@ -55,6 +55,21 @@ export function Footer() {
       className="mt-24 border-t"
       style={{ borderColor: "var(--color-rule)" }}
     >
+      {/* the last page of the ledger closes with the house stamp */}
+      <div className="mx-auto flex max-w-6xl items-end justify-between gap-8 px-5 pt-12">
+        <p className="max-w-md font-serif text-2xl font-medium italic leading-snug text-[var(--color-ink-soft)]">
+          {t("brand.tagline")}
+        </p>
+        <span
+          aria-hidden="true"
+          className="stamp-ink hidden select-none rounded-md border-[2.5px] px-5 py-3 text-center font-mono text-[10px] font-semibold uppercase leading-relaxed tracking-[0.3em] sm:block"
+          style={{ transform: "rotate(-6.5deg)", opacity: 0.55 }}
+        >
+          Carried
+          <br />
+          MMXXV
+        </span>
+      </div>
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-soft)] sm:flex-row sm:items-center sm:justify-between">
         <p>{t("footer.tag")}</p>
         <p className="flex gap-5">

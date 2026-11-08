@@ -237,7 +237,7 @@ export function Composer({ book }: { book: Book }) {
         <button
           type="submit"
           disabled={busy || over}
-          className="mt-10 rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-press mt-10 rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {busy ? t("c.stamping") : t("c.submit")}
         </button>

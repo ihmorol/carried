@@ -2,23 +2,42 @@ import Link from "next/link";
 import { Header, Footer } from "@/components/Chrome";
 import { T } from "@/components/T";
 
+/** The 404 as an artifact: a catalog card that can't be read, stamped
+ * "not in the ledger". Same language as LineCard, no dynamic parts. */
 export default function NotFound() {
   return (
     <>
       <Header />
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-5 py-24 text-center">
-        <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-          <T k="nf.kicker" />
-        </p>
-        <h1 className="mt-6 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
-          <T k="nf.title" />
-        </h1>
-        <p className="mt-5 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-5 py-24">
+        <div
+          className="card-rule w-[420px] max-w-full rounded-[4px] bg-[var(--color-paper-raised)] p-7"
+          style={{ transform: "rotate(-1.6deg)" }}
+        >
+          <div className="flex items-baseline justify-between font-mono text-[9px] font-semibold uppercase tracking-[0.24em] text-[var(--color-ink-soft)]">
+            <span>Carried</span>
+            <span style={{ textDecoration: "line-through", textDecorationColor: "var(--color-stamp)" }}>
+              No. ??????
+            </span>
+          </div>
+          <p className="mt-10 font-serif text-2xl font-medium italic leading-snug text-[var(--color-ink)]">
+            <T k="nf.title" />
+          </p>
+          <div className="mt-12 flex justify-end">
+            <span
+              className="stamp-ink inline-block rounded-md border-[2.5px] px-4 py-2.5 text-center font-mono text-[10px] font-semibold uppercase leading-relaxed tracking-[0.26em]"
+              style={{ transform: "rotate(-5deg)", opacity: 0.9 }}
+            >
+              <T k="nf.kicker" />
+            </span>
+          </div>
+        </div>
+
+        <p className="mt-10 max-w-md text-center font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
           <T k="nf.sub" />
         </p>
         <Link
           href="/#shelf"
-          className="mt-9 rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85"
+          className="btn-press mt-8 rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)]"
         >
           <T k="nf.cta" />
         </Link>

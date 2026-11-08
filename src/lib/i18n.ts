@@ -88,6 +88,13 @@ const EN: Dict = {
   "shelf.empty.title": "Not on this shelf yet.",
   "shelf.empty.cta": "Add “{q}” yourself",
 
+  // my lines
+  "mine.title": "My lines",
+  "mine.sub": "The lines you've carried, kept on this device only. No account exists, this shelf is yours alone.",
+  "mine.empty.title": "Your shelf is waiting.",
+  "mine.empty.sub": "Pick a book, write the line it left in you, and it will be stamped here, and everywhere you share it.",
+  "mine.empty.cta": "Pick a book",
+
   // tags
   "tag.all": "all",
   "tag.fiction": "fiction",
@@ -245,6 +252,12 @@ const BN: Dict = {
     "বই যোগ করা যাবে লাইভ শেলফ জুড়লে। তবে তোমার লাইনগুলো তবু ভ্রমণ করবে: প্রতিটি কার্ড নিজের বইকে নিজের লিংকেই বহন করে।",
   "shelf.empty.title": "শেলফে নেই এখনো।",
   "shelf.empty.cta": "“{q}” নিজেই যোগ করো",
+
+  "mine.title": "আমার লাইনগুলো",
+  "mine.sub": "তুমি যে লাইনগুলো বহন করেছ, সেগুলো শুধু এই ডিভাইসেই জমা থাকে। কোনো অ্যাকাউন্ট নেই, এই শেলফটা একান্ত তোমার।",
+  "mine.empty.title": "তোমার শেলফ অপেক্ষা করছে।",
+  "mine.empty.sub": "একটা বই বেছে নাও, বইটা তোমাকে যে লাইনটা দিয়ে গেছে সেটা লেখো, আর এখানে সিল হয়ে জমা হবে, শেয়ার করা প্রতিটি জায়গায়।",
+  "mine.empty.cta": "একটা বই বেছে নাও",
 
   "tag.all": "সব",
   "tag.fiction": "ফিকশন",

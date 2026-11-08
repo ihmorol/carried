@@ -80,7 +80,7 @@ export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) 
         type="button"
         onClick={save}
         disabled={saving}
-        className={`${btn} border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] hover:opacity-85 disabled:opacity-50`}
+        className={`${btn} border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] btn-press disabled:opacity-50`}
       >
         {saving ? t("share.saving") : t("share.save")}
       </button>

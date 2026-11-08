@@ -9,6 +9,7 @@ import { T } from "@/components/T";
 import { seedLinesFor } from "@/lib/seeds";
 import { bookForPayload, originalName } from "@/lib/books";
 import { findBook, getStore, resolveLine } from "@/lib/store";
+import { tiltFor } from "@/lib/tilt";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -69,19 +70,19 @@ export default async function LinePage({ params }: Props) {
 
         {/* the loop, every visitor is invited to carry their own */}
         <section
-          className="border-y py-16"
+          className="border-y py-20"
           style={{ borderColor: "var(--color-rule)" }}
         >
-          <div className="mx-auto max-w-2xl px-5 text-center">
-            <h2 className="font-serif text-3xl font-semibold leading-tight sm:text-4xl">
+          <div className="mx-auto max-w-4xl px-5">
+            <h2 className="display-lg">
               <T k="card.loop.h" v={{ title: originalName(book) }} />
             </h2>
-            <p className="mx-auto mt-4 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
+            <p className="mt-6 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
               <T k="card.loop.sub" v={{ n: payload.n }} />
             </p>
             <Link
               href={onShelf ? `/b/${book.slug}#write` : "/#shelf"}
-              className="mt-8 inline-block rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] transition-opacity hover:opacity-85"
+              className="btn-press mt-10 inline-block rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)]"
             >
               <T k="card.loop.cta" />
             </Link>
@@ -95,7 +96,11 @@ export default async function LinePage({ params }: Props) {
             </h3>
             <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((l) => (
-                <li key={l.id} className="max-w-[360px]">
+                <li
+                  key={l.id}
+                  className="toss max-w-[360px]"
+                  style={{ "--tilt": `${tiltFor(l.id)}deg` } as React.CSSProperties}
+                >
                   <LineCard payload={l} id={l.id} asLink votes={counts.get(l.id) ?? 0} className="h-full" />
                 </li>
               ))}

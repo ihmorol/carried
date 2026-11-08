@@ -94,7 +94,7 @@ export function HeroSearch() {
           />
           <button
             type="submit"
-            className="btn-press shrink-0 rounded-r-[3px] bg-[var(--color-stamp)] px-5 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper-raised)] hover:opacity-85"
+            className="btn-press shrink-0 rounded-r-[3px] bg-[var(--color-stamp)] px-5 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper-raised)]"
           >
             {t("hero.searchCta")}
           </button>

@@ -147,7 +147,7 @@ export function ShelfExplorer() {
           className={`shrink-0 rounded-[3px] border px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors ${
             adding
               ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)]"
-              : "border-[var(--color-stamp)] text-[var(--color-stamp)] hover:opacity-80"
+              : "border-[var(--color-stamp)] text-[var(--color-stamp)] hover:bg-[color-mix(in_srgb,var(--color-stamp)_8%,transparent)]"
           }`}
         >
           {adding ? t("shelf.close") : t("shelf.add")}
@@ -178,7 +178,7 @@ export function ShelfExplorer() {
             <button
               type="submit"
               disabled={saving}
-              className="rounded-[3px] bg-[var(--color-ink)] px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper)] transition-opacity hover:opacity-85 disabled:opacity-40"
+              className="btn-press rounded-[3px] bg-[var(--color-ink)] px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper)] disabled:opacity-40"
             >
               {saving ? t("shelf.shelving") : t("shelf.shelve")}
             </button>

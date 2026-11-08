@@ -77,7 +77,7 @@ export default async function BookPage({
                 </span>
               ))}
             </p>
-            <h1 className="mt-4 font-serif text-5xl font-semibold leading-[1.05]">
+            <h1 className="display-lg mt-4">
               {originalName(book)}
             </h1>
             {book.titleBn && (
@@ -95,7 +95,7 @@ export default async function BookPage({
             <div className="mt-9 flex flex-wrap gap-4">
               <a
                 href="#write"
-                className="btn-press rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)] hover:opacity-85"
+                className="btn-press rounded-[3px] bg-[var(--color-ink)] px-7 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper)]"
               >
                 <T k="book.cta" />
               </a>

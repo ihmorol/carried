@@ -5,6 +5,7 @@ import { LineCard } from "./LineCard";
 import { usePoll } from "@/lib/use-poll";
 import { useLocale } from "./LocaleProvider";
 import { numFor } from "@/lib/i18n";
+import { tiltFor } from "@/lib/tilt";
 import type { LineRecord } from "@/lib/store";
 import type { SeedLine } from "@/lib/seeds";
 
@@ -97,19 +98,24 @@ export function LinesFeed({ slug, seeds }: { slug: string; seeds: SeedLine[] }) 
       </div>
 
       {records.length === 0 ? (
-        <div className="card-rule mt-8 rounded-[4px] bg-[var(--color-paper-raised)] p-12 text-center">
+        <div className="card-rule mt-8 rounded-[4px] bg-[var(--color-paper-raised)] p-12">
           <p className="font-serif text-2xl italic">{t("feed.empty.title")}</p>
-          <p className="mx-auto mt-3 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
+          <p className="mt-3 max-w-md font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
             {t("feed.empty.sub")}
           </p>
         </div>
       ) : (
         <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {records.map((r) => (
-            <li key={r.id} className="max-w-[360px]">
+          {records.map((r, i) => (
+            <li
+              key={r.id}
+              className={`toss ${i === 0 ? "sm:col-span-2" : "max-w-[360px]"}`}
+              style={{ "--tilt": `${tiltFor(r.id)}deg` } as React.CSSProperties}
+            >
               <LineCard
                 payload={r.payload}
                 id={r.id}
+                size={i === 0 ? "lg" : "sm"}
                 votes={r.votes}
                 asLink
                 onChange={onVote}
