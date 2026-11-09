@@ -8,11 +8,14 @@ export type FontData = {
   style: "normal" | "italic";
 };
 
-/** Read the TTFs we ship for satori. Node runtime only. */
+let cachedFonts: FontData[] | undefined;
+
+/** Read the shipped TTFs once per Node process, never fetch remote fonts. */
 export function loadOgFonts(): FontData[] {
+  if (cachedFonts) return cachedFonts;
   const dir = join(process.cwd(), "public", "fonts");
   const file = (name: string) => readFileSync(join(dir, name));
-  return [
+  cachedFonts = [
     { name: "Fraunces", data: file("Fraunces-500.ttf"), weight: 500, style: "normal" },
     { name: "Fraunces", data: file("Fraunces-600.ttf"), weight: 600, style: "normal" },
     { name: "Fraunces", data: file("Fraunces-Italic-500.ttf"), weight: 500, style: "italic" },
@@ -26,4 +29,5 @@ export function loadOgFonts(): FontData[] {
     { name: "Noto Sans Bengali", data: file("NotoSansBengali-500.ttf"), weight: 500, style: "normal" },
     { name: "Noto Sans Bengali", data: file("NotoSansBengali-600.ttf"), weight: 600, style: "normal" },
   ];
+  return cachedFonts;
 }

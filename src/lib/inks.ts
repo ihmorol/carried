@@ -31,7 +31,7 @@ export const INKS: Record<InkId, Ink> = {
     text: "#f2ecdd",
     soft: "#a2977f",
     rule: "#4a4234",
-    stamp: "#d4644a",
+    stamp: "#ee967e",
   },
   moss: {
     id: "moss",
@@ -40,7 +40,7 @@ export const INKS: Record<InkId, Ink> = {
     text: "#f0ead8",
     soft: "#a8b39a",
     rule: "#4d5c4e",
-    stamp: "#e0a458",
+    stamp: "#ee967e",
   },
 };
 
