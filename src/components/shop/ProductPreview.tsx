@@ -1,4 +1,5 @@
 import { LineCard } from "@/components/LineCard";
+import { ArtworkFit } from "./ArtworkFit";
 import type { ProductSlug } from "@/lib/commerce/catalog";
 import type { Selection } from "@/lib/commerce/personalization";
 
@@ -11,7 +12,7 @@ export function ProductPreview({ product, selection, variant = "center", feature
       <div className={`shop-object-scene shop-scene-${product}`} aria-hidden="true">
         <div className={`shop-object shop-object-${product}${variant === "lower" ? " shop-placement-lower" : ""}`}>
           <div className="shop-artwork">
-            <LineCard payload={selection.payload} id={selection.sourceId} actions={false} className="shop-rendered-card" />
+            <ArtworkFit><LineCard payload={selection.payload} id={selection.sourceId} actions={false} className="shop-rendered-card" /></ArtworkFit>
           </div>
         </div>
       </div>
