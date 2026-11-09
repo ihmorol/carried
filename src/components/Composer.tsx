@@ -1,27 +1,56 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { encodeLine, type LinePayload } from "@/lib/line";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { decodeLine, encodeLine, type LinePayload } from "@/lib/line";
+import { DEFAULT_CARD_TEMPLATE, type CardTemplateId } from "@/lib/card-templates";
 import { getBook, type Book } from "@/lib/books";
 import { INKS, INK_IDS, type InkId } from "@/lib/inks";
 import { addToShelf, getRememberedName, rememberName } from "@/lib/shelf";
 import { LINE_MAX, NAME_MAX } from "@/lib/site";
 import { LineCard } from "./LineCard";
+import { CardDesignPicker } from "./CardDesignPicker";
 import { useLocale } from "./LocaleProvider";
 
+/** Search params suspend during prerender, so the whole composer sits
+ * behind its own Suspense boundary (Next.js requirement for static pages). */
 export function Composer({ book }: { book: Book }) {
+  return (
+    <Suspense fallback={null}>
+      <ComposerForm book={book} />
+    </Suspense>
+  );
+}
+
+function ComposerForm({ book }: { book: Book }) {
   const router = useRouter();
+  const params = useSearchParams();
   const { t } = useLocale();
-  const [text, setText] = useState("");
-  const [name, setName] = useState("");
-  const [ink, setInk] = useState<InkId>("paper");
+  // Prefill a recreation link (?line=<payload>&id=<line id>). Only a payload
+  // that belongs to this book fills the form; anything else is ignored.
+  const prefill = useMemo<LinePayload | null>(() => {
+    const raw = params.get("line");
+    if (!raw) return null;
+    try {
+      const payload = decodeLine(raw);
+      return payload.b === book.slug ? payload : null;
+    } catch { return null; }
+  }, [params, book.slug]);
+  const prefillId = useMemo(() => {
+    const raw = params.get("id");
+    return raw && /^[a-zA-Z0-9_-]{1,512}$/.test(raw) ? raw : undefined;
+  }, [params]);
+  const [text, setText] = useState(() => prefill?.q ?? "");
+  const [name, setName] = useState(() => prefill?.n ?? "");
+  const [ink, setInk] = useState<InkId>(() => prefill?.s ?? "paper");
+  const [template, setTemplate] = useState<CardTemplateId>(() => prefill?.ct ?? DEFAULT_CARD_TEMPLATE);
+  const [stampKey, setStampKey] = useState(0);
   const [errors, setErrors] = useState<{ line?: string; name?: string; form?: string }>({});
   const [busy, setBusy] = useState(false);
   const pending = useRef<AbortController | null>(null);
   useEffect(() => {
     let mounted = true;
-    void Promise.resolve().then(() => { if (mounted) setName(getRememberedName()); });
+    void Promise.resolve().then(() => { if (mounted) setName((current) => current || getRememberedName()); });
     return () => { mounted = false; pending.current?.abort(); };
   }, []);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -30,6 +59,7 @@ export function Composer({ book }: { book: Book }) {
     v: 1, b: book.slug, q: text.trim().replace(/\s+/g, " ") || t("c.previewLine"),
     n: name.trim().replace(/\s+/g, " ") || t("c.previewName"), s: ink, d: today,
     ...(bookMeta ? { bt: bookMeta.title, ba: bookMeta.author, by: bookMeta.year } : {}),
+    ct: template,
   };
 
   async function submit(e: React.FormEvent) {
@@ -42,19 +72,19 @@ export function Composer({ book }: { book: Book }) {
     setErrors(nextErrors);
     if (nextErrors.line || nextErrors.name) return;
     let carried: { id: string; payload: LinePayload };
-    try { carried = encodeLine({ bookSlug: book.slug, text, name, ink, date: today, book: bookMeta }); }
+    try { carried = encodeLine({ bookSlug: book.slug, text, name, ink, date: today, book: bookMeta, template }); }
     catch { setErrors({ form: t("err.generic") }); return; }
     const controller = new AbortController();
     pending.current = controller;
     setBusy(true);
     function finish(id: string, payload: LinePayload) {
       if (controller.signal.aborted) return;
-      rememberName(n); addToShelf({ id, payload }); router.push(`/l/${id}`);
+      rememberName(n); addToShelf({ id, payload }); setStampKey((k) => k + 1); router.push(`/l/${id}`);
     }
     try {
       const res = await fetch(`/api/books/${encodeURIComponent(book.slug)}/lines`, {
         method: "POST", signal: controller.signal, headers: { "content-type": "application/json" },
-        body: JSON.stringify({ q: text, n: name, s: ink }),
+        body: JSON.stringify({ q: text, n: name, s: ink, ct: template }),
       });
       if (controller.signal.aborted) return;
       if (res.ok) {
@@ -94,13 +124,16 @@ export function Composer({ book }: { book: Book }) {
             </label>)}
           </div>
         </fieldset>
+        <CardDesignPicker book={book} payload={preview} value={template} onChange={setTemplate} disabled={busy} />
         {errors.form && <p role="alert" className="mt-4 text-sm text-[var(--color-stamp)]">{errors.form}</p>}
         <button type="submit" disabled={busy} className="ui-button mt-7 w-full sm:w-auto">{busy ? t("c.stamping") : t("c.submit")}</button>
         <p className="mt-3 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">{t("c.note")}</p>
       </form>
       <div className="min-w-0 lg:sticky lg:top-[100px]">
         <p className="mb-4 text-sm text-[var(--color-ink-soft)]">{t("c.proof")}</p>
-        <div className="mx-auto w-full max-w-[360px]"><LineCard payload={preview} book={book} id="preview-preview" actions={false} /></div>
+        <div key={stampKey} className="mx-auto w-full max-w-[360px] animate-stamp-in">
+          <LineCard payload={preview} book={book} id={prefillId ?? "preview-preview"} actions={false} />
+        </div>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
 import { ShareRow } from "@/components/ShareRow";
 import { T } from "@/components/T";
+import { encodePayload } from "@/lib/line";
 import { seedLinesFor } from "@/lib/seeds";
 import { originalName, getBook } from "@/lib/books";
 import { selectionHref } from "@/lib/commerce/personalization";
@@ -36,6 +37,7 @@ export default async function LinePage({ params }: Props) {
   const others = seedLinesFor(payload.b).filter((line) => line.q !== payload.q).slice(0, 3);
   const counts = await getStore().getVoteCounts([id, ...others.map((line) => line.id)]).catch(() => new Map<string, number>());
   const merchandiseUrl = selectionHref("/shop", { payload, sourceId: id, isExample: false });
+  const recreateUrl = `/b/${book.slug}?line=${encodeURIComponent(encodePayload(payload))}&id=${encodeURIComponent(id)}#write`;
   const onShelf = getBook(book.slug) ?? await findBook(book.slug).catch(() => undefined);
 
   return (
@@ -48,6 +50,7 @@ export default async function LinePage({ params }: Props) {
             <h1 className="page-title"><T k="card.ready" /></h1>
             <p><T k="card.travel" /></p>
             <div><ShareRow payload={payload} id={id} /></div>
+            <p><Link href={recreateUrl} className="link-ledger inline-flex min-h-11 items-center"><T k="card.restyle" /></Link></p>
             <div className="border-t border-[var(--color-rule)] pt-6">
               <Link href={merchandiseUrl} className="ui-button-secondary"><Tote size={19} aria-hidden="true" /><T k="card.shop" /></Link>
               <p className="muted mt-3 text-xs"><T k="card.shopNote" /></p>

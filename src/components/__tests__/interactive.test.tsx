@@ -11,18 +11,25 @@ import { UnderlineButton } from "../UnderlineButton";
 import { BookCover } from "../BookCover";
 import { LocaleProvider, useLocale } from "../LocaleProvider";
 import { BookLinks } from "../BookLinks";
+import { LinePicker } from "../shop/LinePicker";
 import ShelfPage from "@/app/shelf/page";
 import { BOOKS } from "@/lib/books";
+import { encodePayload } from "@/lib/line";
 import { addToShelf, getShelf, subscribeShelf } from "@/lib/shelf";
+import type { Selection } from "@/lib/commerce/personalization";
 import { getVoterId } from "@/lib/voter";
 import { usePoll } from "@/lib/use-poll";
 import { translate } from "@/lib/i18n";
 
 const { push, download } = vi.hoisted(() => ({ push: vi.fn(), download: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+  useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 vi.mock("../Chrome", () => ({ Header: () => null, Footer: () => null }));
 vi.mock("../BookSpine", () => ({ BookSpine: () => <span data-testid="spine" /> }));
-vi.mock("../LineCard", () => ({ LineCard: ({ payload }: { payload: { q: string; bt?: string } }) => <div data-testid="card">{payload.q}<span>{payload.bt}</span></div> }));
+vi.mock("../FrontCover", () => ({ FrontCover: () => <span data-testid="cover" /> }));
+vi.mock("../LineCard", () => ({ LineCard: ({ payload, id }: { payload: { q: string; bt?: string }; id?: string }) => <div data-testid={typeof id === "string" && id.startsWith("design-") ? "card-thumb" : "card"}>{payload.q}<span>{payload.bt}</span></div> }));
 vi.mock("@/lib/canvas", () => ({ downloadLineCard: download, lineCardBlob: vi.fn().mockResolvedValue(null) }));
 const payload = { v: 1 as const, b: BOOKS[0].slug, q: "What stayed", n: "Reader", s: "paper" as const, d: "2026-11-09" };
 const seed = { ...payload, id: "seed-line" };
@@ -55,10 +62,10 @@ describe("interaction regressions", () => {
   });
   it("limits the initial shelf to 24 books and combines query with tags", async () => {
     wrap(<ShelfExplorer />); await flush();
-    expect(screen.getAllByTestId("spine")).toHaveLength(24);
+    expect(screen.getAllByTestId("cover")).toHaveLength(24);
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Orwell" } });
     fireEvent.click(screen.getByRole("button", { name: "poetry" }));
-    expect(screen.queryAllByTestId("spine")).toHaveLength(0);
+    expect(screen.queryAllByTestId("cover")).toHaveLength(0);
     expect((screen.getByRole("searchbox") as HTMLInputElement).value).toBe("Orwell");
   });
   it("does not expose add-book fields before live connection is confirmed", async () => {
@@ -149,9 +156,9 @@ describe("interaction regressions", () => {
   it("pages all shelf results and resets pagination with filters", async () => {
     wrap(<ShelfExplorer />); await flush();
     fireEvent.click(screen.getByRole("button", { name: "Show 24 more books" }));
-    expect(screen.getAllByTestId("spine")).toHaveLength(48);
+    expect(screen.getAllByTestId("cover")).toHaveLength(48);
     fireEvent.click(screen.getByRole("button", { name: "fiction" }));
-    expect(screen.getAllByTestId("spine")).toHaveLength(24);
+    expect(screen.getAllByTestId("cover")).toHaveLength(24);
     expect(new URL(window.location.href).searchParams.get("genre")).toBe("fiction");
   });
   it("aborts and ignores a previous slug's late feed response", async () => {
@@ -227,5 +234,69 @@ describe("interaction regressions", () => {
     expect(translate("bn", "c.1")).toMatch(/^০১\./);
     expect(translate("bn", "c.2")).toMatch(/^০২\./);
     expect(translate("en", "home.welcome")).toBe("A book ends. A line stays.");
+  });
+});
+
+describe("design selection", () => {
+  it("prefills text, name, ink, and design from a same-book recreation link", async () => {
+    window.history.replaceState(null, "", `/b/${BOOKS[0].slug}?line=${encodePayload({ ...payload, ct: "poster-v1" })}&id=kept-line`);
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    expect((screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement).value).toBe("What stayed");
+    expect((screen.getByLabelText("02. Sign it") as HTMLInputElement).value).toBe("Reader");
+    expect((screen.getByRole("radio", { name: "Paper" }) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByRole("radio", { name: /Poster/ }) as HTMLInputElement).checked).toBe(true);
+  });
+  it("ignores recreation payloads for another book and unreadable payloads", async () => {
+    window.history.replaceState(null, "", `/b/${BOOKS[0].slug}?line=${encodePayload({ ...payload, b: "another-book" })}`);
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    expect((screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement).value).toBe("");
+    cleanup();
+    window.history.replaceState(null, "", `/b/${BOOKS[0].slug}?line=smudged-beyond-reading`);
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    expect((screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement).value).toBe("");
+  });
+  it("posts the chosen design and carries it into the offline payload", async () => {
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    fireEvent.change(screen.getByLabelText("01. The line it left in you"), { target: { value: "A line to keep." } });
+    fireEvent.change(screen.getByLabelText("02. Sign it"), { target: { value: "Mira" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Ticket/ }));
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stamp it & pass it on" })); });
+    expect(JSON.parse(vi.mocked(fetch).mock.calls[0][1]!.body as string)).toMatchObject({ q: "A line to keep.", s: "paper", ct: "ticket-v1" });
+    const shelf = JSON.parse(window.localStorage.getItem("carried.shelf.v1")!);
+    expect(shelf[0].payload).toMatchObject({ q: "A line to keep.", ct: "ticket-v1" });
+    expect(push).toHaveBeenCalledWith(`/l/${shelf[0].id}`);
+  });
+  it("keeps typed text and signature when the design changes from the keyboard", async () => {
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    fireEvent.change(screen.getByLabelText("01. The line it left in you"), { target: { value: "A line to keep." } });
+    fireEvent.change(screen.getByLabelText("02. Sign it"), { target: { value: "Mira" } });
+    const designRadios = screen.getAllByRole("radio").filter((el) => (el as HTMLInputElement).name === "card-design");
+    expect(designRadios).toHaveLength(3);
+    expect(designRadios.every((el) => el.tagName === "INPUT")).toBe(true);
+    act(() => designRadios[1].focus());
+    fireEvent.click(designRadios[1]);
+    expect((designRadios[1] as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement).value).toBe("A line to keep.");
+    expect((screen.getByLabelText("02. Sign it") as HTMLInputElement).value).toBe("Mira");
+  });
+  it("changes the shop design while retaining the selection's source id", async () => {
+    const selection: Selection = { payload: { ...payload, ct: "bookplate-v1" }, sourceId: "kept-line-id", isExample: false };
+    const example: Selection = { payload: { ...payload, q: "An example", ct: "poster-v1" }, sourceId: "example-id", isExample: true };
+    const onChange = vi.fn();
+    wrap(<LinePicker selection={selection} saved={[]} example={example} onChange={onChange} />); await flush();
+    expect((screen.getByRole("radio", { name: "Bookplate" }) as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByRole("radio", { name: "Poster" }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+    const next = onChange.mock.calls[0][0] as Selection;
+    expect(next.sourceId).toBe("kept-line-id");
+    expect(next.payload.ct).toBe("poster-v1");
+    expect(next.payload.q).toBe("What stayed");
+  });
+  it("shows a legacy shop payload without an edition as the house design", async () => {
+    const selection: Selection = { payload: { ...payload }, sourceId: "legacy-line", isExample: false };
+    const example: Selection = { payload: { ...payload, q: "An example" }, sourceId: "example-id", isExample: true };
+    wrap(<LinePicker selection={selection} saved={[]} example={example} onChange={vi.fn()} />); await flush();
+    expect((screen.getByRole("radio", { name: "Bookplate" }) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByRole("radio", { name: "Ticket" }) as HTMLInputElement).checked).toBe(false);
   });
 });
