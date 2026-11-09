@@ -7,6 +7,9 @@ import {
   isValidVoterId,
 } from "@/lib/store";
 
+import { LINE_ID_MAX } from "@/lib/line";
+import { readJsonObject } from "@/lib/api-input";
+
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
@@ -19,7 +22,8 @@ type Params = { params: Promise<{ id: string }> };
 export async function POST(req: Request, { params }: Params) {
   const { id } = await params;
   try {
-    if (id.length > 512) {
+    // matches decodeLine's own ceiling; URL-carried ids with book meta are long
+    if (id.length > LINE_ID_MAX) {
       return NextResponse.json({ error: "Unknown line." }, { status: 404 });
     }
     const line = await resolveLine(id);
@@ -29,9 +33,9 @@ export async function POST(req: Request, { params }: Params) {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
     await checkRate("vote", ip, 240);
 
-    const body = (await req.json()) as { voterId?: string };
-    const voterId = String(body.voterId ?? "");
-    if (!isValidVoterId(voterId)) {
+    const body = await readJsonObject(req);
+    const voterId = body.voterId;
+    if (typeof voterId !== "string" || !isValidVoterId(voterId)) {
       return NextResponse.json({ error: "Unknown reader." }, { status: 400 });
     }
 

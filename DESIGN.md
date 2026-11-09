@@ -1,0 +1,100 @@
+---
+name: Carried
+description: A modern bilingual workspace for books and the lines they leave
+colors:
+  paper: "#f1f1e7"
+  paper-raised: "#fffefa"
+  surface-soft: "#e7e8df"
+  ink: "#26292f"
+  ink-soft: "#60646c"
+  ink-faint: "#6b7077"
+  rule: "#dbddd4"
+  stamp: "#bf4654"
+  stamp-soft: "#f5d9dd"
+  accent: "#e66b77"
+typography:
+  display:
+    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontSize: "clamp(30px, 3.2vw, 42px)"
+    fontWeight: 500
+    lineHeight: 1.2
+    letterSpacing: "-0.025em"
+  body:
+    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontSize: "16px"
+    lineHeight: 1.5
+    letterSpacing: "normal"
+  metadata:
+    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontSize: "12px"
+    lineHeight: 1.4
+    letterSpacing: "normal"
+rounded:
+  card: "12px"
+  control: "10px"
+  panel: "14px"
+spacing:
+  small: "8px"
+  group: "16px"
+  panel: "24px"
+  section: "36px"
+components:
+  button-primary:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.paper-raised}"
+    rounded: "{rounded.control}"
+    padding: "11px 20px"
+    height: "44px"
+---
+
+# Carried design system
+
+## Overview
+
+Carried is a modern bilingual reading workspace. Its two sectors put the shelf on the left and the daily line plus reader reflections on the right. The product remains a place to author and share a line, not a reading tracker, social profile, or payment application.
+
+This revision explicitly replaces the former letterpress type, sepia palette, wide tracking, and oversized card gaps. Do not restore those rules from historical documents.
+
+## Colors
+
+The shelf uses pale neutral `paper`; the line sector is near-white `paper-raised`. Dark charcoal supports readable content. Coral is one accent family: `accent` for the active navigation circle, `stamp` for readable focus/ownership text, and `stamp-soft` for subtle selection fills. Do not give every category a new interface color.
+
+Artifact styles remain `paper`, `midnight`, and `moss`; exact colors come only from `src/lib/inks.ts`. Moss is now a pale sage card, not a dark green slab. Book-cloth colors are content, not additional interface accents. All small text must pass 4.5:1, including text drawn into books.
+
+## Typography
+
+Use locally hosted **Manrope** for Latin and **Anek Bangla** for Bengali, weights 400/500/600. See [research and licenses](docs/design/modern-bangla-typography.md). Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
+
+Body and fields are 16px, UI/metadata 12–14px, card quotes 20–24px, and headings approximately 30–42px. Bengali tracking is always normal; card labels and signatures also use normal tracking. No forced all-caps labels, monospace prose, ornamental italics, or oversized quote marks. Bengali card leading is 1.5 and Latin card leading is 1.4. Script-specific font choices remain independent for quote, book, author, and name.
+
+WOFF2 files serve web text; matching static TTFs serve canvas/OG. Bengali weights load as needed. Old font files remain historical assets, not the active type system.
+
+## Layout
+
+The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 58% shelf and 42% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
+
+The left sector has one search, compact welcome and book spotlight, genre filters, eight initial books and show-more. The right has the actual daily line, book/writing action, and three linked reader reflections. No duplicate marketing bands, calendars, reading-progress bars, invented profiles, or avatar rows.
+
+General page gutters use 20–40px, groups 16–24px, and sections 28–36px. Component grids respond to sector width, not only viewport width. Original URLs, `#shelf`, `#write`, `#lines`, and `#main-content` remain; home adds `#reader-lines`.
+
+## Elevation & Depth
+
+Light shadows belong to physical book/card artwork only. Remove grain, ornamental drift, glass, and gradients. The interface relies on clear surface separation, not piles of raised boxes. Motion is limited to short press feedback; reduced motion disables it.
+
+## Shapes
+
+Controls are 10px, panels 14px, and artwork approximately 12px with a subtle double border. The signature is a compact horizontal ownership block with a thin coral border, not a large rotated rubber stamp. The active rail icon is a 44px circle.
+
+## Components
+
+- Navigation: consistent outline icons with accessible names, hover/focus labels when collapsed, active state, bottom expand/collapse button, and mobile Escape/focus dismissal.
+- Cards: intrinsic DOM height. Related content groups naturally: header, quote, provenance, ownership. No `h-full`/`flex-1` forcing blank quote space.
+- Exports: shared adaptive geometry in `text-layout.ts` places each section after the preceding content. Extra PNG/OG frame space surrounds the complete centered composition, never splits its internal groups. Full valid text is preserved.
+- Shop previews: actual card artwork fits within the product print area with a ResizeObserver; do not stretch it to fill a fixed-height mockup.
+- Forms and feeds: retain native radios, serial visible-tab polling, local-storage validation/fallback, useful empty/error states, and truthful offline/editorial status.
+
+## Do's and Don'ts
+
+Do keep digital cards, all styles, downloads, and sharing free. Do preserve original line identity, book provenance, signatures, local shelves, and cart contents. Do use bilingual readable text and 44px controls.
+
+Do not add prices, checkout, orders, or delivery promises to the concept shop. Do not reproduce book covers or reader submissions as merchandise without commercial clearance. Do not mistake passing code tests for visual acceptance.

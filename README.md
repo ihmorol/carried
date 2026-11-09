@@ -19,11 +19,11 @@ Not a review. Not a rating. You pick a book, write the one sentence you'd underl
                          is an invite    in you?", the loop
 ```
 
-- **Everything is live.** Lines land on the book page and the home ticker in real time (6–8 s polling, no reload). No accounts anywhere: your name rides with the line.
-- **Short, meaningful links.** Every line gets a slug cut from its own words plus a hash suffix: `carried.site/l/sheep-follow-the-boy-chooses-k3f2`. Deterministic, so the same line always keeps the same URL; legacy base64 links keep resolving too.
-- **Readers add the books.** Missing from the shelf? Two fields and it's there, with a generated book-cloth spine, ready for everyone's lines.
-- **Real covers, free archives.** Book pages pull cover scans from Open Library, falling back to Internet Archive item scans, falling back to the designed spine. The book is never a broken image. A "Find the book" row links Open Library (read/borrow), Internet Archive (free copies & audio), Bookshop.org (buy), and WorldCat (libraries). No API keys anywhere.
-- **A shelf that's never empty.** 1,100 editorial seed lines, ten per book and written in reader voice, so every book page has a live-feeling margin from day one. New reader lines flow in above them in real time.
+- **Shared when connected.** With Redis, public lines and counts refresh while the tab is visible. Without it, original editorial examples and URL-carried lines work without an account.
+- **Portable links.** Live lines use meaningful short IDs; offline lines carry validated payloads. Existing short and legacy base64 links remain supported.
+- **Readers add the books when the live shelf is connected.** Missing books receive a generated book-cloth spine. Offline book creation is disabled to avoid instance-only book links.
+- **Find ways to read.** Book access links resolve asynchronously through Open Library/Internet Archive, Bookshop.org, and WorldCat. The writing workspace does not wait on optional metadata.
+- **Original reflections to explore.** 1,430 editorial seed lines across 143 books, including 33 Bengali titles. This corpus is not automatic merchandise rights clearance.
 - **Lines rise by merit.** Readers **underline** the lines that hit. One toggle per anonymous device id (no accounts), stored as unique-voter sets. Book margins sort by underline count, so the shelf is curated by readers, not by recency.
 - **Two storage modes.** With Upstash Redis (free tier, 2 env vars) the shelf is global and shared. Without it, the app still works in offline mode: the link itself carries the line (base64url JSON payload), seeds fill the pages, and your lines live on your device.
 - **Rich link previews.** `/l/[id]/opengraph-image` renders the exact catalog card with satori, so X, WhatsApp, and iMessage show the card, not a bare URL.
@@ -72,15 +72,15 @@ That's it. The API routes (`/api/books`, `/api/books/[slug]/lines`, `/api/recent
 
 ### Deploy
 
-Push to GitHub → import in [Vercel](https://vercel.com/new) → set the env vars above plus `NEXT_PUBLIC_SITE_URL=https://your-domain.com` (used for canonical share URLs). No database to provision, no API keys beyond the two above. All 110 curated book pages, composer surfaces, and book OG images are prerendered at build; `/l/[id]` and the API render on demand.
+Push to GitHub → import in [Vercel](https://vercel.com/new) → set the env vars above plus `NEXT_PUBLIC_SITE_URL=https://your-domain.com` (used for canonical share URLs). No database to provision, no API keys beyond the two above. All 143 curated book pages, composer surfaces, and book OG images are prerendered at build; `/l/[id]` and the API render on demand.
 
 ## Project structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx                     # hero, live ticker, ink band, the shelf
-│   ├── b/[slug]/page.tsx            # book page: cover, inline composer, live lines
+│   ├── page.tsx                     # reading room, featured card, paged shelf
+│   ├── b/[slug]/page.tsx            # book spine, inline composer, live lines
 │   ├── l/[id]/page.tsx              # the card page, where every share lands
 │   ├── l/[id]/opengraph-image.tsx   # satori card (X/WhatsApp preview)
 │   ├── b/[slug]/opengraph-image.tsx # book OG (spine + invitation)
@@ -94,7 +94,7 @@ src/
 │                                    # StampMark, Composer, LinesFeed, RecentFeed,
 │                                    # ShelfExplorer, ShareRow…
 └── lib/
-    ├── books.ts                     # 110-book dataset + instant search
+    ├── books.ts                     # 143-book dataset + instant search
     ├── store.ts                     # Store interface: RedisStore (Upstash REST) +
     │                                #   MemoryStore (offline dev) + rate limiting
     ├── line.ts                      # payload codec + lineSlugId (short link ids)
@@ -102,22 +102,28 @@ src/
     │                                #   Internet Archive → drawn spine fallback
     ├── inks.ts                      # the three card inks (paper/midnight/moss)
     ├── canvas.ts                    # 1080×1350 PNG export
-    ├── seeds/                       # 1,100 editorial seed lines, ten per book
+    ├── seeds/                       # 1,430 editorial seed lines, ten per book
     └── use-poll.ts                  # visibility-aware polling hook
 public/fonts/                        # Fraunces + IBM Plex Mono TTFs (canvas + satori)
 ```
 
+## Merchandise concepts
+
+Digital cards, Paper/Midnight/Moss styles, PNG downloads, and sharing stay free. `/shop` previews five proposed physical formats with actual Carried artwork. `/shop/[slug]` personalizes a concept; `/shop/cart` keeps device-local selections. Ordering is not open: no prices, payment, delivery details, or fake order-success flow.
+
+See [the theme migration](docs/theme-migration.md), [design system](DESIGN.md), and [commerce boundary ADR](docs/adr/0002-free-digital-local-merchandise.md) for what changed and what is still required to launch physical sales.
+
 ## Design language
 
-Library catalog card: warm paper (`#f2ecdd`), ink (`#211d17`), stamp vermilion (`#b23c25`), double-rule borders, Fraunces for the line and IBM Plex Mono for the ledger. The full guide lives in [docs/brand-guidelines.md](docs/brand-guidelines.md). Domain model in [CONTEXT.md](CONTEXT.md).
+A modern bilingual reading workspace: pale-neutral shelf, near-white line sector, charcoal text, and restrained coral. Manrope and Anek Bangla replace the former letterpress fonts. Compact cards preserve provenance, accession numbers, and reader ownership without wide tracking or empty bands. See [the current revision](docs/bilingual-workspace-revision.md), [brand guide](docs/brand-guidelines.md), and [domain model](CONTEXT.md).
 
 ## Notes & limits
 
-- Seeded lines are **editorial**: original reader takeaways written for the product, not excerpts from the books.
-- `/l/[id]` payloads are validated (version, slug, lengths, ink, date) and capped; the page additionally checks the book exists on the current shelf before rendering. All rendering is text-only via React/satori (no HTML injection surface).
+- Seeded lines are **editorial** reader-voice reflections. Quotation-like passages, translations, and art need separate commercial-rights review before merchandise launch.
+- `/l/[id]` payloads are validated (version, slug, lengths, ink, calendar date) and bounded. The page resolves curated or carried book metadata first, then safely consults the live shelf for legacy records. All rendering uses React/satori escaping.
 - Reader-added books get a slug from their title (collision-safe), a generated spine color, and a `reader-added` tag you can filter the shelf by.
 - The card codec validates structure only; `findBook` decides existence, so the shelf can grow forever without invalidating old links.
 
 ## Credits
 
-Type: [Fraunces](https://fonts.google.com/specimen/Fraunces) (Undercase Type) & [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) (IBM/Bold Monday), both OFL.
+Active type: [Manrope](https://fonts.google.com/specimen/Manrope) and [Anek Bangla](https://fonts.google.com/specimen/Anek+Bangla), both SIL OFL 1.1 with bundled notices. Historical Fraunces/IBM Plex/Noto files are retained but are not the active typography. [Research and source record](docs/design/modern-bangla-typography.md).

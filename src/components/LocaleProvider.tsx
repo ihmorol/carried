@@ -11,12 +11,7 @@ type Ctx = {
 
 const LocaleCtx = createContext<Ctx | null>(null);
 
-/**
- * Region-based language: the middleware guesses from geo + Accept-Language
- * and stores a cookie; this provider reads the cookie (falling back to the
- * browser's language), lets the reader switch any time, and marks <html>
- * with the right lang + font class so Bangla typography applies globally.
- */
+/** Device-local preference, then browser language/timezone. No locale cookies. */
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
 
@@ -24,13 +19,26 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     Promise.resolve().then(() => {
       if (cancelled) return;
-      const cookieMatch = document.cookie.match(new RegExp(`${LOCALE_COOKIE}=(\\w+)`));
-      const stored = window.localStorage.getItem(LOCALE_COOKIE);
-      const saved = (stored ?? cookieMatch?.[1]) as Locale | undefined;
+      let legacy: string | undefined;
+      try {
+        legacy = document.cookie.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${LOCALE_COOKIE}=`))?.slice(LOCALE_COOKIE.length + 1);
+      } catch { /* Cookie access may also be blocked. */ }
+      let stored: string | null = null;
+      try { stored = window.localStorage.getItem(LOCALE_COOKIE); } catch { /* Session language still works. */ }
+      const saved = stored === "bn" || stored === "en" ? stored : legacy;
       let next: Locale = "en";
       if (saved === "bn" || saved === "en") next = saved;
-      else if (/^bn\b/i.test(navigator.language)) next = "bn";
-      else if (Intl.DateTimeFormat().resolvedOptions().timeZone === "Asia/Dhaka") next = "bn";
+      else if ((navigator.languages ?? [navigator.language]).some((language) => /^bn(?:-|$)/i.test(language))) next = "bn";
+      else {
+        try { if (Intl.DateTimeFormat().resolvedOptions().timeZone === "Asia/Dhaka") next = "bn"; } catch { /* English default. */ }
+      }
+      if (legacy !== undefined) {
+        try {
+          if (!stored && (legacy === "en" || legacy === "bn")) window.localStorage.setItem(LOCALE_COOKIE, legacy);
+        } catch { /* Session only. */ }
+        // Only expire our known previous cookie, never touch other cookies.
+        try { document.cookie = `${LOCALE_COOKIE}=; path=/; max-age=0; samesite=lax`; } catch { /* Blocked. */ }
+      }
       setLocaleState(next);
     });
     return () => {
@@ -50,7 +58,6 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* private mode, session-only locale */
     }
-    document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
   }, []);
 
   const t = useCallback(

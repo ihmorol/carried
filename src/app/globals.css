@@ -1,384 +1,182 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Carried: library-card palette ─────────────────────────── */
-  --color-paper: #f2ecdd;
-  --color-paper-raised: #faf6ea;
-  --color-ink: #211d17;
-  --color-ink-soft: #6d6354;
-  --color-ink-faint: #9c917f;
-  --color-rule: #d8cdb6;
-  --color-stamp: #b23c25;
-  --color-stamp-soft: #c96a55;
-  --color-night: #191612;
-  --color-night-raised: #211d17;
+  --color-paper: #f1f1e7;
+  --color-paper-raised: #fffefa;
+  --color-surface-soft: #e7e8df;
+  --color-ink: #26292f;
+  --color-ink-soft: #60646c;
+  --color-ink-faint: #6b7077;
+  --color-rule: #dbddd4;
+  --color-stamp: #bf4654;
+  --color-stamp-soft: #f5d9dd;
+  --color-accent: #e66b77;
+  --color-night: #252a34;
+  --color-night-raised: #303744;
+  --radius-panel: 14px;
+  --radius-control: 10px;
+  --space-page: clamp(20px, 3vw, 40px);
 
-  --font-serif: var(--font-fraunces), var(--font-noto-serif-bengali), "Iowan Old Style", Georgia, serif;
-  --font-mono: var(--font-plex), var(--font-noto-sans-bengali), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  --font-serif: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  --font-mono: var(--font-manrope), var(--font-anek-bangla), sans-serif;
 
-  --animate-stamp-in: stamp-in 0.55s cubic-bezier(0.19, 1.3, 0.36, 1) both;
-  --animate-rise-in: rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-marquee: marquee 80s linear infinite;
-
+  --animate-stamp-in: stamp-in 180ms ease-out both;
+  --animate-rise-in: rise-in 180ms ease-out both;
   @keyframes stamp-in {
-    0% {
-      opacity: 0;
-      transform: rotate(-11deg) scale(1.7);
-    }
-    55% {
-      opacity: 1;
-      transform: rotate(-5.5deg) scale(0.96);
-    }
-    100% {
-      opacity: 1;
-      transform: rotate(-6.5deg) scale(1);
-    }
+    from { opacity: 0.65; transform: translateY(3px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes rise-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
+    from { opacity: 0.8; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
-html {
-  scroll-behavior: smooth;
-  /* Hidden first: Safari < 16 drops clip and needs the downgrade.
-     The 3D layers (hero pile, tilted cards) swing corners past the
-     page edge at narrow widths; without this, phones get a sideways
-     scrollbar. Vertical scrolling is untouched. */
-  overflow-x: hidden;
-  overflow-x: clip;
-}
-
+html { scroll-behavior: smooth; }
 body {
+  --rail-width: 76px;
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+main { min-width: 0; }
+button, a, summary { touch-action: manipulation; }
+button, summary { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+button, input, textarea, select { font: inherit; letter-spacing: normal; }
+input, textarea { caret-color: var(--color-stamp); }
+::selection { background: var(--color-stamp-soft); color: var(--color-ink); }
+:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
 
-::selection {
-  background: var(--color-stamp);
-  color: var(--color-paper-raised);
+.page-title, .display-xl {
+  font-family: var(--font-sans);
+  font-size: clamp(30px, 3.2vw, 42px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
-
-/* Focus: visible, on-brand, never removed */
-:focus-visible {
-  outline: 2px solid var(--color-stamp);
-  outline-offset: 3px;
-  border-radius: 1px;
+.section-title, .display-lg {
+  font-family: var(--font-sans);
+  font-size: clamp(23px, 2.2vw, 30px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
-
-/* Paper grain: a fixed overlay, always on top, never interactive */
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+:lang(bn) .page-title, :lang(bn) .section-title,
+:lang(bn) .display-xl, :lang(bn) .display-lg {
+  line-height: 1.4;
+  letter-spacing: normal;
 }
-
-/* Catalog-card double rule border */
-.card-rule {
+.display-italic { font-style: normal; }
+.muted { color: var(--color-ink-soft); }
+.page-content {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding: 28px var(--space-page) 48px;
+}
+.panel { border-radius: var(--radius-panel); background: var(--color-paper-raised); padding: 24px; }
+.ui-button, .ui-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-decoration: none;
+  transition: background-color 160ms, transform 160ms;
+}
+.ui-button { background: var(--color-ink); color: var(--color-paper-raised); }
+.ui-button-secondary { border-color: var(--color-rule); background: transparent; color: var(--color-ink); }
+.ui-button:hover { background: var(--color-night-raised); }
+.ui-button-secondary:hover { background: var(--color-surface-soft); }
+.ui-button:active, .ui-button-secondary:active { transform: translateY(1px); }
+.ui-button:disabled, .ui-button-secondary:disabled { opacity: 0.55; }
+.field-input {
+  width: 100%;
+  min-height: 48px;
   border: 1px solid var(--color-rule);
-  box-shadow:
-    inset 0 0 0 4px var(--color-paper-raised),
-    inset 0 0 0 5px color-mix(in srgb, var(--color-rule) 70%, transparent);
-}
-
-/* Stamp ink texture: tiny irregular opacity so it reads as rubber-stamp ink */
-.stamp-ink {
-  color: var(--color-stamp);
-  border-color: color-mix(in srgb, var(--color-stamp) 82%, transparent);
-  text-shadow: 0 0 1px color-mix(in srgb, var(--color-stamp) 40%, transparent);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='3.4' intercept='-0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='3.4' intercept='-0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-  -webkit-mask-size: 120px;
-  mask-size: 120px;
-}
-
-.marquee-mask {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 6%,
-    black 94%,
-    transparent
-  );
-}
-
-.marquee-track:hover,
-.marquee-track:focus-within {
-  animation-play-state: paused;
-}
-
-/* Underline links the ledger way */
-.link-ledger {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
-  transition: text-decoration-color 150ms ease;
-}
-.link-ledger:hover {
-  text-decoration-color: var(--color-stamp);
-}
-
-/* Drop cap for book-page prose, a little print, a little church */
-.drop-cap::first-letter {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: 3.1em;
-  line-height: 0.82;
-  float: left;
-  padding-right: 0.09em;
-  padding-top: 0.06em;
-  color: var(--color-stamp);
-}
-
-/* Ink band, the dark rhythm sections */
-.band-ink {
-  background: var(--color-night);
-  color: var(--color-paper);
-}
-.band-ink .soft {
-  color: #a2977f;
-}
-.band-ink ::selection {
+  border-radius: var(--radius-control);
   background: var(--color-paper-raised);
   color: var(--color-ink);
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 1.5;
 }
+.field-input::placeholder { color: var(--color-ink-faint); opacity: 1; }
+.card-rule { border: 1px solid var(--color-rule); }
+.stamp-ink { color: var(--color-stamp); border-color: var(--color-stamp); }
+.link-ledger { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.btn-press { transition: transform 160ms ease; }
+.btn-press:active { transform: translateY(1px); }
 
-/* Buttons: a small physical press */
-.btn-press {
-  transition:
-    opacity 150ms ease,
-    transform 150ms ease;
+.book-tile { display: flex; flex-direction: column; min-width: 0; }
+.book-tile-art {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  min-height: 180px;
+  padding: 12px 8px 16px;
+  border-radius: 10px;
+  background: transparent;
 }
-.btn-press:hover {
-  transform: translateY(-1px);
-}
-.btn-press:active {
-  transform: translateY(1px);
-}
-
-/* ── Physical depth: the desk layer ────────────────────────────── */
-
-/* Pointer tilt, set from TiltCard: short transition while tracking,
-   long ease on release. The card inside is never restyled. The
-   transition promotes the layer while it runs, so no will-change. */
-.tilt {
-  transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-style: preserve-3d;
-}
-
-/* A card handed over on its own, outside a tossed group */
-.lift {
-  transition: translate 200ms ease;
-}
-@media (hover: hover) and (pointer: fine) {
-  .lift:hover {
-    translate: 0 -4px;
-  }
-}
-.lift:focus-within {
-  translate: 0 -4px;
-}
-
-/* Cards tossed on the desk: a small deterministic lean via the rotate
-   property, straightened when a reader reaches for one. The wrapper
-   owns the whole hover response; the card inside keeps still. */
-.toss {
-  rotate: var(--tilt, 0deg);
-  transition:
-    rotate 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    translate 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.toss .lift {
-  translate: none;
-  transition: none;
-}
-@media (hover: hover) and (pointer: fine) {
-  .toss:hover {
-    rotate: 0deg;
-    translate: 0 -4px;
-  }
-}
-.toss:focus-within {
-  rotate: 0deg;
-  translate: 0 -4px;
-}
-
-/* Hero stage: one perspective, three depths. Parallax reads --mx/--my
-   (unitless, -1..1) set from HeroStage; layers move by depth. */
-.hero-stage {
-  position: relative;
-  perspective: 1400px;
-}
-.hero-ghost {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--color-rule);
-  border-radius: 4px;
-  background: var(--color-paper-raised);
-}
-.hero-ghost-a {
-  transform:
-    translate3d(calc(var(--mx, 0) * -14px - 12px), calc(var(--my, 0) * -10px + 10px), -72px)
-    rotate(-5.5deg);
-}
-.hero-ghost-b {
-  transform:
-    translate3d(calc(var(--mx, 0) * 11px + 10px), calc(var(--my, 0) * 8px - 6px), -42px)
-    rotate(4.5deg);
-  opacity: 0.75;
-}
-.hero-front {
-  position: relative;
-  transform:
-    translate3d(calc(var(--mx, 0) * 18px), calc(var(--my, 0) * 13px), 46px)
-    rotate(1.2deg)
-    rotateY(calc(var(--mx, 0) * 2.5deg))
-    rotateX(calc(var(--my, 0) * -2deg));
-}
-
-/* Small screens: the pile tightens up so the corners stay inside the
-   page gutter instead of swinging off-screen. */
-@media (max-width: 640px) {
-  .hero-ghost-a {
-    transform:
-      translate3d(calc(var(--mx, 0) * -8px - 6px), calc(var(--my, 0) * -6px + 6px), -60px)
-      rotate(-4deg);
-  }
-  .hero-ghost-b {
-    transform:
-      translate3d(calc(var(--mx, 0) * 6px + 5px), calc(var(--my, 0) * 5px - 4px), -36px)
-      rotate(3.5deg);
-  }
-  .hero-front {
-    transform:
-      translate3d(calc(var(--mx, 0) * 10px), calc(var(--my, 0) * 8px), 34px)
-      rotate(1.2deg);
-  }
-}
-
-/* The background ghosts drift slowly so the pile feels set down, not
-   drawn. Fine pointers only: touch hardware skips the loop entirely,
-   and prefers-reduced-motion still kills it below. The card being
-   read never bounces on its own. */
-@media (hover: hover) and (pointer: fine) {
-  .hero-ghost-a {
-    animation: bob 12s ease-in-out -4s infinite;
-  }
-  .hero-ghost-b {
-    animation: bob 10s ease-in-out -1.5s infinite;
-  }
-  @keyframes bob {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    50% {
-      translate: 0 -5px;
-    }
-  }
-}
-
-/* Crop marks, the print-shop frame. The stage pseudos sit inside the
-   parallax hit zone, so they opt out of pointer events and the zone
-   stays exactly the stage box. */
-.hero-marks {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.hero-marks::before,
-.hero-marks::after,
-.hero-stage::before,
-.hero-stage::after {
-  content: "";
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  pointer-events: none;
-}
-.hero-stage::before {
-  top: -19px;
-  left: -19px;
-  border-top: 1.5px solid var(--color-ink-faint);
-  border-left: 1.5px solid var(--color-ink-faint);
-}
-.hero-stage::after {
-  bottom: -19px;
-  right: -19px;
-  border-bottom: 1.5px solid var(--color-ink-faint);
-  border-right: 1.5px solid var(--color-ink-faint);
-}
-.hero-marks::before {
-  top: -19px;
-  right: -19px;
-  border-top: 1.5px solid var(--color-ink-faint);
-  border-right: 1.5px solid var(--color-ink-faint);
-}
-.hero-marks::after {
-  bottom: -19px;
-  left: -19px;
-  border-bottom: 1.5px solid var(--color-ink-faint);
-  border-left: 1.5px solid var(--color-ink-faint);
-}
-
-/* Spines stand on the shelf seen slightly off square; a few lean.
-   --ry/--lean come from the book. Hover pulls the book off the shelf,
-   behind a fine-pointer gate so taps don't leave it yanked forward. */
+.book-tile-title { display: block; font-size: 15px; font-weight: 500; line-height: 1.4; margin-top: 10px; }
+.book-tile-author { display: block; font-size: 12px; line-height: 1.45; margin-top: 4px; color: var(--color-ink-soft); }
 .spine-3d {
-  --spine-pull:
-    perspective(900px) rotateY(-2deg) rotate(0deg) translate3d(0, -7px, 22px);
-  --spine-pull-shadow:
-    inset 0 -6px 0 rgba(0, 0, 0, 0.18),
-    0 18px 30px -12px rgba(28, 22, 12, 0.38);
-  transform: perspective(900px) rotateY(var(--ry, -13deg)) rotate(var(--lean, 0deg));
+  transform: perspective(900px) rotateY(-6deg);
   transform-origin: 50% 88%;
-  transition:
-    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 300ms ease;
+  transition: transform 180ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .spine-hover:hover .spine-3d {
-    transform: var(--spine-pull);
-    box-shadow: var(--spine-pull-shadow);
-  }
-}
-.spine-hover:focus-visible .spine-3d {
-  transform: var(--spine-pull);
-  box-shadow: var(--spine-pull-shadow);
+  .spine-hover:hover .spine-3d, .book-tile:hover .spine-3d { transform: translateY(-4px); }
 }
 
+.reading-section { margin-top: 36px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.section-heading > a { font-size: 14px; display: inline-flex; min-height: 44px; align-items: center; gap: 8px; }
+.book-introduction { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 24px; padding-block: 24px 32px; }
+.book-introduction .page-title { font-size: clamp(27px, 3.2vw, 38px); }
+.book-tags { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--color-ink-soft); margin-bottom: 12px; }
+.book-tags span { padding: 4px 10px; border-radius: 999px; background: var(--color-surface-soft); }
+.breadcrumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--color-ink-soft); }
+.writing-section { scroll-margin-top: 88px; border-top: 1px solid var(--color-rule); padding-top: 28px; }
+.writing-section > p { margin-top: 10px; color: var(--color-ink-soft); max-width: 65ch; }
+.book-links-section { margin-top: 28px; max-width: 640px; }
+.book-margin { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--color-rule); scroll-margin-top: 88px; }
+.card-workspace { display: grid; gap: 32px; align-items: center; }
+.card-workspace-art { width: 400px; max-width: 100%; margin-inline: auto; }
+.card-workspace-copy h1 { margin-bottom: 16px; }
+.card-workspace-copy > p { color: var(--color-ink-soft); font-size: 16px; max-width: 42ch; }
+.card-workspace-copy > div { margin-top: 20px; }
+.card-loop { margin-top: 36px; border-top: 1px solid var(--color-rule); padding-top: 28px; }
+.card-loop p { margin: 10px 0 20px; max-width: 55ch; color: var(--color-ink-soft); }
+.skeleton { background: var(--color-surface-soft); border-radius: 10px; min-height: 24px; }
+
+@media (min-width: 640px) {
+  .book-introduction { grid-template-columns: 120px minmax(0, 1fr); gap: 32px; }
+}
+@media (min-width: 1024px) {
+  body { padding-inline-start: var(--rail-width); }
+  .card-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-block: 24px; }
+}
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
