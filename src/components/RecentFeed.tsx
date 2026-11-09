@@ -1,91 +1,42 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { LineCard } from "./LineCard";
 import { usePoll } from "@/lib/use-poll";
 import { useLocale } from "./LocaleProvider";
-import { tiltFor } from "@/lib/tilt";
 import type { LineRecord } from "@/lib/store";
 import type { SeedLine } from "@/lib/seeds";
 
 type FeedRecord = LineRecord & { votes: number };
 
-/**
- * The home ticker, live: starts with the editorial seeds, then the global
- * recent-lines feed flows in and keeps refreshing. Duplicated track for a
- * seamless loop; pauses on hover.
- */
+/** Supplemental reading, three static cards rather than a duplicated ticker. */
 export function RecentFeed({ seeds }: { seeds: SeedLine[] }) {
   const { t } = useLocale();
-  const [lines, setLines] = useState<FeedRecord[]>(() =>
-    seeds.map((s) => ({ id: s.id, payload: s, t: 0, votes: 0 })),
-  );
-  const [live, setLive] = useState(false);
-
-  const poll = useCallback(async () => {
+  const [lines, setLines] = useState<FeedRecord[]>(() => seeds.slice(0, 3).map((s) => ({ id: s.id, payload: s, t: 0, votes: 0 })));
+  const [status, setStatus] = useState<"loading" | "live" | "offline" | "error">("loading");
+  const poll = useCallback(async (signal: AbortSignal) => {
     try {
-      const res = await fetch("/api/recent?limit=24", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = (await res.json()) as { lines: FeedRecord[]; live: boolean };
-      if (!Array.isArray(data.lines) || data.lines.length === 0) return;
-      setLive(data.live);
-      setLines(data.lines);
-    } catch {
-      /* offline, seeds keep ticking */
-    }
+      const res = await fetch("/api/recent?limit=3", { cache: "no-store", signal });
+      if (!res.ok) throw new Error("offline");
+      const data = await res.json() as { lines: FeedRecord[]; live: boolean };
+      if (signal.aborted) return;
+      if (!Array.isArray(data.lines)) throw new Error("invalid feed");
+      setStatus(data.live === true ? "live" : "offline");
+      if (data.live === true) setLines(data.lines.slice(0, 3));
+      // Stateless responses are editorial, not just-carried reader activity.
+    } catch { if (!signal.aborted) setStatus("error"); }
   }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.resolve().then(() => {
-      if (!cancelled) poll();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [poll]);
-
   usePoll(poll, 8000);
-
-  const track = (ariaHidden: boolean) => (
-    <ul
-      className="flex shrink-0 gap-7 pr-7"
-      aria-hidden={ariaHidden || undefined}
-      // The duplicate half of the loop is decoration: inert keeps it
-      // out of the tab order and away from screen readers entirely.
-      inert={ariaHidden || undefined}
-    >
-      {lines.map((r) => (
-        <li
-          key={r.id}
-          className="toss w-[290px] shrink-0"
-          style={{ "--tilt": `${tiltFor(r.id)}deg` } as React.CSSProperties}
-        >
-          <LineCard payload={r.payload} id={r.id} votes={r.votes} asLink className="h-full" />
-        </li>
-      ))}
-    </ul>
-  );
-
-  return (
-    <div>
-      <div className="mx-auto mb-8 flex max-w-6xl items-baseline justify-between px-5">
-        <h2 className="font-mono text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-          {t("feed.fresh")}
-        </h2>
-        {live && (
-          <p className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-stamp)]">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-stamp)]" aria-hidden="true" />
-            {t("feed.live")}
-          </p>
-        )}
-      </div>
-      <div className="marquee-mask overflow-hidden py-2">
-        <div className="marquee-track flex w-max animate-marquee">
-          {track(false)}
-          {track(true)}
-        </div>
-      </div>
+  const onVote = useCallback((id: string, votes: number) => {
+    setLines((prev) => prev.map((line) => line.id === id ? { ...line, votes } : line));
+  }, []);
+  return <div>
+    <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
+      <h2 className="section-title">{t("feed.fresh")}</h2>
+      <p role="status" className="text-[13px] text-[var(--color-ink-soft)]">{t(status === "live" ? "feed.live" : status === "loading" ? "feed.editorialLoading" : status === "error" ? "feed.editorialError" : "feed.editorial")}</p>
     </div>
-  );
+    {lines.length ? <ul className="recent-lines-grid grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {lines.map((line) => <li key={line.id}><LineCard payload={line.payload} id={line.id} votes={line.votes} asLink onChange={onVote} className="h-full" /></li>)}
+    </ul> : <p className="panel p-6 text-sm">{t("feed.empty.title")}</p>}
+  </div>;
 }
