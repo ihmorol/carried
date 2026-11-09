@@ -1,33 +1,47 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BOOKS, originalName, searchBooks, type Book } from "@/lib/books";
 import { BookSpine } from "./BookSpine";
 import { useLocale } from "./LocaleProvider";
 
-/**
- * The hero's real CTA: type a book you love, land on its margin in one
- * action. Instant suggestions, Enter takes the first hit, and "surprise
- * me" drops you into a random shelf, the fastest path to a rabbit hole.
- */
 export function HeroSearch() {
   const router = useRouter();
   const { t } = useLocale();
+  const uid = useId();
+  const inputId = `${uid}-search`;
+  const listId = `${uid}-results`;
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const [readerBooks, setReaderBooks] = useState<Book[]>([]);
   const boxRef = useRef<HTMLDivElement>(null);
-
-  const results = useMemo<Book[]>(() => searchBooks(q, 5), [q]);
+  const books = useMemo(() => [...BOOKS, ...readerBooks.filter((book) => !BOOKS.some((item) => item.slug === book.slug))], [readerBooks]);
+  const results = useMemo(() => searchBooks(q, 5, books), [q, books]);
+  useEffect(() => {
+    const controller = new AbortController();
+    async function load() {
+      try {
+        const res = await fetch("/api/books", { cache: "no-store", signal: controller.signal });
+        if (!res.ok) return;
+        const data = await res.json() as { books?: Book[] };
+        if (!controller.signal.aborted && Array.isArray(data.books)) setReaderBooks(data.books.filter((book) => book.tags.includes("reader-added")));
+      } catch { /* The curated shelf remains searchable offline. */ }
+    }
+    void Promise.resolve().then(() => { if (!controller.signal.aborted) void load(); });
+    return () => controller.abort();
+  }, []);
   const showList = open && q.trim().length > 0;
+  const selected = Math.min(active, Math.max(0, results.length - 1));
+  const optionId = (book: Book) => `${listId}-${book.slug}`;
 
   useEffect(() => {
-    function onDocDown(e: MouseEvent) {
-      if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
+    function outside(e: PointerEvent) {
+      if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener("mousedown", onDocDown);
-    return () => document.removeEventListener("mousedown", onDocDown);
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
   }, []);
 
   function go(book: Book) {
@@ -35,131 +49,48 @@ export function HeroSearch() {
     setQ("");
     router.push(`/b/${book.slug}#write`);
   }
-
-  function surprise() {
-    const book = BOOKS[Math.floor(Math.random() * BOOKS.length)];
-    router.push(`/b/${book.slug}#write`);
-  }
-
+  function surprise() { go(BOOKS[Math.floor(Math.random() * BOOKS.length)]); }
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "ArrowDown") {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       setOpen(true);
-      setActive((i) => Math.min(i + 1, results.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActive((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      const book = results[active] ?? results[0];
-      if (book) go(book);
+      if (results.length) setActive((i) => !showList ? 0 : (i + (e.key === "ArrowDown" ? 1 : -1) + results.length) % results.length);
     } else if (e.key === "Escape") {
-      setOpen(false);
+      e.preventDefault(); setOpen(false);
+    } else if (e.key === "Enter" && showList && results[selected]) {
+      e.preventDefault(); go(results[selected]);
     }
   }
 
   return (
-    <div ref={boxRef} className="relative max-w-xl">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const book = results[active] ?? results[0];
-          if (book) go(book);
-        }}
-        role="search"
-      >
-        <label htmlFor="hero-search" className="sr-only">
-          {t("hero.searchLabel")}
-        </label>
-        <div className="flex">
-          <input
-            id="hero-search"
-            type="text"
-            value={q}
-            onChange={(e) => {
-              setQ(e.target.value);
-              setOpen(true);
-              setActive(0);
-            }}
-            onFocus={() => setOpen(true)}
-            onKeyDown={onKeyDown}
-            placeholder={t("hero.searchPlaceholder")}
-            autoComplete="off"
-            role="combobox"
-            aria-expanded={showList}
-            aria-controls="hero-results"
-            aria-autocomplete="list"
-            className="w-full rounded-l-[3px] border border-r-0 bg-[var(--color-paper-raised)] px-5 py-4 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:outline-none"
-            style={{ borderColor: "var(--color-ink)" }}
-          />
-          <button
-            type="submit"
-            className="btn-press shrink-0 rounded-r-[3px] bg-[var(--color-stamp)] px-5 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--color-paper-raised)]"
-          >
-            {t("hero.searchCta")}
-          </button>
+    <div ref={boxRef} className="relative w-full max-w-xl" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOpen(false); }}>
+      <form role="search" onSubmit={(e) => { e.preventDefault(); if (results[selected]) go(results[selected]); }}>
+        <label htmlFor={inputId} className="sr-only">{t("hero.searchLabel")}</label>
+        <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+          <input id={inputId} type="text" value={q} onChange={(e) => { setQ(e.target.value); setActive(0); setOpen(true); }}
+            onFocus={() => setOpen(true)} onKeyDown={onKeyDown} placeholder={t("hero.searchPlaceholder")} autoComplete="off"
+            role="combobox" aria-expanded={showList && results.length > 0} aria-controls={showList && results.length > 0 ? listId : undefined}
+            aria-activedescendant={showList && results[selected] ? optionId(results[selected]) : undefined} aria-autocomplete="list"
+            className="field-input min-w-0 flex-1" />
+          <button type="submit" className="ui-button shrink-0">{t("hero.searchCta")}</button>
         </div>
       </form>
-
-      {showList && (
-        <ul
-          id="hero-results"
-          role="listbox"
-          aria-label={t("shelf.searchLabel")}
-          className="card-rule absolute z-20 mt-2 w-full overflow-hidden rounded-[4px] bg-[var(--color-paper-raised)] shadow-[0_14px_34px_rgba(28,22,12,0.18)]"
-        >
-          {results.length === 0 ? (
-            <li className="px-5 py-4 font-mono text-xs text-[var(--color-ink-soft)]">
-              {t("shelf.missing")}{" "}
-              <button type="button" onClick={surprise} className="link-ledger text-[var(--color-stamp)]">{t("hero.surprise")}</button>{" "}
-              <a href="#shelf" className="link-ledger">…</a>
+      {showList && (results.length ? (
+        <ul id={listId} role="listbox" aria-label={t("shelf.searchLabel")} className="panel absolute z-20 mt-2 w-full overflow-hidden p-1">
+          {results.map((book, i) => (
+            <li key={book.slug} id={optionId(book)} role="option" aria-selected={i === selected}
+              onMouseDown={(e) => e.preventDefault()} onClick={() => go(book)} onMouseEnter={() => setActive(i)}
+              className={`flex min-h-16 cursor-pointer items-center gap-4 rounded-lg px-3 py-3 ${i === selected ? "bg-[var(--color-paper)]" : ""}`}>
+              <BookSpine book={book} height={48} compact className="shrink-0" />
+              <span className="min-w-0"><span className="block font-serif text-base font-semibold">{originalName(book)}</span>
+                <span className="block text-[13px] text-[var(--color-ink-soft)]">{book.authorBn ?? book.author}</span></span>
+              <span aria-hidden="true" className="ml-auto">→</span>
             </li>
-          ) : (
-            results.map((b, i) => (
-              <li key={b.slug} role="option" aria-selected={i === active}>
-                <button
-                  type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    go(b);
-                  }}
-                  onMouseEnter={() => setActive(i)}
-                  className={`flex w-full items-center gap-4 px-4 py-3 text-left transition-colors ${
-                    i === active ? "bg-[var(--color-paper)]" : ""
-                  }`}
-                >
-                  <BookSpine book={b} height={56} compact className="shrink-0" />
-                  <span className="min-w-0">
-                    <span className="block truncate font-serif text-base font-semibold text-[var(--color-ink)]">
-                      {originalName(b)}
-                    </span>
-                    <span className="block font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-soft)]">
-                      {b.author} · {b.year < 0 ? `${Math.abs(b.year)} BC` : b.year}
-                    </span>
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className="ml-auto shrink-0 font-mono text-xs text-[var(--color-ink-faint)]"
-                  >
-                    →
-                  </span>
-                </button>
-              </li>
-            ))
-          )}
+          ))}
         </ul>
-      )}
-
-      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]">
-        {t("hero.noIdea")}{" "}
-        <button
-          type="button"
-          onClick={surprise}
-          className="link-ledger text-[var(--color-ink)]"
-        >
-          {t("hero.surprise")}
-        </button>
-        {t("hero.surpriseNote")}
+      ) : <div className="panel absolute z-20 mt-2 w-full p-4 text-sm"><p role="status">{t("shelf.empty.title")}</p><a href="#shelf" className="ui-button-secondary mt-3">{t("home.allBooks")}</a></div>)}
+      <p className="mt-3 flex flex-wrap items-center gap-1 text-[13px] text-[var(--color-ink-soft)]">
+        {t("hero.noIdea")} <button type="button" onClick={surprise} className="min-h-11 px-2 underline underline-offset-4">{t("hero.surprise")}</button>
       </p>
     </div>
   );
