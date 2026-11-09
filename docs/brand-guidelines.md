@@ -20,7 +20,8 @@ generic web app, it's off-brand.
 | `paper-raised` | `#faf6ea` | cards, inputs |
 | `ink` | `#211d17` | primary text, primary buttons |
 | `ink-soft` | `#6d6354` | secondary text |
-| `ink-faint` | `#9c917f` | metadata, placeholders |
+| `ink-faint` | `#766a59` | supporting text, placeholders with readable contrast |
+| `surface-soft` | `#eae4d6` | quiet book and product display surfaces |
 | `rule` | `#d8cdb6` | hairlines, double-rule card borders |
 | `stamp` | `#b23c25` | **the only accent**, stamps, key CTAs, focus rings |
 
@@ -33,20 +34,20 @@ must come from `lib/inks.ts`, never re-derived.
 
 - **Fraunces** (500/600 + italic), headlines, the line itself, book titles, the name in the stamp. Serif is the voice of the book.
 - **IBM Plex Mono** (400–600), everything else: UI, metadata, buttons, labels. Letter-spaced uppercase for ledger labels (`CARRIED OUT OF`, `No. 4F2A1C`).
-- No third family. Body text is mono at 12–14px with generous leading, the site is text-light by design.
+- The two house families remain. Existing Noto Serif/Sans Bengali companions provide script coverage. Inputs/body guidance use 16px; supporting UI uses 12–14px. Artwork metadata scales with the card.
 
 ## Signature elements
 
-1. **The stamp**, "CARRIED BY ⟨name⟩ ⟨date⟩", slightly crooked (-6.5°), ink-textured, always vermilion. It's the ownership moment; it never appears without a name.
+1. **The stamp**, "CARRIED BY ⟨name⟩ ⟨date⟩", slightly crooked (-6.5°), ink-textured, vermilion on paper and an accessible salmon-red on dark inks. It's the ownership moment; it never appears without a name.
 2. **The double rule**, every card gets an inner border like a filed catalog card.
 3. **The accession number**, `No. XXXXXX`, minted from the line, on every card.
 4. **The spine**, books are drawn as book-cloth spines with a head/foot band and edge lighting; never use downloaded cover images.
 
 ## Motion
 
-Quiet, mechanical, satisfying: the stamp thumps in (scale 1.7 → overshoot → rest, 550ms), sections rise 14px on load, the marquee drifts slowly and pauses on hover. `prefers-reduced-motion` disables all of it. Nothing bounces for fun.
+Quiet, mechanical, satisfying: the stamp marks the ownership moment. Interface press/hover transitions last 150–250ms. Readable cards stay still; recent reflections use a static grid. `prefers-reduced-motion` disables movement.
 
-Depth works the same way. Cards toss with a small hand-laid lean and straighten when a reader reaches for them, the hero pile drifts a few pixels with the pointer and settles when it lets go, books stand slightly off square and pull off the shelf on approach. The slow idle drift belongs to the hero's background ghosts only, under fine pointers; the card being read never bounces on its own. Touch devices and `prefers-reduced-motion` get the still poses.
+Depth belongs to the artwork and books, not animated page decoration. Cards have modest warm shadows; book spines can lift on fine-pointer hover. Touch devices and reduced motion retain still poses. The reading-room shell, generous gutters, neutral category controls, and shop concepts use the same tokens and control hierarchy documented in `DESIGN.md`.
 
 ## Do / Don't
 

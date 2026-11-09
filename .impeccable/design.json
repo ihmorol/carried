@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T00:00:00Z",
+  "title": "Design System: Carried",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Library paper" },
+      "stamp": { "role": "primary", "displayName": "Ownership vermilion" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "House serif", "purpose": "Book names, readable page headings, and artwork." },
+      "body": { "displayName": "Ledger text", "purpose": "Navigation, metadata, and form guidance; Bengali glyph companions preserved." }
+    },
+    "shadows": [
+      { "name": "artwork", "value": "0 2px 5px rgba(28,22,12,0.10), 0 12px 24px -18px rgba(28,22,12,0.22)", "purpose": "Library-card physical depth only." }
+    ],
+    "motion": [
+      { "name": "press", "value": "180ms ease-out", "purpose": "Acknowledges interactions without ambient motion." },
+      { "name": "stamp", "value": "250ms cubic-bezier(0.22,1,0.36,1)", "purpose": "Ownership moment; reduced motion disables." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "rail", "value": "1024px" }
+    ]
+  },
+  "components": [
+    { "name": "Primary action", "kind": "button", "refersTo": "button-primary", "description": "A clear next action with a 44px touch target.", "html": "<button class=\"ds-primary\">Write your line</button>", "css": ".ds-primary{background:var(--color-ink);color:var(--color-paper-raised);border:1px solid transparent;border-radius:10px;padding:11px 20px;min-height:44px;font-family:var(--font-mono);font-size:13px}.ds-primary:hover{background:var(--color-ink-soft)}.ds-primary:focus-visible{outline:2px solid var(--color-stamp);outline-offset:3px}" },
+    { "name": "Text field", "kind": "input", "description": "Readable editable text, never a placeholder-only label.", "html": "<label for=\"ds-line\">Your line</label><input id=\"ds-line\" class=\"ds-field\" placeholder=\"What stayed with you?\">", "css": ".ds-field{display:block;background:var(--color-paper-raised);color:var(--color-ink);border:1px solid var(--color-rule);border-radius:10px;padding:12px 16px;font-family:var(--font-mono);font-size:16px;min-height:48px}.ds-field:focus-visible{outline:2px solid var(--color-stamp);outline-offset:3px}" }
+  ],
+  "narrative": {
+    "northStar": "A reader's shared reading room",
+    "overview": "A library catalog card the reader can author, framed by calm useful navigation and real book content.",
+    "keyCharacteristics": ["Free digital artwork", "One stamp-red accent", "Readable English and Bangla", "Honest physical product concepts"],
+    "rules": [{ "name": "Artifact parity", "body": "DOM, canvas PNG, and OG use identical content decisions and inks adapted to aspect ratio.", "section": "components" }],
+    "dos": ["Use actual Carried artwork in previews", "Keep prices and ordering unavailable until a real launch"],
+    "donts": ["Do not introduce accounts or tracking", "Do not add gradients or glass", "Do not treat public book art as merchandise clearance"]
+  }
+}
