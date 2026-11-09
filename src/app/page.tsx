@@ -1,63 +1,66 @@
 import Link from "next/link";
-import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Books, Quotes } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
 import { LineCard } from "@/components/LineCard";
 import { BookSpine } from "@/components/BookSpine";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
-import { HeroSearch } from "@/components/HeroSearch";
 import { T } from "@/components/T";
 import { marqueeLines, lineOfTheDay } from "@/lib/seeds";
 import { getBook, originalName } from "@/lib/books";
+import { isBengali } from "@/lib/line";
 
 export const revalidate = 3600;
 
 export default function Home() {
   const featured = lineOfTheDay();
   const featuredBook = getBook(featured.b)!;
-  const books = ["the-little-prince", "1984", "the-alchemist", "the-hobbit"].map(getBook).filter((book) => book !== undefined);
+  const title = originalName(featuredBook);
+  const author = featuredBook.authorBn ?? featuredBook.author;
 
   return (
     <>
       <Header />
-      <main id="main-content" className="page-content">
-        <section className="reading-hero">
-          <div className="reading-welcome">
-            <h1 className="page-title"><T k="home.welcome" /></h1>
-            <p><T k="home.sub" /></p>
-            <div className="reading-search"><HeroSearch /></div>
-          </div>
-          <div className="featured-reading">
-            <div className="featured-artwork"><LineCard payload={featured} id={featured.id} actions={false} asLink /></div>
-            <div className="featured-reading-copy">
-              <h2>{originalName(featuredBook)}</h2>
-              <p>{featuredBook.authorBn ?? featuredBook.author}</p>
+      <main id="main-content" className="reading-workspace" tabIndex={-1}>
+        <nav className="workspace-jumps" aria-labelledby="workspace-jump-label">
+          <span id="workspace-jump-label" className="sr-only"><T k="home.jump" /></span>
+          <a href="#shelf"><Books size={18} weight="regular" aria-hidden="true" /><T k="home.jumpShelf" /></a>
+          <a href="#reader-lines"><Quotes size={18} weight="regular" aria-hidden="true" /><T k="home.jumpLines" /></a>
+        </nav>
+        <div className="workspace-columns">
+          <section id="shelf" className="workspace-shelf" aria-labelledby="workspace-shelf-heading" tabIndex={-1}>
+            <ShelfExplorer variant="workspace" pageSize={8}>
+              <div className="workspace-welcome">
+                <h1><T k="home.welcome" /></h1>
+                <p><T k="home.sub" /></p>
+              </div>
+              <div className="workspace-book">
+                <div className="workspace-book-art"><BookSpine book={featuredBook} height={116} /></div>
+                <div className="workspace-book-copy">
+                  <h2 lang={isBengali(title) ? "bn" : "en"}>{title}</h2>
+                  <p className="workspace-book-author" lang={isBengali(author) ? "bn" : "en"}>{author}</p>
+                  <p className="workspace-eyebrow"><T k="home.featuredBook" /></p>
+                  <Link href={`/b/${featured.b}`} className="workspace-book-link"><T k="home.openBook" /><ArrowRight size={16} weight="regular" aria-hidden="true" /></Link>
+                </div>
+              </div>
+              <div className="workspace-section-heading"><h2 id="workspace-shelf-heading"><T k="shelf.title" /></h2></div>
+            </ShelfExplorer>
+          </section>
+          <section id="reader-lines" className="workspace-lines" aria-labelledby="workspace-lines-heading" tabIndex={-1}>
+            <div className="workspace-daily-heading">
+              <span id="workspace-lines-heading" className="sr-only"><T k="nav.lines" /></span>
+              <h2><T k="home.daily" /></h2>
               <p><T k="home.featured" /></p>
-              <Link href={`/b/${featured.b}#write`} className="ui-button-secondary"><T k="nav.write" /><ArrowRight size={16} aria-hidden="true" /></Link>
             </div>
-          </div>
-        </section>
-
-        <section className="reading-section">
-          <div className="section-heading"><h2 className="section-title"><T k="home.discover" /></h2><Link href="#shelf"><T k="home.allBooks" /><ArrowRight size={16} aria-hidden="true" /></Link></div>
-          <ul className="reading-book-grid">
-            {books.map((book) => <li key={book.slug}><Link href={`/b/${book.slug}`} className="book-tile"><div className="book-tile-art"><BookSpine book={book} height={160} /></div><span className="book-tile-title">{originalName(book)}</span><span className="book-tile-author">{book.authorBn ?? book.author}</span></Link></li>)}
-          </ul>
-        </section>
-
-        <section className="reading-section" aria-label="Reader reflections">
-          <RecentFeed seeds={marqueeLines()} />
-        </section>
-
-        <section id="shelf" className="reading-section scroll-mt-24">
-          <div className="section-heading"><h2 className="section-title"><T k="shelf.title" /></h2></div>
-          <ShelfExplorer />
-        </section>
-
-        <section className="reading-guide">
-          <h2><T k="home.how" /></h2>
-          <ol>{[{ title: "band.1.t", copy: "band.1.d" }, { title: "band.2.t", copy: "band.2.d" }, { title: "band.3.t", copy: "band.3.d" }].map((step) => <li key={step.title}><h3><T k={step.title} /></h3><p><T k={step.copy} /></p></li>)}</ol>
-        </section>
+            <div className="workspace-daily-card"><LineCard payload={featured} id={featured.id} actions={false} asLink /></div>
+            <div className="workspace-daily-book">
+              <Link href={`/b/${featured.b}`} lang={isBengali(title) ? "bn" : "en"}>{title}</Link>
+              <p lang={isBengali(author) ? "bn" : "en"}>{author}</p>
+            </div>
+            <Link href={`/b/${featured.b}#write`} className="ui-button workspace-write"><T k="nav.write" /><ArrowRight size={18} weight="regular" aria-hidden="true" /></Link>
+            <RecentFeed seeds={marqueeLines()} variant="list" />
+          </section>
+        </div>
       </main>
       <Footer />
     </>
