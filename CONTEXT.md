@@ -1,14 +1,13 @@
 # Context
 
-Carried is a no-account, no-backend quote-card site. This is the domain model.
+Carried is a no-account quote-card site with optional public sharing storage and a device-local merchandise concept cart. This is the domain model.
 
 ## Entities
 
 **Book** (`lib/books.ts`), static, curated: `slug, title, author, year, tags, spine`.
-110 entries, prerendered at build (`/b/[slug]`). Books are *drawn* as spines
-(`BookSpine` + `SPINE_COLORS`), and book pages layer real cover scans on top
-(`lib/bookmeta.ts`: Open Library search → Internet Archive item → drawn spine
-fallback; plus free archive links, Open Library work page, Internet Archive,
+143 entries, including 33 Bengali books, prerendered at build (`/b/[slug]`). Books are *drawn* as spines
+(`BookSpine` + `SPINE_COLORS`). Book-access links resolve asynchronously
+(`lib/bookmeta.ts`: Open Library search → Internet Archive item; plus free archive links, Open Library work page, Internet Archive,
 Bookshop, WorldCat, no API keys). Readers can add books (see Store); those
 live in Redis, resolve at request time via `findBook`, and carry the
 `reader-added` tag.
@@ -60,9 +59,10 @@ The single source of truth for the DOM card (`LineCard`), the canvas export
 changing all three surfaces + `isInkId`.
 
 **Seed lines** (`lib/seeds/`), editorial corpus: **ten original reader-voice
-lines per book** (~1,100 total, across canon/modern/more/ideas data files),
-written in-house. They are reactions to books, **not excerpts from them**,
-no scraped or quoted user content, so they're safe to ship. Fixed fields keep
+lines per book** (1,430 total, across English and Bengali data files),
+written in-house as reflections. The corpus is not commercial merchandise clearance;
+quotation-like passages, translations, and art need rights review before printing for sale.
+Fixed fields keep
 ids stable; a coverage test (`npm test`) enforces 10 per book. They populate
 book pages, the home ticker (capped rotation), and the daily front-page pick.
 
@@ -86,7 +86,9 @@ wall, no interstitial).
 
 ## Invariants
 
-- No accounts, no server-side user data. A line's identity is its payload + a name; the device remembers the name, nothing more.
+- No accounts or private server-side customer data. The optional public shelf stores submitted lines/names and anonymous votes; the personal shelf, language choice, and merchandise selections stay device-local. No orders, addresses, payments, or tracking are added.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
-- Fraunces + IBM Plex Mono only; stamp red is the only accent.
+- Fraunces + IBM Plex Mono are the two house faces; existing Noto companions provide Bengali glyphs. Stamp red is the only accent.
+- Encoded line IDs are bounded at 4096 characters to accommodate maximum valid UTF-8 content. New offline public lines use payload IDs; seed and existing short IDs remain valid.
+- Merchandise concepts: `/shop`, `/shop/[slug]`, `/shop/cart`; validated `carried.cart.v1` selections only, no checkout. All digital styles/downloads/sharing remain free. See `docs/adr/0002-free-digital-local-merchandise.md`.
 - ADRs for significant decisions live in `docs/adr/`.
