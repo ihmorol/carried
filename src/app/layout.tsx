@@ -6,9 +6,9 @@ import { LocaleProvider } from "@/components/LocaleProvider";
 
 const fraunces = localFont({
   src: [
-    { path: "../../public/fonts/Fraunces-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/Fraunces-600.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/Fraunces-Italic-500.ttf", weight: "500", style: "italic" },
+    { path: "../../public/fonts/Fraunces-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/Fraunces-600.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/Fraunces-Italic-500.woff2", weight: "500", style: "italic" },
   ],
   variable: "--font-fraunces",
   display: "swap",
@@ -16,9 +16,9 @@ const fraunces = localFont({
 
 const plex = localFont({
   src: [
-    { path: "../../public/fonts/IBMPlexMono-400.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/IBMPlexMono-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/IBMPlexMono-600.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/IBMPlexMono-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/IBMPlexMono-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/IBMPlexMono-600.woff2", weight: "600", style: "normal" },
   ],
   variable: "--font-plex",
   display: "swap",
@@ -26,22 +26,24 @@ const plex = localFont({
 
 const notoSerifBengali = localFont({
   src: [
-    { path: "../../public/fonts/NotoSerifBengali-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/NotoSerifBengali-600.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/NotoSerifBengali-700.ttf", weight: "700", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-600.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-700.woff2", weight: "700", style: "normal" },
   ],
   variable: "--font-noto-serif-bengali",
   display: "swap",
+  preload: false,
 });
 
 const notoSansBengali = localFont({
   src: [
-    { path: "../../public/fonts/NotoSansBengali-400.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/NotoSansBengali-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/NotoSansBengali-600.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/NotoSansBengali-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/NotoSansBengali-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/NotoSansBengali-600.woff2", weight: "600", style: "normal" },
   ],
   variable: "--font-noto-sans-bengali",
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
