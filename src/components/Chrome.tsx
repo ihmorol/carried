@@ -2,50 +2,136 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Books, BookmarkSimple, PencilLine, Tote, List, ArrowUpRight } from "@phosphor-icons/react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUpRight, BookOpen, Books, BookmarkSimple, House, List, Quotes, Tote, X } from "@phosphor-icons/react";
 import { useLocale } from "./LocaleProvider";
-import { LocaleToggle } from "./T";
 import { SITE_NAME } from "@/lib/site";
 
 export function Header() {
   const pathname = usePathname();
-  const { t, locale } = useLocale();
-  const shop = locale === "bn" ? "দোকান" : "Shop";
+  return <Navigation key={pathname} pathname={pathname} />;
+}
+
+function Navigation({ pathname }: { pathname: string }) {
+  const { t, locale, setLocale } = useLocale();
+  const [expanded, setExpanded] = useState(false);
+  const [hash, setHash] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileToggle = useRef<HTMLButtonElement>(null);
+  const mobileNavigation = useRef<HTMLDivElement>(null);
+  const mobileLinks = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const syncHash = () => setHash(window.location.hash);
+    void Promise.resolve().then(() => { if (mounted) syncHash(); });
+    window.addEventListener("hashchange", syncHash);
+    window.addEventListener("popstate", syncHash);
+    return () => {
+      mounted = false;
+      window.removeEventListener("hashchange", syncHash);
+      window.removeEventListener("popstate", syncHash);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    mobileLinks.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setMobileOpen(false);
+      mobileToggle.current?.focus();
+    };
+    const outside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !mobileNavigation.current?.contains(event.target)) {
+        setMobileOpen(false);
+        mobileToggle.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", dismiss);
+    document.addEventListener("pointerdown", outside);
+    return () => {
+      document.removeEventListener("keydown", dismiss);
+      document.removeEventListener("pointerdown", outside);
+    };
+  }, [mobileOpen]);
+
   const links = [
-    { href: "/", label: locale === "bn" ? "মূল পাতা" : "Home", icon: BookOpen, active: pathname === "/" },
-    { href: "/#shelf", label: t("nav.shelf"), icon: Books, active: pathname.startsWith("/b/") },
+    { href: "/", label: t("nav.home"), icon: House, active: pathname === "/" && hash !== "#shelf" && hash !== "#reader-lines" },
+    { href: "/#shelf", label: t("nav.shelf"), icon: Books, active: pathname.startsWith("/b/") || pathname === "/" && hash === "#shelf" },
+    { href: "/#reader-lines", label: t("nav.lines"), icon: Quotes, active: pathname.startsWith("/l/") || pathname === "/" && hash === "#reader-lines" },
     { href: "/shelf", label: t("nav.myLines"), icon: BookmarkSimple, active: pathname === "/shelf" },
-    { href: "/shop", label: shop, icon: Tote, active: pathname.startsWith("/shop") },
+    { href: "/shop", label: t("nav.shop"), icon: Tote, active: pathname.startsWith("/shop") },
   ];
+
+  function navigate(href: string) {
+    const nextHash = href.startsWith("/#") ? href.slice(1) : "";
+    setHash(nextHash);
+    if (mobileOpen) {
+      setMobileOpen(false);
+      mobileToggle.current?.focus();
+    }
+    if (pathname === "/" && nextHash) document.getElementById(nextHash.slice(1))?.focus({ preventScroll: true });
+  }
 
   return (
     <>
-      <a className="skip-link" href="#main-content">{locale === "bn" ? "মূল বিষয়বস্তুতে যান" : "Skip to content"}</a>
-      <aside className="navigation-rail" aria-label={locale === "bn" ? "মূল নেভিগেশন" : "Main navigation"}>
-        <Link href="/" className="rail-brand" aria-label={`${SITE_NAME} home`}><BookOpen size={32} weight="light" /><span>Carried</span></Link>
-        <nav className="rail-links">
+      <a className="skip-link" href="#main-content">{t("nav.skip")}</a>
+      <aside className="navigation-rail" data-expanded={expanded}>
+        <Link href="/" className="rail-brand" aria-label={`${SITE_NAME} · ${t("nav.home")}`} title={SITE_NAME} onNavigate={() => navigate("/")}>
+          <span className="rail-icon"><BookOpen size={26} weight="regular" aria-hidden="true" /></span>
+          <span className="rail-label">{SITE_NAME}</span>
+        </Link>
+        <nav id="desktop-navigation" className="rail-links" aria-label={t("nav.main")}>
           {links.map(({ href, label, icon: Icon, active }) => (
-            <Link key={href} href={href} className={`rail-link${active ? " is-active" : ""}`} aria-current={active ? "page" : undefined}>
-              <Icon size={23} weight={active ? "fill" : "regular"} aria-hidden="true" /><span>{label}</span>
+            <Link key={href} href={href} className={`rail-link${active ? " is-active" : ""}`}
+              aria-label={label} aria-current={active ? (href.includes("#") && pathname === "/" ? "location" : "page") : undefined}
+              onNavigate={() => navigate(href)} title={expanded ? undefined : label}>
+              <span className="rail-icon"><Icon size={23} weight="regular" aria-hidden="true" /></span>
+              <span className="rail-label">{label}</span>
             </Link>
           ))}
         </nav>
-        <Link href="/#shelf" className="rail-write"><PencilLine size={22} aria-hidden="true" /><span>{t("nav.write")}</span></Link>
-        <p className="rail-note">{locale === "bn" ? "আপনার বই। আপনার কথা।" : "Your books.\nYour words."}</p>
+        <button type="button" className="rail-toggle" aria-expanded={expanded} aria-controls="desktop-navigation"
+          aria-label={t(expanded ? "nav.collapse" : "nav.expand")} title={t(expanded ? "nav.collapse" : "nav.expand")}
+          onClick={() => setExpanded((value) => !value)}>
+          <span className="rail-icon"><List size={23} weight="regular" aria-hidden="true" /></span>
+          <span className="rail-label">{t("nav.menu")}</span>
+        </button>
       </aside>
-      <header className="site-header">
+      <header className={`site-header${pathname === "/" ? " site-header--workspace" : ""}`}>
         <div className="header-inner">
-          <Link href="/" className="header-wordmark" aria-label={`${SITE_NAME} home`}>CARRIED<span>{t("brand.tagline")}</span></Link>
+          <div className="header-branding">
+            <Link href="/" className="header-wordmark" aria-label={`${SITE_NAME} · ${t("nav.home")}`} onNavigate={() => navigate("/")}>{SITE_NAME}</Link>
+            <span className="header-room">{t("shell.name")}</span>
+          </div>
           <div className="header-actions">
-            <span className="header-free">{locale === "bn" ? "ডিজিটাল কার্ড সবসময় বিনামূল্যে" : "Digital cards, always free"}</span>
-            <LocaleToggle />
-            <details className="mobile-navigation">
-              <summary aria-label={locale === "bn" ? "মেনু খুলুন" : "Open menu"}><List size={23} /><span>{locale === "bn" ? "মেনু" : "Menu"}</span></summary>
-              <nav aria-label="Main navigation">
-                {links.map(({ href, label, icon: Icon, active }) => <Link key={href} href={href} aria-current={active ? "page" : undefined}><Icon size={20} aria-hidden="true" />{label}</Link>)}
-                <Link href="/#shelf"><PencilLine size={20} aria-hidden="true" />{t("nav.write")}</Link>
+            <span className="header-free">{t("shell.free")}</span>
+            <div className="header-language" role="group" aria-label="Language / ভাষা">
+              {(["en", "bn"] as const).map((language) => (
+                <button key={language} type="button" lang={language} aria-pressed={locale === language} onClick={() => setLocale(language)}>
+                  {language === "en" ? "EN" : "বাংলা"}
+                </button>
+              ))}
+            </div>
+            <div className="mobile-navigation" ref={mobileNavigation} onBlur={(event) => {
+              if (event.relatedTarget instanceof Node && !event.currentTarget.contains(event.relatedTarget)) setMobileOpen(false);
+            }}>
+              <button ref={mobileToggle} type="button" className="mobile-menu-toggle" aria-expanded={mobileOpen}
+                aria-controls="mobile-navigation" aria-label={t(mobileOpen ? "nav.closeMenu" : "nav.openMenu")}
+                onClick={() => setMobileOpen((value) => !value)}>
+                {mobileOpen ? <X size={23} weight="regular" aria-hidden="true" /> : <List size={23} weight="regular" aria-hidden="true" />}
+              </button>
+              <nav ref={mobileLinks} id="mobile-navigation" hidden={!mobileOpen} aria-label={t("nav.main")}>
+                {links.map(({ href, label, icon: Icon, active }) => (
+                  <Link key={href} href={href} aria-current={active ? (href.includes("#") && pathname === "/" ? "location" : "page") : undefined}
+                    onNavigate={() => navigate(href)}>
+                    <span className="rail-icon"><Icon size={22} weight="regular" aria-hidden="true" /></span>{label}
+                  </Link>
+                ))}
               </nav>
-            </details>
+            </div>
           </div>
         </div>
       </header>
@@ -54,16 +140,17 @@ export function Header() {
 }
 
 export function Footer() {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
+  const pathname = usePathname();
   return (
-    <footer className="site-footer">
+    <footer className={`site-footer${pathname === "/" ? " site-footer--workspace" : ""}`}>
       <div className="footer-inner">
-        <p className="footer-signature">{t("brand.tagline")}</p>
+        <p className="footer-signature">{SITE_NAME}<span>{t("brand.tagline")}</span></p>
         <nav aria-label="Footer">
           <Link href="/#shelf">{t("footer.pick")}</Link>
           <Link href="/shelf">{t("footer.mine")}</Link>
-          <Link href="/shop">{locale === "bn" ? "দোকান" : "Shop"}</Link>
-          <a href="https://github.com/ihmorol/carried" target="_blank" rel="noopener noreferrer">{t("footer.source")}<ArrowUpRight size={14} aria-hidden="true" /></a>
+          <Link href="/shop">{t("nav.shop")}</Link>
+          <a href="https://github.com/ihmorol/carried" target="_blank" rel="noopener noreferrer">{t("footer.source")}<ArrowUpRight size={14} weight="regular" aria-hidden="true" /></a>
         </nav>
       </div>
     </footer>
