@@ -155,7 +155,7 @@ describe("store validation", () => {
     expect(() => validateLineInput({ q: "x".repeat(221), n: "A", s: "paper" })).toThrow(StoreError);
     expect(() => validateBookInput({ title: "", author: "A" })).toThrow(StoreError);
     expect(() => validateBookInput({ title: "T", author: "A", year: 99999 })).toThrow(StoreError);
-    const ok = validateBookInput({ title: "  Trip  Echo ", author: "Zoe", year: 0 });
+    const ok = validateBookInput({ title: "  Trip  Echo ", author: "Zoe" });
     expect(ok).toEqual({ title: "Trip Echo", author: "Zoe", year: new Date().getFullYear() });
   });
 
@@ -236,7 +236,7 @@ describe("line slug ids", () => {
   });
 
   it("every seed has a unique short id resolvable without storage", () => {
-    const ids = [...SEED_LINE_BY_ID.keys()];
+    const ids = SEED_LINES.map((line) => line.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) expect(id.length).toBeLessThan(40);
   });
@@ -265,14 +265,14 @@ describe("line slug ids", () => {
 });
 
 describe("memory store", () => {
-  it("assigns short slug ids and resolves them", async () => {
+  it("assigns portable payload ids and resolves them", async () => {
     const store = new MemoryStore();
     const rec = await store.addLine("the-alchemist", {
       q: "Sheep follow. The boy chooses.",
       n: "Test",
       s: "paper",
     });
-    expect(rec.id.length).toBeLessThan(40);
+    expect(decodeLine(rec.id)).toEqual(rec.payload);
     const resolved = await store.getLineById(rec.id);
     expect(resolved?.n).toBe("Test");
     expect(resolved?.b).toBe("the-alchemist");
