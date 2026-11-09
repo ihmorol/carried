@@ -26,7 +26,7 @@ A launch-ready merchandise concept storefront lets readers personalize physical 
 
 ## Brand Commitments
 
-Preserve Carried's name, wordmark, understated literary voice, library-card artwork, accession number, ownership stamp, three inks, and stamp-red accent. The approved migration uses the user's reading-room reference for digital composition and media-dashboard reference for the storefront composition, not its movie content, gradients, accounts, or glass.
+Preserve Carried's name, understated literary voice, authored-card content, accession number, reader ownership, and three style identifiers. The user's typography correction supersedes the former serif/monospace, sepia, and heavily tracked letterpress treatment. Use clean proportional Manrope/Anek Bangla, pale-neutral and near-white sectors, restrained coral accents, and a narrow outline-icon sidebar with bottom expansion. The homepage follows the reference's whole-page shelf/lines split. The shop retains its concept-only commerce boundary.
 
 ## Evidence on Hand
 

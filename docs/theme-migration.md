@@ -1,5 +1,7 @@
 # Reading-room migration
 
+This document records the first migration. Its visual choices were subsequently revised: see [the current bilingual workspace revision](bilingual-workspace-revision.md) and `DESIGN.md` for the active fonts, colors, cards, and split layout.
+
 ## What changed
 
 The letterpress landing page becomes a calmer, task-led reading room. The wordmark, library-card artwork, three inks, original URLs, local shelves, and free digital sharing stay intact.

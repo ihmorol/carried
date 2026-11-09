@@ -2,22 +2,22 @@
 
 ## Scope
 
-Home, book/composer, shared line, My lines, and launch-ready merchandise. Modes: Operate and Read; the shop demonstrates physical concepts without accepting orders.
+Home, book/composer, shared line, My lines, and merchandise concepts. Modes: Operate and Read. This revision supersedes the former letterpress typography and stacked homepage.
 
 ## Direction contract
 
-THESIS: Carried is a reader's place to find a book and author its residue, not a reading tracker. The migration replaces the long marketing page with a useful reading-room composition.
+THESIS: One workspace joins the shelf and its reader lines. It refuses the repeated marketing sections, sepia cast, and exaggerated card gaps of the earlier version.
 
-OWN-WORLD: Existing paper, raised paper, ink, and stamp red; Fraunces and Plex with Bengali glyph fallbacks. Labeled navigation, quiet panels, physical library-card artwork, compact neutral filters.
+OWN-WORLD: Manrope plus Anek Bangla, normal tracking, charcoal text, pale-neutral shelf, near-white line sector, one coral accent family. Thin outline sidebar icons and a compact horizontal ownership mark.
 
-STORY: Discover a book, write an original line, sign and share it for free. Optionally preview that artwork on a product concept and save a local selection.
+STORY: Find a book on the left, read what it left in someone on the right, and write a free card. Optionally preview the same artwork on a merchandise concept without placing an order.
 
-FIRST VIEWPORT: A compact left navigation rail, top utility bar, a left-aligned welcome/search area, and an actual featured Carried card in the right column. The next row exposes book discovery without a giant catalog dump. Shop adapts this into a featured print, category strip, product media grid, and selected-line sidebar.
+FIRST VIEWPORT: A 76px sidebar with coral active circle and bottom expand button; 58/42 shelf/lines sectors. Left starts with one search, compact welcome/book spotlight, then genre controls and eight books. Right has a compact daily card, same-book writing action, and readable reflection list. At small widths, both sectors stack with jump links.
 
-FORM: Brief-pinned reading-room and merchandise-dashboard compositions override the direction roll (seed 11052509). Seven viable structural candidates: catalog index, bookshop display, reading desk, correspondence archive, collection gallery, reader's notebook, shared reading room. Selected form is the shared reading room. Challenger principles kept: consumer-surface touch comfort, finite-catalog clarity, and reference-setting readable measures. Mascot, cassette, coded factory sleeve, and strobing data forms decline on product clarity and audience identification; their literal costumes are not imported.
+FORM: User-pinned reference structure replaces the earlier partial interpretation. The bottom burger expands the rail to 200px and reveals labels. Spacing follows content, not maximum-size empty regions. No fake profile, calendar, or progress is imported from the reference.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Boundaries
 
-Digital remains free. Existing URLs/anchors/local shelves are preserved. No fake metrics, reading progress, accounts, prices, orders, delivery promises, gradients, or glass. No external upload of reader/project material. Concept product renders use actual artwork and remain labeled concepts.
+Digital stays free, original URLs/anchors/local shelves/cart stay compatible. No accounts, tracking, live orders, invented prices, or delivery promises. Font sources and licenses are in `modern-bangla-typography.md`. Product concepts remain labeled; book art does not imply a merchandise license.

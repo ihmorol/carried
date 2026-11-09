@@ -1,35 +1,43 @@
 ---
 name: Carried
-description: A modern reading room for the line a book left in you
+description: A modern bilingual workspace for books and the lines they leave
 colors:
-  paper: "#f2ecdd"
-  paper-raised: "#faf6ea"
-  surface-soft: "#eae4d6"
-  ink: "#211d17"
-  ink-soft: "#6d6354"
-  ink-faint: "#766a59"
-  rule: "#d8cdb6"
-  stamp: "#b23c25"
+  paper: "#f1f1e7"
+  paper-raised: "#fffefa"
+  surface-soft: "#e7e8df"
+  ink: "#26292f"
+  ink-soft: "#60646c"
+  ink-faint: "#6b7077"
+  rule: "#dbddd4"
+  stamp: "#bf4654"
+  stamp-soft: "#f5d9dd"
+  accent: "#e66b77"
 typography:
   display:
-    fontFamily: "Fraunces, Noto Serif Bengali, serif"
-    fontSize: "clamp(32px, 4vw, 56px)"
+    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontSize: "clamp(30px, 3.2vw, 42px)"
     fontWeight: 500
-    lineHeight: 1.15
+    lineHeight: 1.2
     letterSpacing: "-0.025em"
   body:
-    fontFamily: "IBM Plex Mono, Noto Sans Bengali, monospace"
-    fontSize: "14px"
-    lineHeight: 1.65
+    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontSize: "16px"
+    lineHeight: 1.5
+    letterSpacing: "normal"
+  metadata:
+    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontSize: "12px"
+    lineHeight: 1.4
+    letterSpacing: "normal"
 rounded:
-  card: "4px"
+  card: "12px"
   control: "10px"
-  panel: "16px"
+  panel: "14px"
 spacing:
   small: "8px"
   group: "16px"
   panel: "24px"
-  section: "48px"
+  section: "36px"
 components:
   button-primary:
     backgroundColor: "{colors.ink}"
@@ -43,59 +51,50 @@ components:
 
 ## Overview
 
-A library catalog card the reader can author, presented in a modern reading room. The interface helps readers discover, write, share, and preview merchandise concepts. It is not a reading tracker, social profile, or payment application.
+Carried is a modern bilingual reading workspace. Its two sectors put the shelf on the left and the daily line plus reader reflections on the right. The product remains a place to author and share a line, not a reading tracker, social profile, or payment application.
 
-## Palette
+This revision explicitly replaces the former letterpress type, sepia palette, wide tracking, and oversized card gaps. Do not restore those rules from historical documents.
 
-| Role | Token | Value |
-|---|---|---|
-| Page | paper | `#f2ecdd` |
-| Raised field/panel | paper-raised | `#faf6ea` |
-| Supporting surface | surface-soft | `#eae4d6` |
-| Primary text/control | ink | `#211d17` |
-| Secondary text | ink-soft | `#6d6354` |
-| Placeholder/support | ink-faint | `#766a59` |
-| Separator | rule | `#d8cdb6` |
-| Ownership/action accent | stamp | `#b23c25` |
+## Colors
 
-Card colors come only from `src/lib/inks.ts`. Paper, Midnight, and Moss are artifact choices. Dark card stamps use the same accessible salmon-red family, not gold. Page chrome stays print-inspired light; do not alternate dark page sections or introduce a second accent. Book-cloth colors belong to the book content.
+The shelf uses pale neutral `paper`; the line sector is near-white `paper-raised`. Dark charcoal supports readable content. Coral is one accent family: `accent` for the active navigation circle, `stamp` for readable focus/ownership text, and `stamp-soft` for subtle selection fills. Do not give every category a new interface color.
 
-## Type
+Artifact styles remain `paper`, `midnight`, and `moss`; exact colors come only from `src/lib/inks.ts`. Moss is now a pale sage card, not a dark green slab. Book-cloth colors are content, not additional interface accents. All small text must pass 4.5:1, including text drawn into books.
 
-Fraunces is the house serif for headings, book names, reflections, and signatures. IBM Plex Mono is the UI/metadata face. Noto Serif Bengali and Noto Sans Bengali are existing script companions for Bengali coverage, not a third UI style. All are locally loaded.
+## Typography
 
-Headings scale from 32 to 56px; section titles from 26 to 36px. Editable fields are 16px. Supporting UI uses 12–14px. The fixed-format card artwork has its own scaled metadata sizes. Bengali avoids negative tracking and uses generous line-height. Italic text reserves descender clearance.
+Use locally hosted **Manrope** for Latin and **Anek Bangla** for Bengali, weights 400/500/600. See [research and licenses](docs/design/modern-bangla-typography.md). Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
 
-## Space and structure
+Body and fields are 16px, UI/metadata 12–14px, card quotes 20–24px, and headings approximately 30–42px. Bengali tracking is always normal; card labels and signatures also use normal tracking. No forced all-caps labels, monospace prose, ornamental italics, or oversized quote marks. Bengali card leading is 1.5 and Latin card leading is 1.4. Script-specific font choices remain independent for quote, book, author, and name.
 
-Use a 4/8px rhythm. Gutters adapt from 16 to 40px; interface groups have 16–24px gaps; sections separate by 32–48px. Main content caps at 1360px. Desktop navigation occupies a 128px rail at widths of 1024px and up. The header is 76px; mobile uses a labeled menu. Preserve one main landmark, skip target `#main-content`, and original route anchors.
+WOFF2 files serve web text; matching static TTFs serve canvas/OG. Bengali weights load as needed. Old font files remain historical assets, not the active type system.
 
-Panel radius is 16px; controls are 10px; catalog artwork retains a 4px filed edge. Pills are reserved for small filters. Shadows are subtle, warm, and only indicate physical artwork depth. The header is opaque, not frosted glass.
+## Layout
 
-## Surfaces
+The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 58% shelf and 42% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
 
-- Home: search-led welcome, actual daily card, four discovery books, three recent reflections, paged catalog, concise writing guide.
-- Book: compact spine/introduction, writing form and proof, asynchronously streamed book-access links, public margin.
-- Shared line: artwork and free sharing actions, secondary merchandise concept link, same-book writing invitation.
-- My lines: validated device-local collection, search and sorting, loading/empty/unresolved-legacy states.
-- Shop: featured print, category strip, actual artwork placement diagrams, product grid, selected-line workspace.
-- Personalizer: full artwork, line/signature/ink/placement/quantity controls, local-cart feedback, free digital download.
-- Cart: editable local selections; no prices, totals, checkout, order, payment, or delivery promises.
+The left sector has one search, compact welcome and book spotlight, genre filters, eight initial books and show-more. The right has the actual daily line, book/writing action, and three linked reader reflections. No duplicate marketing bands, calendars, reading-progress bars, invented profiles, or avatar rows.
 
-## Interaction and state
+General page gutters use 20–40px, groups 16–24px, and sections 28–36px. Component grids respond to sector width, not only viewport width. Original URLs, `#shelf`, `#write`, `#lines`, and `#main-content` remain; home adds `#reader-lines`.
 
-Controls have at least 44px hit targets. Native radio inputs are used for inks and placements. Search supports click, touch, arrow navigation, Enter, Escape, and active-descendant semantics. Filters combine with queries. The catalog displays 24 results before explicit show-more.
+## Elevation & Depth
 
-Async work distinguishes initial loading, offline, stale, valid empty, and errors. Polls run serially only while visible and abort obsolete work. Share controls report failures without confusing them with user cancellation. Storage failure degrades to a session preference/selection rather than breaking the product.
+Light shadows belong to physical book/card artwork only. Remove grain, ornamental drift, glass, and gradients. The interface relies on clear surface separation, not piles of raised boxes. Motion is limited to short press feedback; reduced motion disables it.
 
-## Motion and layers
+## Shapes
 
-Motion intensity 3: short press/hover feedback and the ownership stamp. No auto-moving readable cards, scroll hijacks, or carousel-as-layout. Reduced motion disables transitions. Layers: page 0, grain 10, navigation 20, header 30, menu 40, skip link 70. Cards and stamps remain readable independently of motion.
+Controls are 10px, panels 14px, and artwork approximately 12px with a subtle double border. The signature is a compact horizontal ownership block with a thin coral border, not a large rotated rubber stamp. The active rail icon is a 44px circle.
 
-## Artwork contract
+## Components
 
-DOM, 1080×1350 canvas PNG, and 1200×630 OG share content decisions in `card-presentation.ts`, inks, script fonts, provenance, accession number, and ownership. Export text uses disjoint fitting regions and grapheme-safe wrapping. Aspect-ratio layout may differ; content may not. Valid text is never silently ellipsized in artwork. Page vote controls and shadows are not printed into export artwork.
+- Navigation: consistent outline icons with accessible names, hover/focus labels when collapsed, active state, bottom expand/collapse button, and mobile Escape/focus dismissal.
+- Cards: intrinsic DOM height. Related content groups naturally: header, quote, provenance, ownership. No `h-full`/`flex-1` forcing blank quote space.
+- Exports: shared adaptive geometry in `text-layout.ts` places each section after the preceding content. Extra PNG/OG frame space surrounds the complete centered composition, never splits its internal groups. Full valid text is preserved.
+- Shop previews: actual card artwork fits within the product print area with a ResizeObserver; do not stretch it to fill a fixed-height mockup.
+- Forms and feeds: retain native radios, serial visible-tab polling, local-storage validation/fallback, useful empty/error states, and truthful offline/editorial status.
 
-## Asset truth
+## Do's and Don'ts
 
-Shop shapes are flat placement diagrams with actual Carried artwork, explicitly labeled concepts. They are not manufactured sample photos or production specifications. Do not reuse book covers, publisher art, or editorial reflections for sale without clearance. No new external imagery or reader data was uploaded for this migration.
+Do keep digital cards, all styles, downloads, and sharing free. Do preserve original line identity, book provenance, signatures, local shelves, and cart contents. Do use bilingual readable text and 44px controls.
+
+Do not add prices, checkout, orders, or delivery promises to the concept shop. Do not reproduce book covers or reader submissions as merchandise without commercial clearance. Do not mistake passing code tests for visual acceptance.

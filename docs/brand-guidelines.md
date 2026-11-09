@@ -1,58 +1,50 @@
-# Carried, Brand Guidelines
+# Carried brand guidelines
 
-The identity in one sentence: **a library catalog card you get to author.**
-Every decision below serves that. If a change makes the product feel like a
-generic web app, it's off-brand.
+The identity in one sentence: **the line a book left in you, made yours.**
 
 ## Voice
 
-- **Understated, literary, warm.** We sound like a well-read friend, not a growth hacker.
-- Say the true small thing: "the sentence you'd underline," "the residue," "stamp it with your name."
-- Never say: boost, unlock, supercharge, level up, 🚀, "unleash your creativity."
-- Second person, plain verbs, short sentences. Wordplay allowed; exclamation marks rare.
-- No fake urgency, no fake stats. If a count is shown it is real.
+Warm, direct, literary without ornament. Use plain action labels and short sentences. No fake urgency, fake statistics, promises of virality, or sales claims for unlaunched products. Digital creation, all three styles, downloading, and sharing remain free.
 
 ## Palette
 
+The reading reference defines a pale-neutral shelf and a near-white line sector. Use charcoal text and one coral accent family.
+
 | Token | Hex | Use |
 |---|---|---|
-| `paper` | `#f2ecdd` | page background |
-| `paper-raised` | `#faf6ea` | cards, inputs |
-| `ink` | `#211d17` | primary text, primary buttons |
-| `ink-soft` | `#6d6354` | secondary text |
-| `ink-faint` | `#766a59` | supporting text, placeholders with readable contrast |
-| `surface-soft` | `#eae4d6` | quiet book and product display surfaces |
-| `rule` | `#d8cdb6` | hairlines, double-rule card borders |
-| `stamp` | `#b23c25` | **the only accent**, stamps, key CTAs, focus rings |
+| paper | `#f1f1e7` | shelf/page background |
+| paper-raised | `#fffefa` | line sector, inputs, paper card |
+| surface-soft | `#e7e8df` | quiet grouping |
+| ink | `#26292f` | primary text and controls |
+| ink-soft | `#60646c` | supporting text |
+| ink-faint | `#6b7077` | readable placeholders |
+| rule | `#dbddd4` | separators |
+| stamp | `#bf4654` | readable accent text and focus |
+| accent | `#e66b77` | active sidebar circle |
+| stamp-soft | `#f5d9dd` | selected-control tint |
 
-Rules: stamp red is scarce, if everything is stamped, nothing is. Buttons are
-ink-on-paper; red is reserved for the ownership moment and small emphasis.
-Card inks (Paper / Midnight `#1c1814` / Moss `#2c3a30`) invert the scheme and
-must come from `lib/inks.ts`, never re-derived.
+The `paper`, `midnight`, and `moss` style identifiers remain stable. Their exact artwork colors come from `lib/inks.ts`. Moss is pale sage. Colorful book cloth is content, not a license for rainbow UI controls.
 
 ## Type
 
-- **Fraunces** (500/600 + italic), headlines, the line itself, book titles, the name in the stamp. Serif is the voice of the book.
-- **IBM Plex Mono** (400–600), everything else: UI, metadata, buttons, labels. Letter-spaced uppercase for ledger labels (`CARRIED OUT OF`, `No. 4F2A1C`).
-- The two house families remain. Existing Noto Serif/Sans Bengali companions provide script coverage. Inputs/body guidance use 16px; supporting UI uses 12–14px. Artwork metadata scales with the card.
+Manrope and Anek Bangla, locally hosted at 400/500/600. Bengali uses normal letter spacing and script-safe line height. Latin prose and all card metadata also use normal tracking. No forced italic quotes, all-caps ledger labels, tiny monospace prose, or excessive letter spacing.
+
+The former Fraunces/Plex letterpress system is superseded by the user's explicit typography revision. Research and full font licensing details are recorded in `docs/design/modern-bangla-typography.md`; the active system is in `DESIGN.md`.
 
 ## Signature elements
 
-1. **The stamp**, "CARRIED BY ⟨name⟩ ⟨date⟩", slightly crooked (-6.5°), ink-textured, vermilion on paper and an accessible salmon-red on dark inks. It's the ownership moment; it never appears without a name.
-2. **The double rule**, every card gets an inner border like a filed catalog card.
-3. **The accession number**, `No. XXXXXX`, minted from the line, on every card.
-4. **The spine**, books are drawn as book-cloth spines with a head/foot band and edge lighting; never use downloaded cover images.
+1. The authored line, book title/author/year, and reader name/date remain complete.
+2. A compact horizontal ownership block uses a thin coral border; it no longer rotates or dominates the card.
+3. The accession number remains derived from the line's identity.
+4. A restrained double border distinguishes Carried artwork without big shadows or grain.
+5. Book-spine artwork remains a fast, reliable source-independent book representation. No commercial cover-art license is implied.
 
-## Motion
+## Layout and interaction
 
-Quiet, mechanical, satisfying: the stamp marks the ownership moment. Interface press/hover transitions last 150–250ms. Readable cards stay still; recent reflections use a static grid. `prefers-reduced-motion` disables movement.
+The home is a whole-page shelf/lines split, not another marketing hero. The sidebar is narrow with regular outline icons, a coral active circle, and a bottom hamburger that reveals labels. Preserve accessible labels and keyboard use in both sizes. On mobile, stack the sectors and provide clear jump links.
 
-Depth belongs to the artwork and books, not animated page decoration. Cards have modest warm shadows; book spines can lift on fine-pointer hover. Touch devices and reduced motion retain still poses. The reading-room shell, generous gutters, neutral category controls, and shop concepts use the same tokens and control hierarchy documented in `DESIGN.md`.
+Content determines card height. Do not insert empty fixed regions between short quotes and their attribution. DOM, PNG, OG, and merchandise previews share content/type decisions. Respect reduced motion; never animate readable cards continuously.
 
-## Do / Don't
+## Boundaries
 
-- **Do** keep the wordmark small; the reader's name is the loudest thing on the card.
-- **Do** let paper grain (`/grain` overlay) sit over everything at low opacity.
-- **Don't** add gradients, glassmorphism, drop-shadowed floating blobs, or emoji in UI copy.
-- **Don't** introduce a fourth ink or a second accent color.
-- **Don't** require an account for anything. The device remembers the name; the link carries the line.
+No accounts, tracking, new locale cookies, gradients, or glass. The personal shelf and merchandise concept cart remain device-local. Physical ordering remains disabled until business, fulfillment, payment, rights, and policy details are supplied and approved.

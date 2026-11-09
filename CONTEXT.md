@@ -71,11 +71,12 @@ book pages, the home ticker (capped rotation), and the daily front-page pick.
 
 ## Rendering surfaces of a Line (must stay visually identical)
 
-1. `LineCard` (DOM), page display, marquee, grids
+1. `LineCard` (DOM), page display and grids
 2. `lib/canvas.ts` (1080×1350 PNG), "Save the card"
 3. `l/[id]/opengraph-image.tsx` (satori, 1200×630), link previews
 
-All read fonts from `public/fonts/*.ttf`; those files are kept in the deploy
+All share compact content-led typography and script decisions. Web text uses local
+WOFF2 fonts; matching static TTFs supply canvas/OG and are kept in the deploy
 bundle via `outputFileTracingIncludes` in `next.config.ts`.
 
 ## The viral loop
@@ -88,7 +89,7 @@ wall, no interstitial).
 
 - No accounts or private server-side customer data. The optional public shelf stores submitted lines/names and anonymous votes; the personal shelf, language choice, and merchandise selections stay device-local. No orders, addresses, payments, or tracking are added.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
-- Fraunces + IBM Plex Mono are the two house faces; existing Noto companions provide Bengali glyphs. Stamp red is the only accent.
+- Manrope and Anek Bangla are the two active house faces, with normal letter spacing. The current user-approved palette uses neutral/near-white surfaces and one coral accent family; the former letterpress fonts and wide tracking are superseded.
 - Encoded line IDs are bounded at 4096 characters to accommodate maximum valid UTF-8 content. New offline public lines use payload IDs; seed and existing short IDs remain valid.
 - Merchandise concepts: `/shop`, `/shop/[slug]`, `/shop/cart`; validated `carried.cart.v1` selections only, no checkout. All digital styles/downloads/sharing remain free. See `docs/adr/0002-free-digital-local-merchandise.md`.
 - ADRs for significant decisions live in `docs/adr/`.

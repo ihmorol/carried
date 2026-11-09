@@ -115,7 +115,7 @@ See [the theme migration](docs/theme-migration.md), [design system](DESIGN.md), 
 
 ## Design language
 
-Library catalog card: warm paper (`#f2ecdd`), ink (`#211d17`), stamp vermilion (`#b23c25`), double-rule borders, Fraunces for the line and IBM Plex Mono for the ledger. The full guide lives in [docs/brand-guidelines.md](docs/brand-guidelines.md). Domain model in [CONTEXT.md](CONTEXT.md).
+A modern bilingual reading workspace: pale-neutral shelf, near-white line sector, charcoal text, and restrained coral. Manrope and Anek Bangla replace the former letterpress fonts. Compact cards preserve provenance, accession numbers, and reader ownership without wide tracking or empty bands. See [the current revision](docs/bilingual-workspace-revision.md), [brand guide](docs/brand-guidelines.md), and [domain model](CONTEXT.md).
 
 ## Notes & limits
 
@@ -126,4 +126,4 @@ Library catalog card: warm paper (`#f2ecdd`), ink (`#211d17`), stamp vermilion (
 
 ## Credits
 
-Type: [Fraunces](https://fonts.google.com/specimen/Fraunces) (Undercase Type) & [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) (IBM/Bold Monday), both OFL.
+Active type: [Manrope](https://fonts.google.com/specimen/Manrope) and [Anek Bangla](https://fonts.google.com/specimen/Anek+Bangla), both SIL OFL 1.1 with bundled notices. Historical Fraunces/IBM Plex/Noto files are retained but are not the active typography. [Research and source record](docs/design/modern-bangla-typography.md).
