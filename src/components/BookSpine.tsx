@@ -26,8 +26,6 @@ export function BookSpine({
   const cloth = {
     backgroundColor: c.bg,
     color: c.text,
-    backgroundImage:
-      "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 9%, rgba(255,255,255,0.10) 26%, rgba(255,255,255,0) 60%, rgba(0,0,0,0.22) 100%)",
   };
 
   if (compact) {
@@ -48,7 +46,7 @@ export function BookSpine({
         >
           <span
             className="font-serif font-semibold leading-none"
-            style={{ fontSize: 9.5, letterSpacing: "0.02em", maxWidth: h - 10 }}
+            style={{ fontSize: 9.5, letterSpacing: "normal", maxWidth: h - 10 }}
           >
             {originalName(book)}
           </span>
@@ -94,20 +92,20 @@ export function BookSpine({
       >
         <span
           className="font-serif font-semibold leading-none"
-          style={{ fontSize: 15, letterSpacing: "0.02em" }}
+          style={{ fontSize: 15, letterSpacing: "normal", lineHeight: 1.15 }}
         >
           {originalName(book)}
         </span>
       </div>
       <span
-        className="w-full text-center font-mono leading-tight opacity-80"
-        style={{ fontSize: 8.5, letterSpacing: "0.06em" }}
+        className="w-full text-center font-sans leading-tight"
+        style={{ fontSize: 10, letterSpacing: "normal" }}
       >
         {book.author}
       </span>
       <span
-        className="font-mono opacity-60"
-        style={{ fontSize: 8 }}
+        className="font-sans"
+        style={{ fontSize: 10 }}
       >
         {book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}
       </span>

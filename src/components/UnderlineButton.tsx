@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { beginVote, cancelVote, finishVote, getServerVoteState, getVoteState, getVoterId, subscribeVotes, updateVoteCount } from "@/lib/voter";
+import { TextUnderline } from "@phosphor-icons/react";
 import type { Ink } from "@/lib/inks";
 import { useLocale } from "./LocaleProvider";
 
@@ -40,7 +41,7 @@ export function UnderlineButton({ lineId, initialVotes = 0, initialVoted = false
       aria-label={`${t("vote.underline")} · ${votes}`}
       className="inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 font-mono text-[13px] font-medium disabled:opacity-60"
       style={{ color: voted ? ink?.stamp ?? "var(--color-stamp)" : ink?.text ?? "inherit", borderColor: voted ? ink?.stamp ?? "var(--color-stamp)" : ink?.rule ?? "var(--color-rule)", background: "transparent" }}>
-      <span aria-hidden="true">⁂</span>{t(voted ? "vote.underlined" : "vote.underline")}<span className="tabular-nums">· {votes}</span>
+      <TextUnderline size={17} weight="regular" aria-hidden="true" />{t(voted ? "vote.underlined" : "vote.underline")}<span className="tabular-nums">· {votes}</span>
     </button>
     {error && <span role="status" className="text-[13px]" style={{ color: ink?.stamp ?? "var(--color-stamp)" }}>{t("vote.error")}</span>}
   </span>;

@@ -39,7 +39,7 @@ export const SPINE_COLORS: Record<SpineColor, { bg: string; text: string; deep: 
   forest:     { bg: "#2f4a38", text: "#f2ecdd", deep: "#23392b" },
   navy:       { bg: "#24344d", text: "#f2ecdd", deep: "#1a2739" },
   mustard:    { bg: "#c79a3b", text: "#211d17", deep: "#a87e2c" },
-  terracotta: { bg: "#b4593b", text: "#f2ecdd", deep: "#96452c" },
+  terracotta: { bg: "#a34b34", text: "#fffefa", deep: "#853a28" },
   cream:      { bg: "#e7dcc2", text: "#211d17", deep: "#cfc2a4" },
   slate:      { bg: "#55606e", text: "#f2ecdd", deep: "#434d59" },
   plum:       { bg: "#5a3a50", text: "#f2ecdd", deep: "#462c3e" },
