@@ -1,10 +1,13 @@
 import { bookForPayload, originalName, type Book } from "./books";
 import { formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
+import { DEFAULT_CARD_TEMPLATE, type CardTemplateId } from "./card-templates";
 
 export type CardScript = "latin" | "bengali";
 export const cardScript = (text: string): CardScript => isBengali(text) ? "bengali" : "latin";
 
-/** Content decisions belong here, not in a renderer. A resolved book enriches legacy links. */
+/** Content decisions belong here, not in a renderer. A resolved book enriches legacy links.
+ * The edition is display-only: `ct` absence means the line predates editions, so the
+ * default is resolved for presentation and NEVER written back into the payload. */
 export function cardPresentation(payload: LinePayload, resolvedBook?: Book) {
   const book = resolvedBook ?? bookForPayload(payload);
   if (!book) return undefined;
@@ -14,6 +17,7 @@ export function cardPresentation(payload: LinePayload, resolvedBook?: Book) {
   const year = book.year < 0 ? `${Math.abs(book.year)} BC` : String(book.year);
   return {
     book,
+    edition: (payload.ct ?? DEFAULT_CARD_TEMPLATE) as CardTemplateId,
     quote: payload.q,
     name: payload.n,
     title,
@@ -29,13 +33,33 @@ export function cardPresentation(payload: LinePayload, resolvedBook?: Book) {
   };
 }
 
-/** Sizes and spacing are in DOM pixels; image surfaces scale this same type system. */
-export const CARD_TYPOGRAPHY = { quote: 22, quoteMin: 20, quoteMax: 24, metadata: 12, title: 16, name: 14 } as const;
-export const CARD_WEIGHTS = { quote: 500, title: 600, byline: 400, name: 600, date: 500, metadata: 500 } as const;
-export const CARD_SPACING = {
-  padding: 22, headerGap: 20, quoteGap: 18, provenanceGap: 4, bylineGap: 2,
-  signatureGap: 16, signaturePaddingX: 12, signaturePaddingY: 10, signatureColumnGap: 12, signatureNameGap: 2,
+/** The edition's own words, per script. Ported from the approved design board. */
+export const EDITION_COPY = {
+  "bookplate-v1": { latin: "A reader’s bookplate", bengali: "পাঠকের স্মারক" },
+  "poster-v1": { latin: "A line, made yours", bengali: "নিজের করে রাখা কথা" },
+  "ticket-v1": { latin: "Reader’s ticket", bengali: "পাঠকের টিকিট" },
+} as const satisfies Record<CardTemplateId, Record<CardScript, string>>;
+
+/** Shared furniture copy, keyed by the card's primary (quote) script. */
+export const EDITION_SHARED_COPY = {
+  afterReading: { latin: "After reading", bengali: "বইটি পড়ে" },
+  carriedBy: { latin: "Carried by", bengali: "সঙ্গে রেখেছেন" },
+  dated: { latin: "Dated", bengali: "তারিখ" },
+  languageName: { latin: "English", bengali: "বাংলা" },
+} as const satisfies Record<string, Record<CardScript, string>>;
+
+export const editionCopy = (edition: CardTemplateId, script: CardScript) => EDITION_COPY[edition][script];
+
+/** Type weights for the edition compositions. Each script has the other shipped
+ * family as its explicit glyph fallback. */
+export const EDITION_WEIGHTS = {
+  quote: 500, posterQuote: 600, ticketQuote: 400,
+  wordmark: 600, book: 600, author: 400,
+  label: 500, name: 600, date: 500,
 } as const;
+
+/** Script-safe leading. Bangla keeps 1.5 for names and generic card text;
+ * the edition compositions refine quote/metadata leadings on top of this. */
 export const cardLeading = (script: CardScript) => script === "bengali" ? 1.5 : 1.4;
 
 /** The role argument remains for callers; both roles now use proportional sans.
