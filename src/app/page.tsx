@@ -1,16 +1,33 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, Books, Quotes } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
 import { LineCard } from "@/components/LineCard";
-import { BookSpine } from "@/components/BookSpine";
+import { FrontCover } from "@/components/FrontCover";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
 import { T } from "@/components/T";
 import { marqueeLines, lineOfTheDay } from "@/lib/seeds";
-import { getBook, originalName } from "@/lib/books";
+import { getBook, originalName, type Book } from "@/lib/books";
+import { resolveCovers } from "@/lib/book-covers";
 import { isBengali } from "@/lib/line";
 
 export const revalidate = 3600;
+
+/** The featured book's front cover, resolved on the server while the page renders. */
+async function FeaturedBookCover({ book }: { book: Book }) {
+  const covers = await resolveCovers([book.slug]);
+  return (
+    <FrontCover
+      slug={book.slug}
+      title={originalName(book)}
+      author={book.authorBn ?? book.author}
+      spine={book.spine}
+      src={covers[book.slug] ?? undefined}
+      featured
+    />
+  );
+}
 
 export default function Home() {
   const featured = lineOfTheDay();
@@ -35,7 +52,11 @@ export default function Home() {
                 <p><T k="home.sub" /></p>
               </div>
               <div className="workspace-book">
-                <div className="workspace-book-art"><BookSpine book={featuredBook} height={116} /></div>
+                <div className="workspace-book-art">
+                  <Suspense fallback={<FrontCover slug={featuredBook.slug} title={title} author={author} spine={featuredBook.spine} featured />}>
+                    <FeaturedBookCover book={featuredBook} />
+                  </Suspense>
+                </div>
                 <div className="workspace-book-copy">
                   <h2 lang={isBengali(title) ? "bn" : "en"}>{title}</h2>
                   <p className="workspace-book-author" lang={isBengali(author) ? "bn" : "en"}>{author}</p>

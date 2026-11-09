@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { BOOKS, originalName, searchBooks, type Book } from "@/lib/books";
-import { BookSpine } from "./BookSpine";
+import { BOOKS, getBook, originalName, searchBooks, type Book } from "@/lib/books";
+import { FrontCover } from "./FrontCover";
 import { usePoll } from "@/lib/use-poll";
 import { useLocale } from "./LocaleProvider";
 import { numFor } from "@/lib/i18n";
@@ -35,6 +35,7 @@ export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZ
   const [year, setYear] = useState("");
   const [bookError, setBookError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [covers, setCovers] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     let mounted = true;
@@ -76,6 +77,27 @@ export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZ
     const matches = query.trim() ? searchBooks(query, all.length, all) : all;
     return tag === "all" ? matches : matches.filter((book) => book.tags.includes(tag));
   }, [all, query, tag]);
+
+  // Cover-led tiles: resolve covers for the books currently on display.
+  // Only curated slugs are askable (reader-added books keep authored covers);
+  // later pages merge in, stale responses are ignored and aborted.
+  const displayedSlugs = results.slice(0, shown).map((book) => book.slug);
+  const coverKey = displayedSlugs.filter((slug) => getBook(slug) !== undefined && covers[slug] === undefined).join(",");
+  useEffect(() => {
+    if (!coverKey) return;
+    const controller = new AbortController();
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/covers?slugs=${encodeURIComponent(coverKey)}`, { cache: "no-store", signal: controller.signal });
+        if (!res.ok) return;
+        const data = await res.json() as { covers?: Record<string, string | null> };
+        if (cancelled || !data.covers || typeof data.covers !== "object") return;
+        setCovers((prev) => ({ ...prev, ...data.covers }));
+      } catch { /* aborted or offline: tiles keep their authored covers */ }
+    })();
+    return () => { cancelled = true; controller.abort(); };
+  }, [coverKey]);
 
   async function addBook(e: React.FormEvent) {
     e.preventDefault();
@@ -136,7 +158,15 @@ export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZ
       <ul className="shelf-book-grid">
         {results.slice(0, shown).map((book) => <li key={book.slug}>
           <a href={`/b/${book.slug}`} className="book-tile">
-            <span className="book-tile-art"><BookSpine book={book} height={152} /></span>
+            <span className="book-tile-art">
+              <FrontCover
+                slug={book.slug}
+                title={originalName(book)}
+                author={book.authorBn ?? book.author}
+                spine={book.spine}
+                src={covers[book.slug] ?? undefined}
+              />
+            </span>
             <span className="book-tile-title">{originalName(book)}</span>
             <span className="book-tile-author">{book.authorBn ?? book.author}</span>
           </a>
