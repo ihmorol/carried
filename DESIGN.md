@@ -61,6 +61,12 @@ The shelf uses pale neutral `paper`; the line sector is near-white `paper-raised
 
 Artifact styles remain `paper`, `midnight`, and `moss`; exact colors come only from `src/lib/inks.ts`. Moss is now a pale sage card, not a dark green slab. Book-cloth colors are content, not additional interface accents. All small text must pass 4.5:1, including text drawn into books.
 
+## Card editions
+
+Three immutable editions change composition and ownership treatment while ink stays a separate choice: **Bookplate** (centered inscription, stepped frame, oval ownership seal), **Poster** (reversed-ink full-bleed quote, coral band, angled stamp), and **Reader's ticket** (die-cut stock, perforation, book stub, circular cancellation mark). Editions live in `src/lib/card-templates.ts` (`bookplate-v1`, `poster-v1`, `ticket-v1`) and ride in the line payload as `ct`.
+
+Payloads without `ct` predate editions: their serialization and identity never change, and renderers present them with the house edition (Bookplate) as a display-only mapping. New cards always write an explicit id after the book metadata. One shared geometry in `text-layout.ts` (`layoutEditionArtwork` 360×450 print space, `layoutEditionOg` 1200×630) feeds DOM, canvas PNG, and OG; per-edition dense layouts preserve every character at readable floors instead of shrinking. Vote and utility actions render outside the painted artwork in page tokens.
+
 ## Typography
 
 Use locally hosted **Manrope** for Latin and **Anek Bangla** for Bengali, weights 400/500/600. See [research and licenses](docs/design/modern-bangla-typography.md). Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
@@ -71,7 +77,11 @@ WOFF2 files serve web text; matching static TTFs serve canvas/OG. Bengali weight
 
 ## Layout
 
+## Layout
+
 The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 58% shelf and 42% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
+
+The shelf is cover-led: front-facing 2:3 covers on a shared ledge with title/author captions, a featured book with its real cover, and resolved-cover artwork only for displayed books. Cover lookups go through `/api/covers` (bounded, identity-checked, cached) with labeled authored typographic fallbacks in the book's cloth color; unresolved books never fall back to spines or random art. Cover images are display-only and never merchandise assets.
 
 The left sector has one search, compact welcome and book spotlight, genre filters, eight initial books and show-more. The right has the actual daily line, book/writing action, and three linked reader reflections. No duplicate marketing bands, calendars, reading-progress bars, invented profiles, or avatar rows.
 

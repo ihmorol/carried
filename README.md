@@ -115,7 +115,7 @@ See [the theme migration](docs/theme-migration.md), [design system](DESIGN.md), 
 
 ## Design language
 
-A modern bilingual reading workspace: pale-neutral shelf, near-white line sector, charcoal text, and restrained coral. Manrope and Anek Bangla replace the former letterpress fonts. Compact cards preserve provenance, accession numbers, and reader ownership without wide tracking or empty bands. See [the current revision](docs/bilingual-workspace-revision.md), [brand guide](docs/brand-guidelines.md), and [domain model](CONTEXT.md).
+A modern bilingual reading workspace: pale-neutral shelf, near-white line sector, charcoal text, and restrained coral. Manrope and Anek Bangla replace the former letterpress fonts. Three collectible card editions (Bookplate, Poster, Reader's ticket) with personal ownership marks, and a cover-led bookshelf with verified edition records and authored fallbacks. See [the current revision](docs/editions-and-covers.md), [brand guide](docs/brand-guidelines.md), and [domain model](CONTEXT.md).
 
 ## Notes & limits
 

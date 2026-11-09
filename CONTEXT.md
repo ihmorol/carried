@@ -15,8 +15,13 @@ live in Redis, resolve at request time via `findBook`, and carry the
 **Line** (`lib/line.ts`), the core entity. A reader's takeaway: `b` (book slug),
 `q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1),
 plus optional `bt/ba/by` (book title/author/year) carried **only** for reader-added
-books, so their cards render with zero server state (see
-`docs/adr/0001-line-payload-carries-reader-added-book.md`). The codec
+books, and optional `ct` (card edition: `bookplate-v1 | poster-v1 | ticket-v1`,
+validated against `lib/card-templates.ts`). Absent `ct` means the line predates
+editions: its serialization and identity never change, and renderers present the
+house edition as a display-only mapping without writing it back. Editions are
+independent of ink; store dedupe and cart identity treat different editions as
+distinct cards (see `docs/adr/0002-free-digital-local-merchandise.md` and the
+payload ADR). The codec
 (`encodeLine` / `decodeLine` / `encodePayload`) validates **structure only**,
 whether the book exists is decided by the caller: the curated shelf via
 `getBook`, then the payload's own meta via `bookForPayload`, then the live
@@ -75,7 +80,8 @@ book pages, the home ticker (capped rotation), and the daily front-page pick.
 2. `lib/canvas.ts` (1080×1350 PNG), "Save the card"
 3. `l/[id]/opengraph-image.tsx` (satori, 1200×630), link previews
 
-All share compact content-led typography and script decisions. Web text uses local
+All render the payload's edition (`ct`, defaulting to the house Bookplate for
+display) from one shared geometry in `lib/text-layout.ts`. Web text uses local
 WOFF2 fonts; matching static TTFs supply canvas/OG and are kept in the deploy
 bundle via `outputFileTracingIncludes` in `next.config.ts`.
 
