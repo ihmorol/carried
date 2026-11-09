@@ -1,93 +1,70 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BookOpen, Books, BookmarkSimple, PencilLine, Tote, List, ArrowUpRight } from "@phosphor-icons/react";
 import { useLocale } from "./LocaleProvider";
 import { LocaleToggle } from "./T";
 import { SITE_NAME } from "@/lib/site";
 
 export function Header() {
-  const { t } = useLocale();
+  const pathname = usePathname();
+  const { t, locale } = useLocale();
+  const shop = locale === "bn" ? "দোকান" : "Shop";
+  const links = [
+    { href: "/", label: locale === "bn" ? "মূল পাতা" : "Home", icon: BookOpen, active: pathname === "/" },
+    { href: "/#shelf", label: t("nav.shelf"), icon: Books, active: pathname.startsWith("/b/") },
+    { href: "/shelf", label: t("nav.myLines"), icon: BookmarkSimple, active: pathname === "/shelf" },
+    { href: "/shop", label: shop, icon: Tote, active: pathname.startsWith("/shop") },
+  ];
+
   return (
-    <header
-      className="site-header border-b"
-      style={{ borderColor: "var(--color-rule)" }}
-    >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-        <Link href="/" className="flex items-baseline gap-2.5" aria-label={`${SITE_NAME} home`}>
-          <span
-            className="inline-block h-2.5 w-2.5 rounded-[2px]"
-            style={{ backgroundColor: "var(--color-stamp)" }}
-            aria-hidden="true"
-          />
-          <span
-            className="font-serif text-xl font-semibold tracking-[0.14em]"
-          >
-            {SITE_NAME.toUpperCase()}
-          </span>
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-soft)] lg:inline">
-            {t("brand.tagline")}
-          </span>
-        </Link>
-        <nav className="flex items-center gap-4 font-mono text-xs uppercase tracking-[0.14em]">
-          <Link href="/#shelf" className="link-ledger hidden text-[var(--color-ink)] sm:inline">
-            {t("nav.shelf")}
-          </Link>
-          <Link href="/shelf" className="link-ledger text-[var(--color-ink)]">
-            {t("nav.myLines")}
-          </Link>
-          <Link
-            href="/#shelf"
-            className="btn-press hidden rounded-[3px] bg-[var(--color-ink)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--color-paper)] md:inline-block"
-          >
-            {t("nav.write")}
-          </Link>
-          <LocaleToggle />
+    <>
+      <a className="skip-link" href="#main-content">{locale === "bn" ? "মূল বিষয়বস্তুতে যান" : "Skip to content"}</a>
+      <aside className="navigation-rail" aria-label={locale === "bn" ? "মূল নেভিগেশন" : "Main navigation"}>
+        <Link href="/" className="rail-brand" aria-label={`${SITE_NAME} home`}><BookOpen size={32} weight="light" /><span>Carried</span></Link>
+        <nav className="rail-links">
+          {links.map(({ href, label, icon: Icon, active }) => (
+            <Link key={href} href={href} className={`rail-link${active ? " is-active" : ""}`} aria-current={active ? "page" : undefined}>
+              <Icon size={23} weight={active ? "fill" : "regular"} aria-hidden="true" /><span>{label}</span>
+            </Link>
+          ))}
         </nav>
-      </div>
-    </header>
+        <Link href="/#shelf" className="rail-write"><PencilLine size={22} aria-hidden="true" /><span>{t("nav.write")}</span></Link>
+        <p className="rail-note">{locale === "bn" ? "আপনার বই। আপনার কথা।" : "Your books.\nYour words."}</p>
+      </aside>
+      <header className="site-header">
+        <div className="header-inner">
+          <Link href="/" className="header-wordmark" aria-label={`${SITE_NAME} home`}>CARRIED<span>{t("brand.tagline")}</span></Link>
+          <div className="header-actions">
+            <span className="header-free">{locale === "bn" ? "ডিজিটাল কার্ড সবসময় বিনামূল্যে" : "Digital cards, always free"}</span>
+            <LocaleToggle />
+            <details className="mobile-navigation">
+              <summary aria-label={locale === "bn" ? "মেনু খুলুন" : "Open menu"}><List size={23} /><span>{locale === "bn" ? "মেনু" : "Menu"}</span></summary>
+              <nav aria-label="Main navigation">
+                {links.map(({ href, label, icon: Icon, active }) => <Link key={href} href={href} aria-current={active ? "page" : undefined}><Icon size={20} aria-hidden="true" />{label}</Link>)}
+                <Link href="/#shelf"><PencilLine size={20} aria-hidden="true" />{t("nav.write")}</Link>
+              </nav>
+            </details>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }
 
 export function Footer() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   return (
-    <footer
-      className="mt-24 border-t"
-      style={{ borderColor: "var(--color-rule)" }}
-    >
-      {/* the last page of the ledger closes with the house stamp */}
-      <div className="mx-auto flex max-w-6xl items-end justify-between gap-8 px-5 pt-12">
-        <p className="max-w-md font-serif text-2xl font-medium italic leading-snug text-[var(--color-ink-soft)]">
-          {t("brand.tagline")}
-        </p>
-        <span
-          aria-hidden="true"
-          className="stamp-ink hidden select-none rounded-md border-[2.5px] px-5 py-3 text-center font-mono text-[10px] font-semibold uppercase leading-relaxed tracking-[0.3em] sm:block"
-          style={{ transform: "rotate(-6.5deg)", opacity: 0.55 }}
-        >
-          Carried
-          <br />
-          MMXXV
-        </span>
-      </div>
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-10 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-soft)] sm:flex-row sm:items-center sm:justify-between">
-        <p>{t("footer.tag")}</p>
-        <p className="flex gap-5">
-          <Link href="/#shelf" className="link-ledger">
-            {t("footer.pick")}
-          </Link>
-          <Link href="/shelf" className="link-ledger">
-            {t("footer.mine")}
-          </Link>
-          <a
-            href="https://github.com/ihmorol/carried"
-            className="link-ledger"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {t("footer.source")}
-          </a>
-        </p>
+    <footer className="site-footer">
+      <div className="footer-inner">
+        <p className="footer-signature">{t("brand.tagline")}</p>
+        <nav aria-label="Footer">
+          <Link href="/#shelf">{t("footer.pick")}</Link>
+          <Link href="/shelf">{t("footer.mine")}</Link>
+          <Link href="/shop">{locale === "bn" ? "দোকান" : "Shop"}</Link>
+          <a href="https://github.com/ihmorol/carried" target="_blank" rel="noopener noreferrer">{t("footer.source")}<ArrowUpRight size={14} aria-hidden="true" /></a>
+        </nav>
       </div>
     </footer>
   );

@@ -8,7 +8,7 @@ export default function NotFound() {
   return (
     <>
       <Header />
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-5 py-24">
+      <main id="main-content" className="page-content flex flex-1 flex-col items-center py-16">
         <div
           className="card-rule w-[420px] max-w-full rounded-[4px] bg-[var(--color-paper-raised)] p-7"
           style={{ transform: "rotate(-1.6deg)" }}
