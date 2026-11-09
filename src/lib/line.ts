@@ -1,4 +1,5 @@
 import { isInkId, type InkId } from "./inks";
+import { isCardTemplateId, type CardTemplateId } from "./card-templates";
 import { LINE_MAX, NAME_MAX } from "./site";
 
 /**
@@ -32,6 +33,13 @@ export type LinePayload = {
   bt?: string;
   ba?: string;
   by?: number;
+  /**
+   * Optional card edition. Absent means the line predates editions: its
+   * serialization and identity stay exactly as minted, so this field is
+   * never backfilled. New cards write an explicit immutable id after the
+   * book metadata.
+   */
+  ct?: CardTemplateId;
 };
 
 export class LineError extends Error {}
@@ -75,6 +83,8 @@ export function encodeLine(input: {
   date?: string;
   /** book meta, carried in the URL for books the curated shelf doesn't know */
   book?: { title: string; author: string; year: number };
+  /** card edition; omitted keeps the payload in its legacy shape */
+  template?: CardTemplateId;
 }): { id: string; payload: LinePayload } {
   if (typeof input.text !== "string" || typeof input.name !== "string") throw new LineError("This line is out of bounds.");
   if (typeof input.bookSlug !== "string" || !input.bookSlug || input.bookSlug.length > BOOK_SLUG_MAX || !/^[a-z0-9-]+$/.test(input.bookSlug)) throw new LineError("The book on this line is not on our shelf.");
@@ -107,6 +117,10 @@ export function encodeLine(input: {
     payload.bt = bt;
     payload.ba = ba;
     payload.by = by;
+  }
+  if (input.template !== undefined) {
+    if (!isCardTemplateId(input.template)) throw new LineError("That card design is unknown.");
+    payload.ct = input.template;
   }
   const id = encodePayload(payload);
   if (id.length > LINE_ID_MAX) throw new LineError("Line too long.");
@@ -205,6 +219,10 @@ export function validateLinePayload(data: unknown): LinePayload {
     out.bt = p.bt.trim();
     out.ba = p.ba.trim();
     out.by = p.by;
+  }
+  if (p.ct !== undefined) {
+    if (!isCardTemplateId(p.ct)) throw new LineError("This line uses an unknown card design.");
+    out.ct = p.ct;
   }
   return out;
 }

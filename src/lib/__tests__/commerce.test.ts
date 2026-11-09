@@ -80,11 +80,11 @@ describe("cart validation and identity", () => {
       expect(() => validateCart(raw)).toThrow();
     }
   });
-  it("dedupes exact selections but distinguishes text, name, placement, ink and accession", () => {
+  it("dedupes exact selections but distinguishes text, name, placement, ink, edition and accession", () => {
     const key = itemIdentity(input);
     expect(itemIdentity({ ...input, qty: 10 })).toBe(key);
     expect(itemIdentity({ ...input, payload: { d: payload.d, n: payload.n, s: payload.s, q: payload.q, b: payload.b, v: 1 } })).toBe(key);
-    for (const other of [{ ...input, variant: "lower" }, { ...input, sourceId: "different-accession" }, { ...input, payload: { ...payload, s: "moss" as const } }, { ...input, payload: { ...payload, q: "Another line." } }, { ...input, payload: { ...payload, n: "Someone else" } }]) {
+    for (const other of [{ ...input, variant: "lower" }, { ...input, sourceId: "different-accession" }, { ...input, payload: { ...payload, s: "moss" as const } }, { ...input, payload: { ...payload, q: "Another line." } }, { ...input, payload: { ...payload, n: "Someone else" } }, { ...input, payload: { ...payload, ct: "poster-v1" as const } }]) {
       expect(itemIdentity(other)).not.toBe(key);
     }
   });

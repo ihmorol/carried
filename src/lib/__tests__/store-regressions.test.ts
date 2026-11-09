@@ -40,4 +40,15 @@ describe("store contracts", () => {
     fetcher.mockResolvedValue(new Response(JSON.stringify([{ error: "invalid command" }])));
     await expect(getStore().getVoteCounts(["line-one"])).rejects.toBeInstanceOf(StoreError);
   });
+  it("treats the same words in different editions as distinct cards", async () => {
+    const store = new MemoryStore();
+    const legacy = await store.addLine("the-alchemist", { q: "Same words, new frame.", n: "Reader", s: "paper" });
+    const ticket = await store.addLine("the-alchemist", { q: "Same words, new frame.", n: "Reader", s: "paper", ct: "ticket-v1" });
+    expect(legacy.id).not.toBe(ticket.id);
+    expect(ticket.payload.ct).toBe("ticket-v1");
+    expect(legacy.payload.ct).toBeUndefined();
+    await expect(store.addLine("the-alchemist", { q: "x", n: "Reader", s: "paper", ct: "neon-v9" as never })).rejects.toBeInstanceOf(StoreError);
+    const replay = await store.addLine("the-alchemist", { q: "Same words, new frame.", n: "Reader", s: "paper", ct: "ticket-v1" });
+    expect(replay.id).toBe(ticket.id);
+  });
 });

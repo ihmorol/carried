@@ -1,5 +1,6 @@
 import { BOOKS, getBook, bookForPayload, spineForSlug, type Book } from "./books";
 import { decodeLine, encodePayload, validateLinePayload, lineSlugId, type LinePayload } from "./line";
+import { isCardTemplateId, type CardTemplateId } from "./card-templates";
 import { SEED_LINES, SEED_LINE_BY_ID } from "./seeds";
 import { isInkId, type InkId } from "./inks";
 import { LINE_MAX, NAME_MAX } from "./site";
@@ -19,11 +20,13 @@ import { LINE_MAX, NAME_MAX } from "./site";
 
 export type LineRecord = { id: string; payload: LinePayload; t: number };
 
+export type NewLineInput = { q: string; n: string; s: InkId; ct?: CardTemplateId };
+
 export interface Store {
   readonly kind: "redis" | "memory";
   getLines(slug: string, limit?: number): Promise<LineRecord[]>;
   countLines(slug: string): Promise<number>;
-  addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord>;
+  addLine(slug: string, input: NewLineInput): Promise<LineRecord>;
   /** Resolve a short slug id to its payload. */
   getLineById(id: string): Promise<LinePayload | undefined>;
   /** Toggle a reader's "underline" on a line, one vote per voter id. */
@@ -37,7 +40,7 @@ export interface Store {
 }
 
 function samePayload(a: LinePayload, b: LinePayload): boolean {
-  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d && a.bt === b.bt && a.ba === b.ba && a.by === b.by;
+  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d && a.bt === b.bt && a.ba === b.ba && a.by === b.by && a.ct === b.ct;
 }
 
 /** Voters identify themselves with an anonymous, persistent device id. */
@@ -156,11 +159,12 @@ class RedisStore implements Store {
     return this.cmd<number>("LLEN", `carried:lines:${slug}`);
   }
 
-  async addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord> {
+  async addLine(slug: string, input: NewLineInput): Promise<LineRecord> {
     const book = (await this.getUserBook(slug)) ?? getBook(slug);
     if (!book) throw new StoreError("That book is not on the shelf.", 404);
     const { q, n } = validateLineInput(input);
     if (!isInkId(input.s)) throw new StoreError("Unknown ink.", 400);
+    if (input.ct !== undefined && !isCardTemplateId(input.ct)) throw new StoreError("Unknown card design.", 400);
 
     // Identical payloads share an id; ink, date, and case remain the reader's choice.
     const existing = await this.getLines(slug, 20);
@@ -180,6 +184,8 @@ class RedisStore implements Store {
       payload.ba = book.author;
       payload.by = book.year;
     }
+    // The edition rides with the line, so a restyled repost is a distinct card.
+    if (input.ct !== undefined) payload.ct = input.ct;
 
     const dup = existing.find((record) => samePayload(record.payload, payload));
     if (dup) return dup;
@@ -300,9 +306,10 @@ export class MemoryStore implements Store {
     return (this.lines.get(`carried:lines:${slug}`) ?? []).length;
   }
 
-  async addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord> {
+  async addLine(slug: string, input: NewLineInput): Promise<LineRecord> {
     if (!getBook(slug) && !this.books.has(slug)) throw new StoreError("That book is not on the shelf.", 404);
     if (!isInkId(input.s)) throw new StoreError("Unknown ink.", 400);
+    if (input.ct !== undefined && !isCardTemplateId(input.ct)) throw new StoreError("Unknown card design.", 400);
     const { q, n } = validateLineInput(input);
     const payload: LinePayload = {
       v: 1,
@@ -319,6 +326,7 @@ export class MemoryStore implements Store {
       payload.ba = local.author;
       payload.by = local.year;
     }
+    if (input.ct !== undefined) payload.ct = input.ct;
 
     const id = encodePayload(payload);
     const dup = this.byId.get(id);

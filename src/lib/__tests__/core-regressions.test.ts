@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encodeLine, decodeLine, encodePayload, lineSlugId, LineError } from "@/lib/line";
+import { encodeLine, decodeLine, encodePayload, validateLinePayload, lineSlugId, LineError } from "@/lib/line";
 import { searchBooks } from "@/lib/books";
 
 const base = { bookSlug: "the-alchemist", text: "A line", name: "Reader", ink: "paper" as const, date: "2026-11-09" };
@@ -25,5 +25,28 @@ describe("accepted line boundaries", () => {
 describe("discovery aliases", () => {
   it("finds Nineteen Eighty-Four by its conventional numerical title", () => {
     expect(searchBooks("1984")[0]?.slug).toBe("1984");
+  });
+});
+
+describe("card editions", () => {
+  it("keeps legacy payloads free of any edition field", () => {
+    const { payload } = encodeLine(base);
+    expect(JSON.stringify(payload)).toBe('{"v":1,"b":"the-alchemist","q":"A line","n":"Reader","s":"paper","d":"2026-11-09"}');
+  });
+  it("round trips an explicit edition after the book metadata", () => {
+    const { id, payload } = encodeLine({ ...base, bookSlug: "reader-book", book: { title: "Carried Book", author: "Reader", year: 2024 }, template: "poster-v1" });
+    expect(JSON.stringify(payload)).toBe('{"v":1,"b":"reader-book","q":"A line","n":"Reader","s":"paper","d":"2026-11-09","bt":"Carried Book","ba":"Reader","by":2024,"ct":"poster-v1"}');
+    expect(decodeLine(id)).toEqual(payload);
+  });
+  it("rejects unknown editions at both boundaries", () => {
+    expect(() => encodeLine({ ...base, template: "neon-v9" as never })).toThrow(LineError);
+    expect(() => decodeLine(encodePayload({ ...decodeLine(encodeLine(base).id), ct: "neon-v9" as never }))).toThrow(LineError);
+    expect(() => decodeLine(encodePayload({ ...decodeLine(encodeLine(base).id), ct: null as never }))).toThrow(LineError);
+  });
+  it("canonicalizes edition position, so permuted JSON validates identically", () => {
+    const ordered = { v: 1 as const, b: "the-alchemist", q: "A line", n: "Reader", s: "paper" as const, d: "2026-11-09", ct: "ticket-v1" as const };
+    const shuffled = { ct: "ticket-v1", d: "2026-11-09", s: "paper", n: "Reader", q: "A line", b: "the-alchemist", v: 1 };
+    expect(validateLinePayload(ordered)).toEqual(validateLinePayload(shuffled));
+    expect(encodePayload(validateLinePayload(shuffled))).toBe(encodePayload(ordered));
   });
 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStore, StoreError, checkRate, findBook, validateLineInput } from "@/lib/store";
 import { readJsonObject, queryLimit } from "@/lib/api-input";
 import { seedLinesFor } from "@/lib/seeds";
+import { isCardTemplateId } from "@/lib/card-templates";
 import type { InkId } from "@/lib/inks";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +30,13 @@ export async function POST(req: Request, { params }: Params) {
     const body = await readJsonObject(req);
     const s = (body.s ?? "paper") as InkId;
     const input = validateLineInput({ q: body.q as string, n: body.n as string, s });
+    const ct = body.ct;
+    if (ct !== undefined && !isCardTemplateId(ct)) throw new StoreError("Unknown card design.", 400);
     if (!await findBook(slug)) throw new StoreError("That book is not on the shelf.", 404);
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
     await checkRate("line", ip, 8);
     const store = getStore();
-    const record = await store.addLine(slug, { ...input, s });
+    const record = await store.addLine(slug, { ...input, s, ct: ct === undefined ? undefined : ct });
     return NextResponse.json({ ...record, live: store.kind === "redis" }, { status: 201 });
   } catch (err) {
     if (err instanceof StoreError) return NextResponse.json({ error: err.message }, { status: err.status });
