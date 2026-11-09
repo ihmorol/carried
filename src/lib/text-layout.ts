@@ -1,4 +1,4 @@
-import type { CardScript } from "./card-presentation";
+import { CARD_SPACING, CARD_TYPOGRAPHY, cardLeading, type CardScript } from "./card-presentation";
 
 export type TextMeasure = (text: string, fontSize: number) => number;
 export type TextFit = { lines: string[]; fontSize: number; lineHeight: number; height: number };
@@ -55,65 +55,104 @@ export function fitText(text: string, options: {
   throw new RangeError("Full text does not fit the reserved card region");
 }
 
-/** Conservative metric for server/SSR layout, which has no canvas. The
- * real canvas uses loaded-font metrics. Wide Latin glyphs and each Bengali
- * base glyph receive extra room; marks remain attached to their cluster.
- */
-export function estimateTextWidth(text: string, fontSize: number, role: "serif" | "mono" = "serif"): number {
+/** Conservative proportional-sans metrics for SSR, bounded against the
+ * shipped Manrope/Anek Bangla 400–600 advances. Bengali spacing marks DO
+ * have width; only nonspacing marks and joiners can be omitted. Canvas uses
+ * the loaded faces' shaped metrics instead. */
+export function estimateTextWidth(text: string, fontSize: number, role?: "serif" | "mono"): number {
+  // Legacy role arguments no longer select monospaced metrics.
+  void role;
   let units = 0;
   for (const char of Array.from(text)) {
-    if (/\p{Mark}|[\u200c\u200d\r\n]/u.test(char)) continue;
-    if (/\s/u.test(char)) units += 0.34;
-    else if (/[\u0980-\u09ff]/u.test(char)) units += 0.92;
-    else if (role === "mono") units += 0.65;
-    else if (/[MW@%&]/u.test(char)) units += 1.12;
-    else if (/[A-Z]/u.test(char)) units += 0.78;
-    else if (/[ilI.,'!:;|]/u.test(char)) units += 0.38;
-    else if (/[a-z0-9]/u.test(char)) units += 0.64;
+    if (/[\u0980-\u09ff]/u.test(char)) {
+      if (/[\u09cb\u09cc\u09e2\u09e3]/u.test(char)) units += 0.8;
+      else if (/[\u0982\u0983]/u.test(char)) units += 0.55;
+      else if (/\p{Mc}/u.test(char)) units += 0.36;
+      else if (!/\p{Mark}/u.test(char)) units += char === "আ" ? 1.3 : char === "ঞ" ? 1.06 : 1;
+    } else if (/\p{Mark}|[\u200c\u200d\r\n]/u.test(char)) continue;
+    else if (char === "\t") units += 2.72;
+    else if (/\s/u.test(char)) units += 0.34;
+    else if (/[MW@%&#]/u.test(char)) units += 1.02;
+    else if (/[mw]/u.test(char)) units += 0.92;
+    else if (/[A-Z]/u.test(char)) units += 0.8;
+    else if (/[il.,'!:;|]/u.test(char)) units += 0.38;
+    else if (/[a-z0-9]/u.test(char)) units += 0.68;
     else units += 1.15;
   }
   return units * fontSize;
 }
 
 export type CardText = {
-  quote: string; title: string; byline: string; name: string;
-  quoteScript: CardScript; titleScript: CardScript; authorScript: CardScript; nameScript: CardScript;
+  quote: string; title: string; byline: string; name: string; date: string;
+  quoteScript: CardScript; titleScript: CardScript; authorScript: CardScript; nameScript: CardScript; dateScript: CardScript;
 };
 export type CardRegion = { x: number; y: number; width: number; height: number };
+export type CardTextRole = "quote" | "title" | "byline" | "name" | "date";
 
-/** Portrait export and landscape preview are cuts of the same artifact.
- * Explicit, disjoint regions prevent long quotes from pushing into metadata
- * or the rotated stamp. The stamp's rotation clearance is outside its box.
- */
-export const CARD_REGIONS = {
-  png: {
-    quote: { x: 92, y: 210, width: 896, height: 570 },
-    title: { x: 92, y: 856, width: 896, height: 116 },
-    byline: { x: 92, y: 980, width: 896, height: 80 },
-    stamp: { x: 260, y: 1094, width: 560, height: 152 },
-    name: { x: 284, y: 1136, width: 512, height: 64 },
-  },
-  og: {
-    quote: { x: 82, y: 145, width: 1036, height: 230 },
-    title: { x: 82, y: 429, width: 636, height: 88 },
-    byline: { x: 82, y: 520, width: 636, height: 58 },
-    stamp: { x: 788, y: 427, width: 312, height: 144 },
-    name: { x: 804, y: 466, width: 280, height: 64 },
-  },
+/** Only the safe outer frame is fixed. Every inner region follows actual text. */
+export const CARD_SURFACES = {
+  png: { width: 1080, height: 1350, padding: 66, scale: 3 },
+  og: { width: 1200, height: 630, padding: 44, scale: 2 },
 } as const;
 
-export function layoutCardText(content: CardText, surface: "png" | "og", measure?: (role: "quote" | "title" | "byline" | "name", text: string, size: number) => number) {
-  const regions = CARD_REGIONS[surface];
-  const portrait = surface === "png";
-  const fit = (role: "quote" | "title" | "byline" | "name", text: string, script: CardScript, max: number, min: number) => fitText(text, {
-    ...regions[role], maxFontSize: max, minFontSize: min,
-    leading: script === "bengali" ? 1.65 : role === "quote" ? 1.42 : 1.3,
-    measure: (value, size) => measure ? measure(role, value, size) : estimateTextWidth(value, size, role === "byline" ? "mono" : "serif"),
+/** A compact, vertically centered composition: header, quote, provenance,
+ * signature. Surplus image height stays outside the group. Try the normal
+ * 20–22px quote range first; only dense, simultaneous input limits reduce
+ * the complete type scale, retaining the hierarchy instead of clipping. */
+export function layoutCardText(content: CardText, surface: "png" | "og", measure?: (role: CardTextRole, text: string, size: number) => number) {
+  const frame = CARD_SURFACES[surface];
+  for (let step = 20; step >= 8; step--) {
+    try {
+      return composeCardText(content, frame, frame.scale * step / 20, measure);
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+    }
+  }
+  throw new RangeError("Full text does not fit the card composition");
+}
+
+function composeCardText(content: CardText, frame: typeof CARD_SURFACES["png"] | typeof CARD_SURFACES["og"], scale: number, measure?: (role: CardTextRole, text: string, size: number) => number) {
+  const { padding: x } = frame;
+  const width = frame.width - 2 * x;
+  const available = frame.height - 2 * x;
+  const gap = (value: number) => value * scale;
+  const metadata = CARD_TYPOGRAPHY.metadata * scale;
+  const metadataHeight = metadata * cardLeading("latin");
+  const fit = (role: CardTextRole, text: string, script: CardScript, fontSize: number, textWidth: number, height = available, min = fontSize) => fitText(text, {
+    width: textWidth, height, maxFontSize: fontSize, minFontSize: min, leading: cardLeading(script),
+    measure: (value, size) => measure ? measure(role, value, size) : estimateTextWidth(value, size),
   });
+
+  const title = fit("title", content.title, content.titleScript, CARD_TYPOGRAPHY.title * scale, width);
+  const byline = fit("byline", content.byline, content.authorScript, metadata, width);
+  const stampInset = gap(CARD_SPACING.signaturePaddingX);
+  const stampGap = gap(CARD_SPACING.signatureColumnGap);
+  const stampInner = width - 2 * stampInset;
+  const dateWidth = Math.floor((stampInner - stampGap) * 0.42);
+  const nameWidth = stampInner - stampGap - dateWidth;
+  const name = fit("name", content.name, content.nameScript, CARD_TYPOGRAPHY.name * scale, nameWidth);
+  const date = fit("date", content.date, content.dateScript, metadata, dateWidth);
+  const nameOffset = metadataHeight + gap(CARD_SPACING.signatureNameGap);
+  const signatureHeight = Math.max(nameOffset + name.height, date.height) + gap(CARD_SPACING.signaturePaddingY * 2);
+  const otherHeight = metadataHeight + gap(CARD_SPACING.headerGap + CARD_SPACING.quoteGap + CARD_SPACING.provenanceGap + CARD_SPACING.bylineGap + CARD_SPACING.signatureGap)
+    + metadataHeight + title.height + byline.height + signatureHeight;
+  const quote = fit("quote", content.quote, content.quoteScript, CARD_TYPOGRAPHY.quote * scale, width, available - otherHeight, CARD_TYPOGRAPHY.quoteMin * scale);
+  const height = otherHeight + quote.height;
+  const top = (frame.height - height) / 2;
+  const region = (y: number, height: number, left: number = x, regionWidth: number = width): CardRegion => ({ x: left, y, width: regionWidth, height });
+  const header = region(top, metadataHeight);
+  const quoteRegion = region(header.y + header.height + gap(CARD_SPACING.headerGap), quote.height);
+  const provenance = region(quoteRegion.y + quote.height + gap(CARD_SPACING.quoteGap), metadataHeight);
+  const titleRegion = region(provenance.y + provenance.height + gap(CARD_SPACING.provenanceGap), title.height);
+  const bylineRegion = region(titleRegion.y + title.height + gap(CARD_SPACING.bylineGap), byline.height);
+  const stamp = region(bylineRegion.y + byline.height + gap(CARD_SPACING.signatureGap), signatureHeight);
+  const stampLabel = region(stamp.y + gap(CARD_SPACING.signaturePaddingY), metadataHeight, x + stampInset, nameWidth);
+  const nameRegion = region(stampLabel.y + nameOffset, name.height, stampLabel.x, nameWidth);
+  const dateRegion = region(stamp.y + (stamp.height - date.height) / 2, date.height, stampLabel.x + nameWidth + stampGap, dateWidth);
   return {
-    quote: fit("quote", content.quote, content.quoteScript, 64, portrait ? 30 : 24),
-    title: fit("title", content.title, content.titleScript, portrait ? 40 : 38, portrait ? 22 : 16),
-    byline: fit("byline", content.byline, content.authorScript, portrait ? 25 : 21, portrait ? 18 : 16),
-    name: fit("name", content.name, content.nameScript, portrait ? 46 : 34, portrait ? 22 : 18),
+    quote, title, byline, name, date, scale,
+    metadata: { fontSize: metadata, lineHeight: metadataHeight },
+    composition: region(top, height),
+    regions: { header, quote: quoteRegion, provenance, title: titleRegion, byline: bylineRegion, stamp, stampLabel, name: nameRegion, date: dateRegion },
   };
 }

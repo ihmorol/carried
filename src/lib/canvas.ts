@@ -1,13 +1,11 @@
 import { INKS } from "./inks";
 import type { Book } from "./books";
 import { accessionNo, type LinePayload } from "./line";
-import { cardFontFamily, cardPresentation, type CardScript } from "./card-presentation";
-import { CARD_REGIONS, fitText, layoutCardText, type TextFit } from "./text-layout";
+import { CARD_WEIGHTS, cardFontFamily, cardPresentation, type CardScript } from "./card-presentation";
+import { CARD_SURFACES, layoutCardText, type CardRegion, type TextFit } from "./text-layout";
 import { SITE_NAME } from "./site";
 
-const W = 1080;
-const H = 1350;
-const M = 92;
+const { width: W, height: H, scale } = CARD_SURFACES.png;
 const fontLoads = new Map<string, Promise<void>>();
 
 /** FontFaceSet.check is not registration evidence: it also returns true
@@ -29,18 +27,14 @@ export function loadCanvasFont(family: string, file: string, weight: string, sty
 
 export async function loadCanvasFonts(): Promise<void> {
   await Promise.all([
-    loadCanvasFont("Fraunces Export", "Fraunces-500.ttf", "500", "normal"),
-    loadCanvasFont("Fraunces Export", "Fraunces-600.ttf", "600", "normal"),
-    loadCanvasFont("Fraunces Export", "Fraunces-Italic-500.ttf", "500", "italic"),
-    ...[400, 500, 600].map((weight) => loadCanvasFont("Plex Export", `IBMPlexMono-${weight}.ttf`, String(weight), "normal")),
-    ...[500, 600].map((weight) => loadCanvasFont("Noto Serif Bengali Export", `NotoSerifBengali-${weight}.ttf`, String(weight), "normal")),
-    ...[400, 500, 600].map((weight) => loadCanvasFont("Noto Sans Bengali Export", `NotoSansBengali-${weight}.ttf`, String(weight), "normal")),
+    ...[400, 500, 600].map((weight) => loadCanvasFont("Manrope Export", `Manrope-${weight}.ttf`, String(weight), "normal")),
+    ...[400, 500, 600].map((weight) => loadCanvasFont("Anek Bangla Export", `AnekBangla-${weight}.ttf`, String(weight), "normal")),
   ]);
   await document.fonts.ready;
 }
 
-function font(script: CardScript, role: "serif" | "mono", size: number, weight: number, italic = false) {
-  return `${italic && script === "latin" ? "italic " : ""}${weight} ${size}px ${cardFontFamily(script, role, "canvas")}`;
+function font(script: CardScript, size: number, weight: number) {
+  return `${weight} ${size}px ${cardFontFamily(script, "serif", "canvas")}, sans-serif`;
 }
 
 export async function exportLineCard(payload: LinePayload, id: string, book?: Book): Promise<Blob> {
@@ -54,79 +48,60 @@ export async function exportLineCard(payload: LinePayload, id: string, book?: Bo
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas unavailable");
   const families = {
-    quote: (size: number) => font(content.quoteScript, "serif", size, 500, true),
-    title: (size: number) => font(content.titleScript, "serif", size, 600),
-    byline: (size: number) => font(content.authorScript, "mono", size, 400),
-    name: (size: number) => font(content.nameScript, "serif", size, 600),
+    quote: (size: number) => font(content.quoteScript, size, CARD_WEIGHTS.quote),
+    title: (size: number) => font(content.titleScript, size, CARD_WEIGHTS.title),
+    byline: (size: number) => font(content.authorScript, size, CARD_WEIGHTS.byline),
+    name: (size: number) => font(content.nameScript, size, CARD_WEIGHTS.name),
+    date: (size: number) => font(content.dateScript, size, CARD_WEIGHTS.date),
   };
   ctx.letterSpacing = "0px";
   const layout = layoutCardText(content, "png", (role, text, size) => {
     ctx.font = families[role](size);
     return ctx.measureText(text).width;
   });
-  const regions = CARD_REGIONS.png;
-  const text = (fit: TextFit, x: number, y: number, type: (size: number) => string) => {
+  const { regions, metadata } = layout;
+  const text = (fit: TextFit, region: CardRegion, type: (size: number) => string, right = false) => {
     ctx.font = type(fit.fontSize);
-    fit.lines.forEach((line, index) => ctx.fillText(line.replace(/[\r\n]/g, ""), x, y + index * fit.lineHeight));
+    ctx.textAlign = right ? "right" : "left";
+    fit.lines.forEach((line, index) => ctx.fillText(line.replace(/[\r\n]/g, ""), region.x + (right ? region.width : 0), region.y + index * fit.lineHeight));
+  };
+  const border = (x: number, y: number, width: number, height: number, radius: number) => {
+    ctx.beginPath(); ctx.roundRect(x, y, width, height, radius); ctx.stroke();
   };
   ctx.fillStyle = ink.bg;
   ctx.fillRect(0, 0, W, H);
   ctx.strokeStyle = ink.rule;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(58, 58, W - 116, H - 116);
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(70, 70, W - 140, H - 140);
+  ctx.lineWidth = scale;
+  border(12 * scale, 12 * scale, W - 24 * scale, H - 24 * scale, 12 * scale);
+  ctx.lineWidth = scale;
+  border(16 * scale, 16 * scale, W - 32 * scale, H - 32 * scale, 8 * scale);
   ctx.textBaseline = "top";
   ctx.fillStyle = ink.text;
-  ctx.font = font("latin", "mono", 22, 600);
-  ctx.letterSpacing = "7px";
-  ctx.fillText(SITE_NAME.toUpperCase(), M, M);
+  ctx.font = font("latin", metadata.fontSize, CARD_WEIGHTS.metadata);
+  ctx.fillText(SITE_NAME, regions.header.x, regions.header.y);
   ctx.textAlign = "right";
   ctx.fillStyle = ink.soft;
-  ctx.fillText(`No. ${accessionNo(id)}`, W - M, M);
+  ctx.fillText(`No. ${accessionNo(id)}`, regions.header.x + regions.header.width, regions.header.y);
   ctx.textAlign = "left";
-  ctx.letterSpacing = "0px";
-  if (content.quoteScript === "latin") {
-    ctx.fillStyle = ink.rule;
-    ctx.font = font("latin", "serif", 132, 500, true);
-    ctx.fillText("“", M - 10, 140);
-  }
   ctx.fillStyle = ink.text;
-  text(layout.quote, regions.quote.x, regions.quote.y, families.quote);
-  ctx.strokeStyle = ink.rule;
-  ctx.beginPath(); ctx.moveTo(M, 810); ctx.lineTo(W - M, 810); ctx.stroke();
+  text(layout.quote, regions.quote, families.quote);
   ctx.fillStyle = ink.soft;
-  ctx.font = font("latin", "mono", 18, 600);
-  ctx.letterSpacing = "6px";
-  ctx.fillText("CARRIED OUT OF", M, 823);
-  ctx.letterSpacing = "0px";
+  ctx.font = font("latin", metadata.fontSize, CARD_WEIGHTS.metadata);
+  ctx.fillText("Carried out of", regions.provenance.x, regions.provenance.y);
   ctx.fillStyle = ink.text;
-  text(layout.title, regions.title.x, regions.title.y, families.title);
+  text(layout.title, regions.title, families.title);
   ctx.fillStyle = ink.soft;
-  text(layout.byline, regions.byline.x, regions.byline.y, families.byline);
+  text(layout.byline, regions.byline, families.byline);
 
   const stamp = regions.stamp;
-  ctx.save();
-  ctx.translate(stamp.x + stamp.width / 2, stamp.y + stamp.height / 2);
-  ctx.rotate(-6.5 * Math.PI / 180);
-  ctx.strokeStyle = ink.stamp; ctx.fillStyle = ink.stamp; ctx.lineWidth = 5;
-  ctx.strokeRect(-stamp.width / 2, -stamp.height / 2, stamp.width, stamp.height);
-  ctx.textAlign = "center";
-  ctx.font = font("latin", "mono", 18, 600);
-  ctx.letterSpacing = "5px";
-  ctx.fillText("CARRIED BY", 0, -stamp.height / 2 + 14);
-  ctx.letterSpacing = "0px";
-  text(layout.name, 0, -stamp.height / 2 + 42 + (regions.name.height - layout.name.height) / 2, families.name);
-  const dateFit = fitText(content.date, { width: stamp.width - 40, height: 28, maxFontSize: 16, minFontSize: 13,
-    leading: 1.65, measure: (value, size) => { ctx.font = font(content.dateScript, "mono", size, 500); return ctx.measureText(value).width; } });
-  text(dateFit, 0, stamp.height / 2 - 35, (size) => font(content.dateScript, "mono", size, 500));
-  ctx.restore();
-  ctx.textAlign = "left";
-  ctx.fillStyle = ink.soft;
-  ctx.font = font("latin", "mono", 16, 400);
-  ctx.letterSpacing = "2px";
-  ctx.fillText(`${SITE_NAME.toUpperCase()}, THE LINE A BOOK LEFT IN YOU`, M, 1298);
-  ctx.letterSpacing = "0px";
+  ctx.strokeStyle = ink.stamp;
+  ctx.fillStyle = ink.stamp;
+  ctx.lineWidth = scale;
+  border(stamp.x, stamp.y, stamp.width, stamp.height, 6 * scale);
+  ctx.font = font("latin", metadata.fontSize, CARD_WEIGHTS.metadata);
+  ctx.fillText("Carried by", regions.stampLabel.x, regions.stampLabel.y);
+  text(layout.name, regions.name, families.name);
+  text(layout.date, regions.date, families.date, true);
   return new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Export failed")), "image/png"));
 }
 

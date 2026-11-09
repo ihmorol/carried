@@ -16,18 +16,8 @@ export function loadOgFonts(): FontData[] {
   const dir = join(process.cwd(), "public", "fonts");
   const file = (name: string) => readFileSync(join(dir, name));
   cachedFonts = [
-    { name: "Fraunces", data: file("Fraunces-500.ttf"), weight: 500, style: "normal" },
-    { name: "Fraunces", data: file("Fraunces-600.ttf"), weight: 600, style: "normal" },
-    { name: "Fraunces", data: file("Fraunces-Italic-500.ttf"), weight: 500, style: "italic" },
-    { name: "Plex", data: file("IBMPlexMono-400.ttf"), weight: 400, style: "normal" },
-    { name: "Plex", data: file("IBMPlexMono-500.ttf"), weight: 500, style: "normal" },
-    { name: "Plex", data: file("IBMPlexMono-600.ttf"), weight: 600, style: "normal" },
-    { name: "Noto Serif Bengali", data: file("NotoSerifBengali-500.ttf"), weight: 500, style: "normal" },
-    { name: "Noto Serif Bengali", data: file("NotoSerifBengali-600.ttf"), weight: 600, style: "normal" },
-    { name: "Noto Serif Bengali", data: file("NotoSerifBengali-700.ttf"), weight: 700, style: "normal" },
-    { name: "Noto Sans Bengali", data: file("NotoSansBengali-400.ttf"), weight: 400, style: "normal" },
-    { name: "Noto Sans Bengali", data: file("NotoSansBengali-500.ttf"), weight: 500, style: "normal" },
-    { name: "Noto Sans Bengali", data: file("NotoSansBengali-600.ttf"), weight: 600, style: "normal" },
+    ...([400, 500, 600] as const).map((weight) => ({ name: "Manrope", data: file(`Manrope-${weight}.ttf`), weight, style: "normal" as const })),
+    ...([400, 500, 600] as const).map((weight) => ({ name: "Anek Bangla", data: file(`AnekBangla-${weight}.ttf`), weight, style: "normal" as const })),
   ];
   return cachedFonts;
 }

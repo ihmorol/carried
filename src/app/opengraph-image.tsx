@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { loadOgFonts } from "@/lib/og-fonts";
 import { SITE_NAME } from "@/lib/site";
 import { INKS } from "@/lib/inks";
+import { cardFontFamily } from "@/lib/card-presentation";
 
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
@@ -37,15 +38,14 @@ export default function OgImage() {
             width: "100%",
           }}
         >
-          <span style={{ fontFamily: "Plex", fontWeight: 600, fontSize: 20, letterSpacing: 8, color: ink.soft }}>
-            NO ACCOUNT · JUST A LINE
+          <span style={{ fontFamily: cardFontFamily("latin", "mono", "og"), fontWeight: 500, fontSize: 24, color: ink.soft }}>
+            No account · Just a line
           </span>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ fontFamily: "Fraunces", fontWeight: 600, fontSize: 96, letterSpacing: 22, color: ink.text, marginLeft: 22 }}>
-              {SITE_NAME.toUpperCase()}
+            <span style={{ fontFamily: cardFontFamily("latin", "serif", "og"), fontWeight: 600, fontSize: 80, lineHeight: 1.4, color: ink.text }}>
+              {SITE_NAME}
             </span>
-            <div style={{ width: 90, height: 4, backgroundColor: ink.stamp, marginTop: 34 }} />
-            <span style={{ fontFamily: "Fraunces", fontStyle: "italic", fontWeight: 500, fontSize: 34, color: ink.soft, marginTop: 30 }}>
+            <span style={{ fontFamily: cardFontFamily("latin", "serif", "og"), fontWeight: 400, fontSize: 32, lineHeight: 1.4, color: ink.soft, marginTop: 16 }}>
               the line a book left in you
             </span>
           </div>

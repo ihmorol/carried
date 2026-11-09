@@ -29,17 +29,23 @@ export function cardPresentation(payload: LinePayload, resolvedBook?: Book) {
   };
 }
 
-/** Noto is a glyph companion to the two house faces, never an unrelated display voice. */
-export function cardFontFamily(script: CardScript, role: "serif" | "mono", surface: "dom" | "canvas" | "og") {
-  const bengali = role === "serif" ? "Noto Serif Bengali" : "Noto Sans Bengali";
-  const latin = role === "serif" ? "Fraunces" : "Plex";
+/** Sizes and spacing are in DOM pixels; image surfaces scale this same type system. */
+export const CARD_TYPOGRAPHY = { quote: 22, quoteMin: 20, quoteMax: 24, metadata: 12, title: 16, name: 14 } as const;
+export const CARD_WEIGHTS = { quote: 500, title: 600, byline: 400, name: 600, date: 500, metadata: 500 } as const;
+export const CARD_SPACING = {
+  padding: 22, headerGap: 20, quoteGap: 18, provenanceGap: 4, bylineGap: 2,
+  signatureGap: 16, signaturePaddingX: 12, signaturePaddingY: 10, signatureColumnGap: 12, signatureNameGap: 2,
+} as const;
+export const cardLeading = (script: CardScript) => script === "bengali" ? 1.5 : 1.4;
+
+/** The role argument remains for callers; both roles now use proportional sans.
+ * Each script has the other shipped family as its explicit glyph fallback. */
+export function cardFontFamily(script: CardScript, _role: "serif" | "mono", surface: "dom" | "canvas" | "og") {
   if (surface === "dom") {
-    const bn = role === "serif" ? "var(--font-noto-serif-bengali)" : "var(--font-noto-sans-bengali)";
-    const en = role === "serif" ? "var(--font-fraunces)" : "var(--font-plex)";
-    return `${script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`}, ${role === "serif" ? "serif" : "monospace"}`;
+    const en = "var(--font-manrope)", bn = "var(--font-anek-bangla)";
+    return `${script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`}, sans-serif`;
   }
   const suffix = surface === "canvas" ? " Export" : "";
-  return script === "bengali"
-    ? `"${bengali}${suffix}", "${latin}${suffix}"`
-    : `"${latin}${suffix}", "${bengali}${suffix}"`;
+  const en = `"Manrope${suffix}"`, bn = `"Anek Bangla${suffix}"`;
+  return script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`;
 }
