@@ -297,22 +297,25 @@ const OG_BOOK_REGIONS: Record<CardTemplateId, {
   quote: CardRegion; credit: CardRegion; labelHeight: number;
   ownership: CardRegion; nameZone: CardRegion; dateZone: CardRegion; nameMax: number;
 }> = {
-  // Bookplate: centered inscription under the header, oval seal at the foot.
+  // Bookplate: centered inscription under the header, type-only ownership
+  // with the coral signature rule at the foot. The name keeps the same
+  // 42px two-line Bengali floor the landscape cut has always reserved.
   "bookplate-v1": {
     quote: { x: 140, y: 126, width: 920, height: 250 },
-    credit: { x: 140, y: 390, width: 920, height: 106 }, labelHeight: 24,
-    ownership: { x: 370, y: 504, width: 460, height: 96 },
-    nameZone: { x: 414, y: 530, width: 372, height: 42 },
-    dateZone: { x: 414, y: 574, width: 372, height: 20 },
+    credit: { x: 140, y: 384, width: 920, height: 106 }, labelHeight: 24,
+    ownership: { x: 370, y: 494, width: 460, height: 88 },
+    nameZone: { x: 414, y: 512, width: 372, height: 42 },
+    dateZone: { x: 414, y: 562, width: 372, height: 17 },
     nameMax: 26,
   },
-  // Poster: full-bleed reversed field, coral band carries the angled stamp.
+  // Poster: full-bleed reversed field; the coral band carries the ownership
+  // as a straight credit line aligned with the quote.
   "poster-v1": {
     quote: { x: 88, y: 128, width: 1024, height: 280 },
     credit: { x: 88, y: 418, width: 1024, height: 88 }, labelHeight: 20,
-    ownership: { x: 728, y: 440, width: 400, height: 140 },
-    nameZone: { x: 760, y: 476, width: 336, height: 66 },
-    dateZone: { x: 760, y: 548, width: 336, height: 20 },
+    ownership: { x: 88, y: 510, width: 500, height: 120 },
+    nameZone: { x: 88, y: 544, width: 500, height: 44 },
+    dateZone: { x: 88, y: 594, width: 500, height: 20 },
     nameMax: 26,
   },
   // Ticket: the body column sits left of the vertical perforation; the stub

@@ -91,30 +91,40 @@ function drawCredit(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   drawFit(ctx, layout.author, x, bookTop + layout.book.height, { script: text.authorScript, weight: EDITION_WEIGHTS.author, color: soft, align });
 }
 
-function drawOwnership(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, x: number, top: number): void {
-  const { nameHeight, gap, height } = layout.ownership;
-  const labelHeight = 14.3, dateHeight = 14;
-  const rowsTop = top + (height - labelHeight - nameHeight - dateHeight - gap * 2) / 2;
+/** Rows of the ownership stack in print space: label, name, then the
+ * optional coral signature rule, then the date. Mirrors the DOM grid. */
+function ownershipBlockHeight(layout: EditionLayout, withRule: boolean): number {
+  const dateHeight = 14, ruleHeight = withRule ? 1.5 : 0;
+  const gaps = layout.ownership.gap * (withRule ? 3 : 2);
+  return 14.3 + layout.ownership.nameHeight + dateHeight + ruleHeight + gaps;
+}
+
+function drawOwnershipRows(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, x: number, rowsTop: number,
+  align: "center" | "left", withRule: boolean, colors: { label: string; name: string; date: string }): void {
   drawLabel(ctx, EDITION_SHARED_COPY.carriedBy[text.language], x, rowsTop,
-    { color: ink.stamp, script: text.language, align: "center" });
-  drawFit(ctx, layout.name, x, rowsTop + labelHeight + gap + (nameHeight - layout.name.height) / 2,
-    { script: text.nameScript, weight: EDITION_WEIGHTS.name, color: ink.stamp, align: "center" });
-  drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, x, rowsTop + labelHeight + gap + nameHeight + gap,
-    { color: ink.stamp, script: text.dateScript, align: "center", size: 10, leading: 1.4 });
+    { color: colors.label, script: text.language, align });
+  drawFit(ctx, layout.name, x, rowsTop + 14.3 + layout.ownership.gap + (layout.ownership.nameHeight - layout.name.height) / 2,
+    { script: text.nameScript, weight: EDITION_WEIGHTS.name, color: colors.name, align });
+  let ruleTop = 0;
+  if (withRule) {
+    ruleTop = rowsTop + 14.3 + layout.ownership.gap + layout.ownership.nameHeight + layout.ownership.gap;
+    ctx.fillStyle = ink.stamp;
+    ctx.fillRect((x - 28) * S, ruleTop * S, 56 * S, 1.5 * S);
+  }
+  const dateTop = withRule
+    ? ruleTop + 1.5 + layout.ownership.gap
+    : rowsTop + 14.3 + layout.ownership.gap + layout.ownership.nameHeight + layout.ownership.gap;
+  drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, x, dateTop,
+    { color: colors.date, script: text.dateScript, align, size: 10, leading: 1.4 });
 }
 
 function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, copy: string): void {
   ctx.fillStyle = ink.bg;
   ctx.fillRect(0, 0, PW * S, PH * S);
+  // The whole frame is one hairline plate rule.
   ctx.strokeStyle = ink.text;
-  ctx.lineWidth = 1.15 * S;
-  tracePath(ctx, "M36 14H324V26H338V424H324V436H36V424H22V26H36Z", S); ctx.stroke();
-  ctx.lineWidth = 0.55 * S;
-  tracePath(ctx, "M42 21H318V33H331V417H318V429H42V417H29V33H42Z", S); ctx.stroke();
   ctx.lineWidth = 0.75 * S;
-  tracePath(ctx, "M22 48H13V34M338 48H347V34M22 402H13V416M338 402H347V416", S); ctx.stroke();
-  ctx.fillStyle = ink.text;
-  tracePath(ctx, "M180 10L184 14L180 18L176 14ZM180 432L184 436L180 440L176 436Z", S); ctx.fill();
+  ctx.strokeRect(13.5 * S, 13.5 * S, 333 * S, 423 * S);
 
   const cx = PW / 2;
   if (layout.dense) {
@@ -128,12 +138,9 @@ function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLay
   drawCredit(ctx, ink, text, layout, "bookplate");
 
   const { top, height } = layout.ownership;
-  ctx.strokeStyle = ink.stamp;
-  ctx.lineWidth = 1.5 * S;
-  ctx.beginPath(); ctx.ellipse(cx * S, (top + height / 2) * S, 113.25 * S, (height / 2 - 0.75) * S, 0, 0, Math.PI * 2); ctx.stroke();
-  ctx.lineWidth = 0.7 * S;
-  ctx.beginPath(); ctx.ellipse(cx * S, (top + height / 2) * S, 108.65 * S, (height / 2 - 5.35) * S, 0, 0, Math.PI * 2); ctx.stroke();
-  drawOwnership(ctx, ink, text, layout, cx, top);
+  const rowsTop = top + (height - ownershipBlockHeight(layout, true)) / 2;
+  drawOwnershipRows(ctx, ink, text, layout, cx, rowsTop, "center", true,
+    { label: ink.soft, name: ink.text, date: ink.soft });
   if (layout.dense) {
     ctx.save(); ctx.translate(338 * S, 88 * S); ctx.rotate(Math.PI / 2);
     drawLabel(ctx, text.accession, 0, 0, { color: ink.soft, size: 9 }); ctx.restore();
@@ -152,21 +159,13 @@ function drawPoster(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
 
   ctx.fillStyle = ink.stamp;
   ctx.fillRect(0, layout.bandTop * S, PW * S, (PH - layout.bandTop) * S);
-  ctx.save(); ctx.beginPath(); ctx.rect(0, layout.bandTop * S, PW * S, (PH - layout.bandTop) * S); ctx.clip();
-  drawLabel(ctx, "”", 14, layout.bandTop - 34, { color: fieldColor, size: 264, weight: EDITION_WEIGHTS.posterQuote, leading: 1 });
-  ctx.restore();
 
-  const { top, height } = layout.ownership;
-  ctx.save(); ctx.translate(238 * S, (top + height / 2) * S); ctx.rotate(-6 * Math.PI / 180);
-  ctx.fillStyle = ink.bg;
-  ctx.fillRect(-102 * S, -height / 2 * S, 204 * S, height * S);
-  ctx.strokeStyle = ink.stamp;
-  ctx.lineWidth = 2 * S;
-  ctx.strokeRect(-101 * S, (-height / 2 + 1) * S, 202 * S, (height - 2) * S);
-  ctx.lineWidth = 0.7 * S;
-  ctx.strokeRect(-97.65 * S, (-height / 2 + 4.35) * S, 195.3 * S, (height - 8.7) * S);
-  drawOwnership(ctx, ink, text, layout, 0, -height / 2);
-  ctx.restore();
+  // The ownership is a straight credit line on the band, left-aligned with
+  // the quote. Ink-pale text keeps 4.5:1 on every coral.
+  const bandHeight = PH - layout.bandTop;
+  const rowsTop = layout.bandTop + (bandHeight - ownershipBlockHeight(layout, false)) / 2;
+  drawOwnershipRows(ctx, ink, text, layout, 28, rowsTop, "left", false,
+    { label: ink.bg, name: ink.bg, date: ink.bg });
 }
 
 function ticketStock(ctx: Ctx, stub = false): void {
@@ -215,11 +214,11 @@ function drawTicket(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   ctx.stroke(); ctx.restore();
 
   ctx.save(); ctx.translate(297 * S, 391.5 * S); ctx.rotate(-5 * Math.PI / 180);
+  // One coral ring; the inner circle and tick marks are gone.
   const k = 108 / 132;
-  ctx.save(); ctx.translate(-66 * k * S, -56 * k * S); ctx.scale(k * S, k * S);
-  ctx.beginPath(); ctx.arc(66, 56, 50, 0, Math.PI * 2); ctx.fillStyle = ink.bg; ctx.fill(); ctx.strokeStyle = ink.stamp; ctx.lineWidth = 1.4; ctx.stroke();
-  ctx.beginPath(); ctx.arc(66, 56, 45, 0, Math.PI * 2); ctx.lineWidth = 0.7; ctx.stroke(); ctx.lineWidth = 1;
-  tracePath(ctx, "M0 43H10M0 49H10M0 55H10M122 57H132M122 63H132M122 69H132M64 13H68M64 99H68", 1); ctx.stroke(); ctx.restore();
+  ctx.beginPath(); ctx.arc(0, 0, 50 * k * S, 0, Math.PI * 2);
+  ctx.fillStyle = ink.bg; ctx.fill();
+  ctx.strokeStyle = ink.stamp; ctx.lineWidth = 1.4 * k * S; ctx.stroke();
   const rowsTop = -(12.35 + 2 + layout.name.height) / 2;
   drawLabel(ctx, EDITION_SHARED_COPY.carriedBy[text.language], 0, rowsTop, { color: ink.stamp, script: text.language, align: "center", size: 9.5 });
   drawFit(ctx, layout.name, 0, rowsTop + 14.35,

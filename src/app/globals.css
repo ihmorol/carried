@@ -362,21 +362,8 @@ input, textarea { caret-color: var(--color-stamp); }
   pointer-events: none;
 }
 
-.edition-frame-outer {
-  stroke-width: 1.15;
-}
-
-.edition-frame-inner {
-  stroke-width: 0.55;
-}
-
-.edition-frame-corners {
+.edition-frame-rule {
   stroke-width: 0.75;
-}
-
-.edition-frame-diamonds {
-  fill: var(--edition-text);
-  stroke: none;
 }
 
 .edition-bookplate-heading {
@@ -426,29 +413,28 @@ input, textarea { caret-color: var(--color-stamp); }
   justify-content: center;
 }
 
-.edition-oval-seal {
-  position: relative;
+/* The ownership mark is typography, not a box: label, name, one coral
+   signature rule, then the date. The accent appears exactly once. */
+.edition-bookplate-mark {
   display: grid;
-  grid-template-rows: 3.972222cqw var(--edition-name-row) 3.888889cqw;
+  grid-template-rows: 3.972222cqw var(--edition-name-row) 0.416667cqw 3.888889cqw;
   gap: var(--edition-ownership-gap);
   align-content: center;
   justify-items: center;
   align-items: center;
-  inline-size: 63.3333cqw;
   block-size: var(--edition-ownership-height);
-  padding-inline: 8.0556cqw;
-  border: 0.4167cqw solid currentColor;
-  border-radius: 50%;
-  color: var(--edition-coral);
+  color: var(--edition-text);
 }
 
-.edition-oval-seal::before {
-  position: absolute;
-  inset: 1.1111cqw;
-  border: 0.1944cqw solid currentColor;
-  border-radius: inherit;
-  content: "";
-  pointer-events: none;
+.edition-bookplate-mark .edition-reader-label,
+.edition-bookplate-mark .edition-date {
+  color: var(--edition-soft);
+}
+
+.edition-signature-rule {
+  inline-size: 15.5556cqw;
+  block-size: 0.4167cqw;
+  background: var(--edition-coral);
 }
 
 .edition-bookplate-accession {
@@ -507,42 +493,20 @@ input, textarea { caret-color: var(--color-stamp); }
   background: var(--edition-coral);
 }
 
-.edition-poster-quotation {
+/* The coral band carries the ownership as a straight credit line, aligned
+   with the quote's left edge. Ink-pale text keeps 4.5:1 on every coral. */
+.edition-poster-credit {
   position: absolute;
-  inset-block-start: -9.4444cqw;
-  inset-inline-start: 3.8889cqw;
-  font-size: 73.3333cqw;
-  font-weight: 600;
-  line-height: 1;
-  user-select: none;
-}
-
-.edition-poster-stamp {
-  --edition-stamp-rotation: -6deg;
-  position: absolute;
-  inset-block-start: var(--edition-ownership-top);
-  inset-inline-end: 5.5556cqw;
+  inset: var(--edition-band-top) 0 0;
   display: grid;
   grid-template-rows: 3.972222cqw var(--edition-name-row) 3.888889cqw;
   gap: var(--edition-ownership-gap);
-  align-items: center;
   align-content: center;
-  justify-items: center;
-  inline-size: 56.6667cqw;
-  block-size: var(--edition-ownership-height);
-  padding-inline: 5cqw;
-  border: 0.5556cqw solid currentColor;
-  color: var(--edition-coral);
-  background: var(--edition-bg);
-  text-align: center;
-}
-
-.edition-poster-stamp::before {
-  position: absolute;
-  inset: 1.1111cqw;
-  border: 0.1944cqw solid currentColor;
-  content: "";
-  pointer-events: none;
+  justify-items: start;
+  align-items: center;
+  padding-inline: 7.7778cqw;
+  color: var(--edition-bg);
+  text-align: start;
 }
 
 /* Ticket: the stock itself is die-cut; its lower 26% is a contrasting stub. */
@@ -693,15 +657,6 @@ input, textarea { caret-color: var(--color-stamp); }
   stroke-width: 1.4;
 }
 
-.edition-cancellation-inner {
-  stroke-width: 0.7;
-}
-
-.edition-cancellation-lines,
-.edition-cancellation-ticks {
-  stroke-width: 1;
-}
-
 /* Dense compositions share their credit and seal bounds with the export. */
 .edition-artwork[data-density="dense"] .edition-bookplate-heading {
   inset-block-start: 6.388889cqw;
@@ -729,6 +684,7 @@ input, textarea { caret-color: var(--color-stamp); }
 
 .edition-artwork[data-density="dense"] .edition-poster-heading { inset-block-start: 3.333333cqw; }
 .edition-artwork[data-density="dense"] .edition-poster-field { block-size: var(--edition-band-top); }
+.edition-artwork[data-density="dense"] .edition-poster-credit { padding-inline: 3.3333cqw; }
 
 .edition-artwork[data-density="dense"] .edition-ticket-heading {
   inset-block-start: 3.3333cqw;

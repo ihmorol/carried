@@ -147,20 +147,20 @@ describe("three edition DOM compositions", () => {
       expect(JSON.stringify(payload)).toBe(JSON.stringify({ ...base, ct: edition, b: nativeBook.slug }));
     }
   });
-  it("ports the bookplate's stepped frame and oval seal", async () => {
+  it("ports the bookplate's hairline plate rule and signature ownership", async () => {
     const html = await renderLineCard({ ...base, ct: "bookplate-v1", b: nativeBook.slug });
     expect(html).toContain("edition-bookplate-frame");
-    expect(html).toContain("M36 14H324V26H338V424H324V436H36V424H22V26H36Z");
-    expect(html).toContain("edition-oval-seal");
+    expect(html).toContain("edition-frame-rule");
+    expect(html).toContain("edition-bookplate-mark");
+    expect(html).toContain("edition-signature-rule");
     expect(html).toContain("edition-bookplate-accession");
     expect(html).toContain("Carried");
   });
-  it("ports the poster's reversed field, coral band and angled stamp", async () => {
+  it("ports the poster's reversed field and coral band credit line", async () => {
     const html = await renderLineCard({ ...base, ct: "poster-v1", b: nativeBook.slug });
     expect(html).toContain("edition-poster-field");
     expect(html).toContain("edition-poster-band");
-    expect(html).toContain("edition-poster-stamp");
-    expect(html).toContain("”");
+    expect(html).toContain("edition-poster-credit");
     expect(html).toContain("--edition-poster-bg");
   });
   it("ports the ticket's die-cut stock, perforation, stub and cancellation", async () => {
@@ -175,7 +175,7 @@ describe("three edition DOM compositions", () => {
     const payload: LinePayload = { ...base, b: nativeBook.slug };
     const html = await renderLineCard(payload);
     expect(html).toContain("edition-bookplate-frame");
-    expect(html).toContain("edition-oval-seal");
+    expect(html).toContain("edition-bookplate-mark");
     expect(html).toContain('data-edition="bookplate"');
     expect(html).not.toContain('data-edition="poster"');
     expect(html).not.toContain('data-edition="ticket"');
@@ -380,11 +380,13 @@ describe("per-edition OG images", () => {
       expect(text).toContain(EDITION_SHARED_COPY.carriedBy[content.quoteScript]);
       expect(html).toContain('"Manrope", "Anek Bangla"'.replace(/"/g, "&quot;"));
       if (edition === "bookplate-v1") {
-        expect(html).toContain("M48 18H1152V34H1180V596H1152V612H48V596H20V34H48Z");
-        expect(html).toContain("border-radius:50%");
+        // One hairline plate rule; the coral signature rule is the only mark.
+        expect(html).toContain("border-top:3px solid");
+        expect(html).not.toContain("border-radius:50%");
       }
       if (edition === "poster-v1") {
-        expect(html).toContain("rotate(-6deg)");
+        // Straight credit line on the band; no rotated box remains.
+        expect(html).not.toContain("rotate(-6deg)");
         expect(html).toContain(`background-color:${INKS.paper.stamp}`);
       }
       if (edition === "ticket-v1") {
@@ -506,13 +508,15 @@ describe("explicit canvas font registration and per-edition export", () => {
     const { exportLineCard } = await import("@/lib/canvas");
     const cases: [CardTemplateId, (mock: ReturnType<typeof mockCanvas>) => void][] = [
       ["bookplate-v1", (mock) => {
-        expect(mock.ctx.ellipse).toHaveBeenCalled();
-        expect(mock.ctx.fill).toHaveBeenCalled(); // frame diamonds
+        // One hairline plate rule plus the coral signature rule.
+        expect(mock.ctx.strokeRect).toHaveBeenCalled();
+        expect(mock.ctx.fillRect.mock.calls.length).toBeGreaterThanOrEqual(2);
       }],
       ["poster-v1", (mock) => {
-        expect(mock.ctx.rotate).toHaveBeenCalled(); // angled stamp
+        // Straight band credit: no rotated box, no decorative quotation mark.
+        expect(mock.ctx.rotate).not.toHaveBeenCalled();
         expect(mock.ctx.fillRect.mock.calls.length).toBeGreaterThanOrEqual(2); // field + band
-        expect(mock.drawn).toContain("”");
+        expect(mock.drawn).not.toContain("”");
       }],
       ["ticket-v1", (mock) => {
         expect(mock.ctx.arc).toHaveBeenCalled(); // die-cut stock + cancellation
@@ -543,7 +547,8 @@ describe("explicit canvas font registration and per-edition export", () => {
     const { exportLineCard } = await import("@/lib/canvas");
     const mock = mockCanvas();
     await exportLineCard({ ...base, ct: "ticket-v1" }, "ticket", getBook(base.b));
-    expect(mock.ctx.scale).toHaveBeenCalledWith(108 / 132 * 3, 108 / 132 * 3);
+    // The cancellation ring keeps the DOM viewBox proportions (108/132).
+    expect(mock.ctx.arc).toHaveBeenCalledWith(0, 0, expect.closeTo(50 * (108 / 132) * 3, 1), 0, expect.closeTo(Math.PI * 2, 5));
   });
   it("keeps the dense Poster band below the credit rather than painting over it", async () => {
     vi.resetModules();

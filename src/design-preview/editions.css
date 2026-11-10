@@ -118,7 +118,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Bookplate: centered inscription, stepped printer's frame, oval ownership. */
+/* Bookplate: centered inscription, one hairline plate rule, type-only
+   ownership with a single coral signature rule. */
 .edition-bookplate {
   background: var(--edition-bg);
   text-align: center;
@@ -134,21 +135,8 @@
   pointer-events: none;
 }
 
-.edition-frame-outer {
-  stroke-width: 1.15;
-}
-
-.edition-frame-inner {
-  stroke-width: 0.55;
-}
-
-.edition-frame-corners {
+.edition-frame-rule {
   stroke-width: 0.75;
-}
-
-.edition-frame-diamonds {
-  fill: var(--edition-text);
-  stroke: none;
 }
 
 .edition-bookplate-heading {
@@ -197,29 +185,26 @@
   justify-content: center;
 }
 
-.edition-oval-seal {
-  position: relative;
+.edition-bookplate-mark {
   display: grid;
-  grid-template-rows: 3.6111cqw 11.6667cqw 3.8889cqw;
+  grid-template-rows: 3.6111cqw 11.6667cqw 0.4167cqw 3.8889cqw;
   gap: 0.5556cqw;
   align-content: center;
   justify-items: center;
   align-items: center;
-  inline-size: 63.3333cqw;
   block-size: 23.8889cqw;
-  padding-inline: 8.0556cqw;
-  border: 0.4167cqw solid currentColor;
-  border-radius: 50%;
-  color: var(--edition-coral);
+  color: var(--edition-text);
 }
 
-.edition-oval-seal::before {
-  position: absolute;
-  inset: 1.1111cqw;
-  border: 0.1944cqw solid currentColor;
-  border-radius: inherit;
-  content: "";
-  pointer-events: none;
+.edition-bookplate-mark .edition-reader-label,
+.edition-bookplate-mark .edition-date {
+  color: var(--edition-soft);
+}
+
+.edition-signature-rule {
+  inline-size: 15.5556cqw;
+  block-size: 0.4167cqw;
+  background: var(--edition-coral);
 }
 
 .edition-bookplate-accession {
@@ -279,42 +264,20 @@
   background: var(--edition-coral);
 }
 
-.edition-poster-quotation {
+/* The coral band carries the ownership as a straight credit line aligned
+   with the quote's left edge; ink-pale text keeps 4.5:1 on every coral. */
+.edition-poster-credit {
   position: absolute;
-  inset-block-start: -9.4444cqw;
-  inset-inline-start: 3.8889cqw;
-  font-size: 73.3333cqw;
-  font-weight: 600;
-  line-height: 1;
-  user-select: none;
-}
-
-.edition-poster-stamp {
-  --edition-stamp-rotation: -6deg;
-  position: absolute;
-  inset-block-start: 94.4444cqw;
-  inset-inline-end: 5.5556cqw;
+  inset: 92.5cqw 0 0;
   display: grid;
   grid-template-rows: 3.6111cqw 11.6667cqw 3.8889cqw;
   gap: 0.5556cqw;
-  align-items: center;
   align-content: center;
-  justify-items: center;
-  inline-size: 56.6667cqw;
-  block-size: 24.4444cqw;
-  padding-inline: 5cqw;
-  border: 0.5556cqw solid currentColor;
-  color: var(--edition-coral);
-  background: var(--edition-bg);
-  text-align: center;
-}
-
-.edition-poster-stamp::before {
-  position: absolute;
-  inset: 1.1111cqw;
-  border: 0.1944cqw solid currentColor;
-  content: "";
-  pointer-events: none;
+  justify-items: start;
+  align-items: center;
+  padding-inline: 7.7778cqw;
+  color: var(--edition-bg);
+  text-align: start;
 }
 
 /* Ticket: the stock itself is die-cut; its lower 26% is a contrasting stub. */
@@ -463,15 +426,6 @@
   stroke-width: 1.4;
 }
 
-.edition-cancellation-inner {
-  stroke-width: 0.7;
-}
-
-.edition-cancellation-lines,
-.edition-cancellation-ticks {
-  stroke-width: 1;
-}
-
 /* Only exceptionally wide 220-character input uses tighter furniture. */
 .edition-card[data-density="dense"] .edition-quote {
   line-break: anywhere;
@@ -517,8 +471,8 @@
   inset-block-start: 104.4444cqw;
 }
 
-.edition-card[data-density="dense"] .edition-oval-seal {
-  grid-template-rows: 3.6111cqw 7.7778cqw 3.8889cqw;
+.edition-card[data-density="dense"] .edition-bookplate-mark {
+  grid-template-rows: 3.6111cqw 7.7778cqw 0.4167cqw 3.8889cqw;
   gap: 0.2778cqw;
   block-size: 18.8889cqw;
 }
@@ -542,11 +496,11 @@
   inset-block-start: 102.7778cqw;
 }
 
-.edition-card[data-density="dense"] .edition-poster-stamp {
-  inset-block-start: 104.4444cqw;
+.edition-card[data-density="dense"] .edition-poster-credit {
+  inset: 102.7778cqw 0 0;
   grid-template-rows: 3.6111cqw 7.7778cqw 3.8889cqw;
   gap: 0.2778cqw;
-  block-size: 18.8889cqw;
+  padding-inline: 3.3333cqw;
 }
 
 .edition-card[data-density="dense"] .edition-ticket-heading {

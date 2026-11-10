@@ -63,7 +63,7 @@ Artifact styles remain `paper`, `midnight`, and `moss`; exact colors come only f
 
 ## Card editions
 
-Three immutable editions change composition and ownership treatment while ink stays a separate choice: **Bookplate** (centered inscription, stepped frame, oval ownership seal), **Poster** (reversed-ink full-bleed quote, coral band, angled stamp), and **Reader's ticket** (die-cut stock, perforation, book stub, circular cancellation mark). Editions live in `src/lib/card-templates.ts` (`bookplate-v1`, `poster-v1`, `ticket-v1`) and ride in the line payload as `ct`.
+Three immutable editions change composition and ownership treatment while ink stays a separate choice: **Bookplate** (centered inscription, one hairline plate rule, type-only ownership with a coral signature rule), **Poster** (reversed-ink full-bleed quote, coral band carrying a straight credit line), and **Reader's ticket** (die-cut stock, perforation, book stub, single-ring circular cancellation mark). Editions live in `src/lib/card-templates.ts` (`bookplate-v1`, `poster-v1`, `ticket-v1`) and ride in the line payload as `ct`.
 
 Payloads without `ct` predate editions: their serialization and identity never change, and renderers present them with the house edition (Bookplate) as a display-only mapping. New cards always write an explicit id after the book metadata. One shared geometry in `text-layout.ts` (`layoutEditionArtwork` 360×450 print space, `layoutEditionOg` 1200×630) feeds DOM, canvas PNG, and OG; per-edition dense layouts preserve every character at readable floors instead of shrinking. Vote and utility actions render outside the painted artwork in page tokens.
 
@@ -91,7 +91,7 @@ Light shadows belong to physical book/card artwork only. Remove grain, ornamenta
 
 ## Shapes
 
-Controls are 10px and panels 14px. The active rail icon is a 44px circle. Card artwork follows its immutable edition: the Bookplate's stepped frame/oval seal, Poster's angled stamp, and Ticket's die-cut stock/cancellation. Do not apply the interface's generic panel radius or signature shape to those painted surfaces.
+Controls are 10px and panels 14px. The active rail icon is a 44px circle. Card artwork follows its immutable edition: the Bookplate's hairline plate rule/signature ownership, Poster's coral band credit line, and Ticket's die-cut stock/single-ring cancellation. Do not apply the interface's generic panel radius or signature shape to those painted surfaces.
 
 ## Components
 

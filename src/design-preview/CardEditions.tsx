@@ -182,10 +182,7 @@ function DateLine({ content }: { content: PreviewLine }) {
 function BookplateFrame() {
   return (
     <svg className="edition-bookplate-frame" viewBox="0 0 360 450" aria-hidden="true" focusable="false">
-      <path className="edition-frame-outer" d="M36 14H324V26H338V424H324V436H36V424H22V26H36Z" />
-      <path className="edition-frame-inner" d="M42 21H318V33H331V417H318V429H42V417H29V33H42Z" />
-      <path className="edition-frame-corners" d="M22 48H13V34M338 48H347V34M22 402H13V416M338 402H347V416" />
-      <path className="edition-frame-diamonds" d="M180 10L184 14L180 18L176 14ZM180 432L184 436L180 440L176 436Z" />
+      <rect className="edition-frame-rule" x="13.5" y="13.5" width="333" height="423" />
     </svg>
   );
 }
@@ -202,9 +199,10 @@ function Bookplate({ content, stampKey }: Pick<EditionProps, "content" | "stampK
       <Quote content={content} />
       <BookCredit content={content} />
       <div className="edition-bookplate-ownership">
-        <div key={stampKey ?? 0} className="edition-stamp edition-oval-seal" data-stamped={stampKey ? "true" : undefined}>
+        <div key={stampKey ?? 0} className="edition-stamp edition-bookplate-mark" data-stamped={stampKey ? "true" : undefined}>
           <span className="edition-reader-label">{labels.carriedBy}</span>
           <ReaderName content={content} />
+          <span className="edition-signature-rule" aria-hidden="true" />
           <DateLine content={content} />
         </div>
       </div>
@@ -224,10 +222,8 @@ function Poster({ content, stampKey }: Pick<EditionProps, "content" | "stampKey"
         <Quote content={content} />
         <BookCredit content={content} />
       </div>
-      <div className="edition-poster-band" aria-hidden="true">
-        <span className="edition-poster-quotation" lang="en">”</span>
-      </div>
-      <div key={stampKey ?? 0} className="edition-stamp edition-poster-stamp" data-stamped={stampKey ? "true" : undefined}>
+      <div className="edition-poster-band" aria-hidden="true" />
+      <div key={stampKey ?? 0} className="edition-stamp edition-poster-credit" data-stamped={stampKey ? "true" : undefined}>
         <span className="edition-reader-label">{LABELS[content.language].carriedBy}</span>
         <ReaderName content={content} />
         <DateLine content={content} />
@@ -251,9 +247,6 @@ function CancellationMark() {
   return (
     <svg className="edition-cancellation-mark" viewBox="0 0 132 112" aria-hidden="true" focusable="false">
       <circle className="edition-cancellation-outer" cx="66" cy="56" r="50" />
-      <circle className="edition-cancellation-inner" cx="66" cy="56" r="45" />
-      <path className="edition-cancellation-lines" d="M0 43H10M0 49H10M0 55H10M122 57H132M122 63H132M122 69H132" />
-      <path className="edition-cancellation-ticks" d="M64 13H68M64 99H68" />
     </svg>
   );
 }

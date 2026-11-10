@@ -34,7 +34,7 @@ The former Fraunces/Plex letterpress system is superseded by the user's explicit
 ## Signature elements
 
 1. The authored line, book title/author, and reader name/date remain complete on every edition; the year stays in the payload and page metadata.
-2. Editions carry their own ownership marks: the Bookplate's oval seal, the Poster's angled stamp, the Reader's ticket's circular cancellation. Each makes the card feel personally claimed.
+2. Editions carry their own ownership marks, set in type with one coral accent: the Bookplate's coral signature rule under the reader's name, the Poster's coral band credit line, and the Reader's ticket's single-ring circular cancellation. Each makes the card feel personally claimed without certificate ornaments.
 3. The accession number remains derived from the line's identity.
 4. Edition geometry (frames, bands, notches, seals) belongs to its own design, never accumulated across cards.
 5. The shelf shows front-facing covers resolved through the bounded, identity-checked route with labeled authored fallbacks. Cover art is display-only; publisher covers never appear on merchandise.

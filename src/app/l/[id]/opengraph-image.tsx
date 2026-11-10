@@ -14,9 +14,10 @@ export const alt = "A carried line";
 
 const { width: W, height: H } = EDITION_OG;
 
-/** Landscape cuts of the three editions: each keeps its identity (bookplate
- * frame + oval, poster band + angled stamp, ticket stub + cancellation) with
- * the full bilingual text fitted at readable floors, never truncated. */
+/** Landscape cuts of the three editions: each keeps its identity (hairline
+ * plate rule + signature ownership, poster band + credit line, ticket stub +
+ * circular cancellation) with the full bilingual text fitted at readable
+ * floors, never truncated. */
 export default async function OgImage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const fonts = loadOgFonts();
@@ -53,27 +54,21 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
   if (content.edition === "bookplate-v1") {
     return new ImageResponse(
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", backgroundColor: ink.bg, color: ink.text }}>
+        {/* One hairline plate rule; the ownership is type plus a coral signature rule. */}
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", left: 0, top: 0 }}>
-          <path fill="none" stroke={ink.text} strokeWidth={2}
-            d="M48 18H1152V34H1180V596H1152V612H48V596H20V34H48Z" />
-          <path fill="none" stroke={ink.text} strokeWidth={1}
-            d="M55 25H1145V41H1173V589H1145V605H55V589H27V41H55Z" />
-          <path fill="none" stroke={ink.text} strokeWidth={1.4}
-            d="M76 18H44V6M1124 18H1156V6M76 612H44V624M1124 612H1156V624" />
-          <path fill={ink.text} stroke="none" d="M600 12L605 18L600 24L595 18ZM600 606L605 612L600 618L595 612Z" />
+          <rect fill="none" stroke={ink.text} strokeWidth={2} x={48} y={48} width={1104} height={534} />
         </svg>
-        <div style={{ position: "absolute", left: 0, right: 0, top: 46, textAlign: "center", ...sans("latin", EDITION_WEIGHTS.wordmark), fontSize: 34, lineHeight: 1.1 }}>{SITE_NAME}</div>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 46, ...sans("latin", EDITION_WEIGHTS.wordmark), fontSize: 34, lineHeight: 1.1, display: "flex", justifyContent: "center" }}>{SITE_NAME}</div>
         {span(EDITION_COPY["bookplate-v1"][text.language], { left: 0, right: 0, top: 90, fontSize: 17, color: ink.soft, textAlign: "center", fontFamily: cardFontFamily(text.language, "serif", "og") })}
         {span(text.accession, { right: 56, top: 60, fontSize: 15, color: ink.soft })}
         {block(layout.quote, layout.regions.quote, { ...sans(text.quoteScript, EDITION_WEIGHTS.quote), textAlign: "center" })}
-        {span(shared.afterReading[text.language], { left: 140, top: 390, width: 920, fontSize: 15, color: ink.soft, textAlign: "center", fontFamily: cardFontFamily(text.language, "serif", "og") })}
+        {span(shared.afterReading[text.language], { left: 140, top: 384, width: 920, fontSize: 15, color: ink.soft, textAlign: "center", fontFamily: cardFontFamily(text.language, "serif", "og") })}
         {block(layout.book, layout.regions.book, { ...sans(text.bookScript, EDITION_WEIGHTS.book), textAlign: "center" })}
         {block(layout.author, layout.regions.author, { ...sans(text.authorScript, EDITION_WEIGHTS.author), color: ink.soft, textAlign: "center" })}
-        <div style={{ position: "absolute", left: 370, top: 504, width: 460, height: 96, border: `3px solid ${ink.stamp}`, borderRadius: "50%", color: ink.stamp }} />
-        <div style={{ position: "absolute", left: 376, top: 510, width: 448, height: 84, border: `1.5px solid ${ink.stamp}`, borderRadius: "50%" }} />
-        {span(shared.carriedBy[text.language], { left: 414, top: 514, width: 372, fontSize: 14, color: ink.stamp, textAlign: "center", fontFamily: cardFontFamily(text.language, "serif", "og") })}
-        {block(layout.name, layout.regions.name, { ...sans(text.nameScript, EDITION_WEIGHTS.name), color: ink.stamp, textAlign: "center" })}
-        {span(dated, { left: 414, top: 574, width: 372, fontSize: 14, color: ink.stamp, textAlign: "center", fontFamily: cardFontFamily(text.dateScript, "serif", "og") })}
+        {span(shared.carriedBy[text.language], { left: 414, top: 494, width: 372, fontSize: 14, color: ink.soft, textAlign: "center", fontFamily: cardFontFamily(text.language, "serif", "og") })}
+        {block(layout.name, layout.regions.name, { ...sans(text.nameScript, EDITION_WEIGHTS.name), color: ink.text, textAlign: "center" })}
+        <div style={{ position: "absolute", left: 525, top: 557, width: 150, borderTop: `3px solid ${ink.stamp}` }} />
+        {span(dated, { left: 414, top: 562, width: 372, fontSize: 13, color: ink.soft, textAlign: "center", fontFamily: cardFontFamily(text.dateScript, "serif", "og") })}
       </div>, { ...size, fonts });
   }
 
@@ -88,17 +83,12 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
         {span(shared.afterReading[text.language], { left: 88, top: 418, fontSize: 15, color: textColor, fontFamily: cardFontFamily(text.language, "serif", "og") })}
         {block(layout.book, layout.regions.book, sans(text.bookScript, EDITION_WEIGHTS.book))}
         {block(layout.author, layout.regions.author, { ...sans(text.authorScript, EDITION_WEIGHTS.author), color: textColor })}
-        <div style={{ position: "absolute", left: 0, right: 0, top: 510, bottom: 0, backgroundColor: ink.stamp, overflow: "hidden", display: "flex" }}>
-          <span style={{ position: "absolute", left: 50, top: -130, fontSize: 300, fontWeight: 600, lineHeight: 1, color: fieldColor }}>”</span>
-        </div>
-        <div style={{ position: "absolute", left: 728, top: 440, width: 400, height: 140, transform: "rotate(-6deg)", backgroundColor: ink.bg,
-          border: `3px solid ${ink.stamp}`, color: ink.stamp, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, textAlign: "center" }}>
-          <span style={{ ...sans(text.language, EDITION_WEIGHTS.label), fontSize: 14 }}>{shared.carriedBy[text.language]}</span>
-          <div style={{ ...sans(text.nameScript, EDITION_WEIGHTS.name), fontSize: layout.name.fontSize, lineHeight: `${layout.name.lineHeight}px`, width: 336, display: "flex", flexDirection: "column", alignItems: "center" }}>
-            {lines(layout.name, "center")}
-          </div>
-          <span style={{ ...sans(text.dateScript, EDITION_WEIGHTS.label), fontSize: 14 }}>{dated}</span>
-        </div>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 510, bottom: 0, backgroundColor: ink.stamp, display: "flex" }} />
+        {/* Straight credit line on the band, left-aligned with the quote;
+            ink-pale text keeps 4.5:1 on every coral. */}
+        {span(shared.carriedBy[text.language], { left: 88, top: 522, fontSize: 14, color: ink.bg, fontFamily: cardFontFamily(text.language, "serif", "og") })}
+        {block(layout.name, layout.regions.name, { ...sans(text.nameScript, EDITION_WEIGHTS.name), color: ink.bg })}
+        {span(dated, { left: 88, top: 594, fontSize: 14, color: ink.bg, fontFamily: cardFontFamily(text.dateScript, "serif", "og") })}
       </div>, { ...size, fonts });
   }
 
@@ -125,9 +115,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
       {block(layout.book, layout.regions.book, { ...sans(text.bookScript, EDITION_WEIGHTS.book), color: ink.bg })}
       {block(layout.author, layout.regions.author, { ...sans(text.authorScript, EDITION_WEIGHTS.author), color: ink.bg })}
       <svg width={264} height={240} viewBox="0 0 264 240" style={{ position: "absolute", left: 908, top: 312 }}>
-        <circle cx="132" cy="120" r="118" fill={ink.bg} stroke={ink.stamp} strokeWidth={5} />
-        <circle cx="132" cy="120" r="105" fill="none" stroke={ink.stamp} strokeWidth={2.5} />
-        <path fill="none" stroke={ink.stamp} strokeWidth={2.5} d="M0 108H14M0 120H14M0 132H14M250 108H264M250 120H264M250 132H264" />
+        <circle cx="132" cy="120" r="100" fill={ink.bg} stroke={ink.stamp} strokeWidth={3} />
       </svg>
       <div style={{ position: "absolute", left: 942, top: 358, width: 196, height: 148, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, color: ink.stamp }}>
         <span style={{ ...sans(text.language, EDITION_WEIGHTS.label), fontSize: 13 }}>{shared.carriedBy[text.language]}</span>
