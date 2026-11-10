@@ -77,8 +77,6 @@ WOFF2 files serve web text; matching static TTFs serve canvas/OG. Bengali weight
 
 ## Layout
 
-## Layout
-
 The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 58% shelf and 42% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
 
 The shelf is cover-led: front-facing 2:3 covers on a shared ledge with title/author captions, a featured book with its real cover, and resolved-cover artwork only for displayed books. Cover lookups go through `/api/covers` (bounded, identity-checked, cached) with labeled authored typographic fallbacks in the book's cloth color; unresolved books never fall back to spines or random art. Cover images are display-only and never merchandise assets.
@@ -93,13 +91,13 @@ Light shadows belong to physical book/card artwork only. Remove grain, ornamenta
 
 ## Shapes
 
-Controls are 10px, panels 14px, and artwork approximately 12px with a subtle double border. The signature is a compact horizontal ownership block with a thin coral border, not a large rotated rubber stamp. The active rail icon is a 44px circle.
+Controls are 10px and panels 14px. The active rail icon is a 44px circle. Card artwork follows its immutable edition: the Bookplate's stepped frame/oval seal, Poster's angled stamp, and Ticket's die-cut stock/cancellation. Do not apply the interface's generic panel radius or signature shape to those painted surfaces.
 
 ## Components
 
 - Navigation: consistent outline icons with accessible names, hover/focus labels when collapsed, active state, bottom expand/collapse button, and mobile Escape/focus dismissal.
-- Cards: intrinsic DOM height. Related content groups naturally: header, quote, provenance, ownership. No `h-full`/`flex-1` forcing blank quote space.
-- Exports: shared adaptive geometry in `text-layout.ts` places each section after the preceding content. Extra PNG/OG frame space surrounds the complete centered composition, never splits its internal groups. Full valid text is preserved.
+- Cards: fixed 4:5 collectible artwork with fitted text and edition-specific furniture; utility actions and readable companion provenance sit outside it. Do not stretch artwork or spread internal sections with `flex-1`.
+- Exports: shared print-space geometry and canonical portrait line breaks place complete text and ownership marks consistently in DOM/PNG. OG uses the same content and visual identity in an explicit landscape adaptation. Test actual raster output, font shaping, units, and alignment, not only file dimensions.
 - Shop previews: actual card artwork fits within the product print area with a ResizeObserver; do not stretch it to fill a fixed-height mockup.
 - Forms and feeds: retain native radios, serial visible-tab polling, local-storage validation/fallback, useful empty/error states, and truthful offline/editorial status.
 

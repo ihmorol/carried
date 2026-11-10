@@ -43,7 +43,7 @@ The former Fraunces/Plex letterpress system is superseded by the user's explicit
 
 The home is a whole-page shelf/lines split, not another marketing hero. The sidebar is narrow with regular outline icons, a coral active circle, and a bottom hamburger that reveals labels. Preserve accessible labels and keyboard use in both sizes. On mobile, stack the sectors and provide clear jump links.
 
-Content determines card height. Do not insert empty fixed regions between short quotes and their attribution. DOM, PNG, OG, and merchandise previews share content/type decisions. Respect reduced motion; never animate readable cards continuously.
+Collectible artwork keeps its approved 4:5 composition. Fit full valid content within the edition's text regions; do not stretch or distribute those groups to fill a page panel. Page utilities and readable companion provenance remain outside the artwork. DOM, PNG, OG, and merchandise previews share content/type decisions. Respect reduced motion; never animate readable cards continuously.
 
 ## Boundaries
 
