@@ -58,7 +58,7 @@ export function LinePicker({ selection, saved, example, onChange, showCard = tru
     <p id={hintId} className="shop-note">{c(saved.length ? "chooseHint" : "noLines")}</p>
     <InkSelector selection={selection} onChange={onChange} />
     <DesignSelector selection={selection} onChange={onChange} />
-    <Link className="shop-text-link" href="/#shelf">{c("write")}</Link>
+    <Link className="shop-text-link" href="/books">{c("write")}</Link>
     {showCard && <LineCard payload={selection.payload} id={selection.sourceId} actions={false} className="shop-sidebar-card" />}
   </section>;
 }

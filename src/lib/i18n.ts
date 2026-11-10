@@ -74,6 +74,11 @@ const EN: Dict = {
   "nav.menu": "Menu",
   "shell.name": "Reading room",
   "shell.free": "Digital cards, always free",
+  "books.title": "The shelf",
+  "books.sub": "The wall of books readers carry. Search, filter by kind, and open one to write the line it left in you.",
+  "lines.title": "Reader lines",
+  "lines.sub": "The freshest lines carried out of the shelf, one card at a time. Underline the ones that stay with you.",
+  "lines.count": "{n} {lines}",
 
   // footer
   "footer.tag": "every book leaves a line in you. pass yours on.",
@@ -322,6 +327,11 @@ const BN: Dict = {
   "nav.menu": "মেনু",
   "shell.name": "পড়ার ঘর",
   "shell.free": "ডিজিটাল কার্ড সবসময় বিনামূল্যে",
+  "books.title": "শেলফ",
+  "books.sub": "পাঠকেরা যেসব বই বহন করে, সেই বইয়ের প্রাচীর। খুঁজো, ধরন বেছে নাও, আর একটি খুলে লিখে ফেলো বইটি তোমার ভেতরে কী রেখে গেছে।",
+  "lines.title": "পাঠকের লাইন",
+  "lines.sub": "শেলফ থেকে পাঠকেরা যে লাইনগুলো বহন করেছে, তাজা গুলো আগে। যেগুলো তোমার সঙ্গে থাকে, সেগুলোতে দাগ দাও।",
+  "lines.count": "{n} {lines}",
 
   "footer.tag": "প্রতিটি বই তোমাকে একটা লাইন দিয়ে যায়। তোমারটাও পাঠিয়ে দাও।",
   "footer.pick": "বই খোঁজো",

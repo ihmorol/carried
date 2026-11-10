@@ -61,7 +61,7 @@ describe("reading-room navigation", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     const nav = document.getElementById(toggle.getAttribute("aria-controls")!)!;
     expect(within(nav).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual([
-      "/", "/#shelf", "/#reader-lines", "/shelf", "/shop",
+      "/", "/books", "/lines", "/shelf", "/shop",
     ]);
     expect(within(nav).getByRole("link", { name: "Home" }).getAttribute("aria-current")).toBe("page");
     fireEvent.click(toggle);
@@ -86,7 +86,7 @@ describe("reading-room navigation", () => {
     fireEvent.click(toggle);
     fireEvent.click(within(nav).getByRole("link", { name: "Lines" }));
     expect(nav.hidden).toBe(true);
-    expect(document.activeElement?.id).toBe("reader-lines");
+    expect(document.activeElement).toBe(toggle);
   });
 
   it("dismisses the mobile menu when focus leaves it or the route changes", async () => {
@@ -102,25 +102,28 @@ describe("reading-room navigation", () => {
     expect(within(document.getElementById("desktop-navigation")!).getByRole("link", { name: "Shop" }).getAttribute("aria-current")).toBe("page");
   });
 
-  it("marks section anchors and line routes as the active destination", async () => {
-    window.history.replaceState(null, "", "/#reader-lines");
+  it("marks book and line routes as the active destination", async () => {
+    navigation.pathname = "/books";
     const view = wrap(<Header />); await flush();
     const nav = document.getElementById("desktop-navigation")!;
-    expect(within(nav).getByRole("link", { name: "Lines" }).getAttribute("aria-current")).toBe("location");
+    expect(within(nav).getByRole("link", { name: "The shelf" }).getAttribute("aria-current")).toBe("page");
     expect(within(nav).getByRole("link", { name: "Home" }).hasAttribute("aria-current")).toBe(false);
-    window.history.replaceState(null, "", "/#shelf");
-    fireEvent(window, new HashChangeEvent("hashchange"));
-    expect(within(nav).getByRole("link", { name: "The shelf" }).getAttribute("aria-current")).toBe("location");
+    navigation.pathname = "/b/a-real-book";
+    view.rerender(<LocaleProvider><Header /></LocaleProvider>); await flush();
+    expect(within(document.getElementById("desktop-navigation")!).getByRole("link", { name: "The shelf" }).getAttribute("aria-current")).toBe("page");
     navigation.pathname = "/l/a-real-line";
     view.rerender(<LocaleProvider><Header /></LocaleProvider>); await flush();
     expect(within(document.getElementById("desktop-navigation")!).getByRole("link", { name: "Lines" }).getAttribute("aria-current")).toBe("page");
+    navigation.pathname = "/";
+    view.rerender(<LocaleProvider><Header /></LocaleProvider>); await flush();
+    expect(within(document.getElementById("desktop-navigation")!).getByRole("link", { name: "Lines" }).hasAttribute("aria-current")).toBe(false);
   });
 
   it("translates navigation while keeping the language preference on-device", async () => {
     wrap(<Header />); await flush();
     fireEvent.click(screen.getByRole("button", { name: "বাংলা" }));
     expect(screen.getByRole("button", { name: "নেভিগেশন বড় করো" })).toBeTruthy();
-    expect(within(document.getElementById("desktop-navigation")!).getByRole("link", { name: "লাইন" }).getAttribute("href")).toBe("/#reader-lines");
+    expect(within(document.getElementById("desktop-navigation")!).getByRole("link", { name: "লাইন" }).getAttribute("href")).toBe("/lines");
     expect(window.localStorage.getItem("carried-locale")).toBe("bn");
   });
 });

@@ -71,7 +71,7 @@ export default async function LinePage({ params, searchParams }: Props) {
         <section className="card-loop">
           <h2 className="section-title"><T k="card.loop.h" v={{ title: originalName(book) }} /></h2>
           <p><T k="card.loop.sub" v={{ n: payload.n }} /></p>
-          <Link href={onShelf ? `/b/${book.slug}#write` : "/#shelf"} className="ui-button"><T k="card.loop.cta" /><ArrowRight size={17} aria-hidden="true" /></Link>
+          <Link href={onShelf ? `/b/${book.slug}#write` : "/books"} className="ui-button"><T k="card.loop.cta" /><ArrowRight size={17} aria-hidden="true" /></Link>
         </section>
         {others.length > 0 && <section className="reading-section"><h2 className="section-title mb-6"><T k="card.more" v={{ title: originalName(book) }} /></h2><ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{others.map((line) => <li key={line.id}><LineCard payload={line} id={line.id} asLink votes={counts.get(line.id) ?? 0} className="h-full" /></li>)}</ul></section>}
       </main>

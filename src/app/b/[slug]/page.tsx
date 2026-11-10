@@ -43,7 +43,7 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
     <>
       <Header />
       <main id="main-content" className="page-content">
-        <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/#shelf"><T k="nav.shelf" /></Link><span aria-hidden="true">/</span><span>{originalName(book)}</span></nav>
+        <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/books"><T k="nav.shelf" /></Link><span aria-hidden="true">/</span><span>{originalName(book)}</span></nav>
         <section className="book-introduction">
           <div className="justify-self-center"><BookSpine book={book} height={180} /></div>
           <div>

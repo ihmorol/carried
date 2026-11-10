@@ -15,24 +15,10 @@ export function Header() {
 function Navigation({ pathname }: { pathname: string }) {
   const { t, locale, setLocale } = useLocale();
   const [expanded, setExpanded] = useState(false);
-  const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileToggle = useRef<HTMLButtonElement>(null);
   const mobileNavigation = useRef<HTMLDivElement>(null);
   const mobileLinks = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    const syncHash = () => setHash(window.location.hash);
-    void Promise.resolve().then(() => { if (mounted) syncHash(); });
-    window.addEventListener("hashchange", syncHash);
-    window.addEventListener("popstate", syncHash);
-    return () => {
-      mounted = false;
-      window.removeEventListener("hashchange", syncHash);
-      window.removeEventListener("popstate", syncHash);
-    };
-  }, []);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -57,37 +43,36 @@ function Navigation({ pathname }: { pathname: string }) {
     };
   }, [mobileOpen]);
 
+  // Every rail button is a real page: the home workspace keeps its section
+  // anchors (#shelf, #reader-lines) for jump links and legacy URLs.
   const links = [
-    { href: "/", label: t("nav.home"), icon: House, active: pathname === "/" && hash !== "#shelf" && hash !== "#reader-lines" },
-    { href: "/#shelf", label: t("nav.shelf"), icon: Books, active: pathname.startsWith("/b/") || pathname === "/" && hash === "#shelf" },
-    { href: "/#reader-lines", label: t("nav.lines"), icon: Quotes, active: pathname.startsWith("/l/") || pathname === "/" && hash === "#reader-lines" },
+    { href: "/", label: t("nav.home"), icon: House, active: pathname === "/" },
+    { href: "/books", label: t("nav.shelf"), icon: Books, active: pathname === "/books" || pathname.startsWith("/b/") },
+    { href: "/lines", label: t("nav.lines"), icon: Quotes, active: pathname === "/lines" || pathname.startsWith("/l/") },
     { href: "/shelf", label: t("nav.myLines"), icon: BookmarkSimple, active: pathname === "/shelf" },
     { href: "/shop", label: t("nav.shop"), icon: Tote, active: pathname.startsWith("/shop") },
   ];
 
-  function navigate(href: string) {
-    const nextHash = href.startsWith("/#") ? href.slice(1) : "";
-    setHash(nextHash);
+  function closeMobileMenu() {
     if (mobileOpen) {
       setMobileOpen(false);
       mobileToggle.current?.focus();
     }
-    if (pathname === "/" && nextHash) document.getElementById(nextHash.slice(1))?.focus({ preventScroll: true });
   }
 
   return (
     <>
       <a className="skip-link" href="#main-content">{t("nav.skip")}</a>
       <aside className="navigation-rail" data-expanded={expanded}>
-        <Link href="/" className="rail-brand" aria-label={`${SITE_NAME} · ${t("nav.home")}`} title={SITE_NAME} onNavigate={() => navigate("/")}>
+        <Link href="/" className="rail-brand" aria-label={`${SITE_NAME} · ${t("nav.home")}`} title={SITE_NAME} onNavigate={closeMobileMenu}>
           <span className="rail-icon"><BookOpen size={26} weight="regular" aria-hidden="true" /></span>
           <span className="rail-label">{SITE_NAME}</span>
         </Link>
         <nav id="desktop-navigation" className="rail-links" aria-label={t("nav.main")}>
           {links.map(({ href, label, icon: Icon, active }) => (
             <Link key={href} href={href} className={`rail-link${active ? " is-active" : ""}`}
-              aria-label={label} aria-current={active ? (href.includes("#") && pathname === "/" ? "location" : "page") : undefined}
-              onNavigate={() => navigate(href)} title={expanded ? undefined : label}>
+              aria-label={label} aria-current={active ? "page" : undefined}
+              onNavigate={closeMobileMenu} title={expanded ? undefined : label}>
               <span className="rail-icon"><Icon size={23} weight="regular" aria-hidden="true" /></span>
               <span className="rail-label">{label}</span>
             </Link>
@@ -103,7 +88,7 @@ function Navigation({ pathname }: { pathname: string }) {
       <header className={`site-header${pathname === "/" ? " site-header--workspace" : ""}`}>
         <div className="header-inner">
           <div className="header-branding">
-            <Link href="/" className="header-wordmark" aria-label={`${SITE_NAME} · ${t("nav.home")}`} onNavigate={() => navigate("/")}>{SITE_NAME}</Link>
+            <Link href="/" className="header-wordmark" aria-label={`${SITE_NAME} · ${t("nav.home")}`} onNavigate={closeMobileMenu}>{SITE_NAME}</Link>
             <span className="header-room">{t("shell.name")}</span>
           </div>
           <div className="header-actions">
@@ -125,8 +110,8 @@ function Navigation({ pathname }: { pathname: string }) {
               </button>
               <nav ref={mobileLinks} id="mobile-navigation" hidden={!mobileOpen} aria-label={t("nav.main")}>
                 {links.map(({ href, label, icon: Icon, active }) => (
-                  <Link key={href} href={href} aria-current={active ? (href.includes("#") && pathname === "/" ? "location" : "page") : undefined}
-                    onNavigate={() => navigate(href)}>
+                  <Link key={href} href={href} aria-current={active ? "page" : undefined}
+                    onNavigate={closeMobileMenu}>
                     <span className="rail-icon"><Icon size={22} weight="regular" aria-hidden="true" /></span>{label}
                   </Link>
                 ))}
@@ -147,8 +132,9 @@ export function Footer() {
       <div className="footer-inner">
         <p className="footer-signature">{SITE_NAME}<span>{t("brand.tagline")}</span></p>
         <nav aria-label="Footer">
-          <Link href="/#shelf">{t("footer.pick")}</Link>
+          <Link href="/books">{t("footer.pick")}</Link>
           <Link href="/shelf">{t("footer.mine")}</Link>
+          <Link href="/lines">{t("nav.lines")}</Link>
           <Link href="/shop">{t("nav.shop")}</Link>
           <a href="https://github.com/ihmorol/carried" target="_blank" rel="noopener noreferrer">{t("footer.source")}<ArrowUpRight size={14} weight="regular" aria-hidden="true" /></a>
         </nav>

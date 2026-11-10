@@ -42,7 +42,7 @@ export default function ShelfPage() {
     {blocked && <p role="status" className="panel mt-6 p-4 text-sm">{t("mine.blocked")}</p>}
     {lines === null ? <p role="status" className="panel mt-8 p-6 text-sm">{t("mine.loading")}</p> : lines.length === 0 ? <div className="panel mt-8 p-8">
       <p className="font-serif text-2xl">{t("mine.empty.title")}</p><p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--color-ink-soft)]">{t("mine.empty.sub")}</p>
-      <Link href="/#shelf" className="ui-button mt-6">{t("mine.empty.cta")}</Link>
+      <Link href="/books" className="ui-button mt-6">{t("mine.empty.cta")}</Link>
     </div> : <>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <label htmlFor="my-search" className="sr-only">{t("mine.search")}</label><input id="my-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("mine.search")} className="field-input min-w-0 flex-1" />
