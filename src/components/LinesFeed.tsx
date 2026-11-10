@@ -53,7 +53,7 @@ function BookFeed({ slug, seeds }: { slug: string; seeds: SeedLine[] }) {
       })}</p>
     </div>
     {records.length === 0 ? <div className="panel mt-8 p-8"><p className="font-serif text-2xl">{t("feed.empty.title")}</p><p className="mt-3 text-sm text-[var(--color-ink-soft)]">{t("feed.empty.sub")}</p></div>
-      : <ul className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      : <ul className="reveal-list mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {records.map((record) => <li key={record.id}><LineCard payload={record.payload} id={record.id} votes={record.votes} asLink onChange={onVote} className="h-full" /></li>)}
       </ul>}
   </div>;

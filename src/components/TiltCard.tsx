@@ -27,6 +27,9 @@ export function TiltCard({
   const enabled = useRef(false);
 
   useEffect(() => {
+    // Very old engines and test environments lack matchMedia; tilt is
+    // presentation only, so it simply stays off there.
+    if (typeof window.matchMedia !== "function") return;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
     const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {

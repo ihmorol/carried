@@ -39,7 +39,7 @@ export function ReaderLinesFeed({ seeds, limit = 36 }: { seeds: SeedLine[]; limi
       {t(status === "live" ? "feed.live" : status === "loading" ? "feed.editorialLoading" : status === "error" ? "feed.editorialError" : "feed.editorial")}
       {" · "}{t("lines.count", { n: numFor(lines.length, locale), lines: t(lines.length === 1 ? "feed.line" : "feed.lines") })}
     </p>
-    <ul className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="reveal-list mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {lines.map((line) => <li key={line.id}>
         <LineCard payload={line.payload} id={line.id} asLink votes={line.votes} onChange={onVote} className="h-full" />
       </li>)}

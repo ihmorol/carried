@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Tote } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
+import { TiltCard } from "@/components/TiltCard";
 import { Composer } from "@/components/Composer";
 import { LocalSaveNotice } from "@/components/LocalSaveNotice";
 import { ShareRow } from "@/components/ShareRow";
@@ -50,7 +51,7 @@ export default async function LinePage({ params, searchParams }: Props) {
       <Header />
       <main id="main-content" className="page-content">
         <div className="card-workspace">
-          <div className="card-workspace-art"><LineCard payload={payload} book={book} id={id} size="lg" animateStamp votes={counts.get(id) ?? 0} /></div>
+          <div className="card-workspace-art"><TiltCard><LineCard payload={payload} book={book} id={id} size="lg" animateStamp votes={counts.get(id) ?? 0} /></TiltCard></div>
           <div className="card-workspace-copy">
             <h1 className="page-title"><T k="card.ready" /></h1>
             <p><T k="card.travel" /></p>
@@ -73,7 +74,7 @@ export default async function LinePage({ params, searchParams }: Props) {
           <p><T k="card.loop.sub" v={{ n: payload.n }} /></p>
           <Link href={onShelf ? `/b/${book.slug}#write` : "/books"} className="ui-button"><T k="card.loop.cta" /><ArrowRight size={17} aria-hidden="true" /></Link>
         </section>
-        {others.length > 0 && <section className="reading-section"><h2 className="section-title mb-6"><T k="card.more" v={{ title: originalName(book) }} /></h2><ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{others.map((line) => <li key={line.id}><LineCard payload={line} id={line.id} asLink votes={counts.get(line.id) ?? 0} className="h-full" /></li>)}</ul></section>}
+        {others.length > 0 && <section className="reading-section"><h2 className="section-title mb-6"><T k="card.more" v={{ title: originalName(book) }} /></h2><ul className="reveal-list grid gap-6 sm:grid-cols-2 xl:grid-cols-3">{others.map((line) => <li key={line.id}><LineCard payload={line} id={line.id} asLink votes={counts.get(line.id) ?? 0} className="h-full" /></li>)}</ul></section>}
       </main>
       <Footer />
     </>

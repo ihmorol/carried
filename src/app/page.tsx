@@ -4,6 +4,7 @@ import { ArrowRight, Books, Quotes } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
 import { LineCard } from "@/components/LineCard";
+import { TiltCard } from "@/components/TiltCard";
 import { FrontCover } from "@/components/FrontCover";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
 import { T } from "@/components/T";
@@ -76,7 +77,7 @@ export default function Home() {
               <h2><T k="home.daily" /></h2>
               <p><T k="home.featured" /></p>
             </div>
-            <div className="workspace-daily-card"><LineCard payload={featured} id={featured.id} actions={false} asLink /></div>
+            <div className="workspace-daily-card"><TiltCard><LineCard payload={featured} id={featured.id} actions={false} asLink /></TiltCard></div>
             <div className="workspace-daily-book">
               <Link href={`/b/${featured.b}`} lang={isBengali(title) ? "bn" : "en"}>{title}</Link>
               <p lang={isBengali(author) ? "bn" : "en"}>{author}</p>

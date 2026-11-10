@@ -712,32 +712,6 @@ input, textarea { caret-color: var(--color-stamp); }
   inset-block-end: 4.4444cqw;
 }
 
-/* Re-pressing the mark replays the 250ms stamp. */
-.edition-stamp {
-  transform: rotate(var(--edition-stamp-rotation, 0deg));
-  transform-origin: center;
-  opacity: 1;
-}
-
-.edition-stamp[data-stamped="true"] {
-  animation: edition-stamp-in 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes edition-stamp-in {
-  from {
-    opacity: 0.6;
-    transform: translateY(-2.2222cqw) rotate(calc(var(--edition-stamp-rotation, 0deg) - 4deg)) scale(1.07);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(0.2778cqw) rotate(var(--edition-stamp-rotation, 0deg)) scale(0.99);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) rotate(var(--edition-stamp-rotation, 0deg)) scale(1);
-  }
-}
-
 /* Vote/actions row: page furniture, never ink colors. */
 .edition-actions {
   display: flex;
@@ -752,4 +726,80 @@ input, textarea { caret-color: var(--color-stamp); }
   font-size: 12px;
   line-height: 1.4;
   color: var(--color-ink-soft);
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion. One easing, three durations, one authored moment: the      */
+/* ownership mark pressing into the card. Tilt and reveals sit on     */
+/* wrappers, never on the painted artwork itself.                     */
+/* ------------------------------------------------------------------ */
+
+.tilt { transform-style: preserve-3d; }
+
+/* A light physical shadow under the held card, deepening as it leans. */
+.tilt .edition-artwork {
+  box-shadow: 0 1px 2px rgb(38 41 47 / 0.05), 0 10px 28px rgb(38 41 47 / 0.09);
+  transition: box-shadow 550ms var(--ease-out-soft);
+}
+
+.tilt:hover .edition-artwork,
+.tilt:focus-within .edition-artwork {
+  box-shadow: 0 2px 4px rgb(38 41 47 / 0.07), 0 18px 44px rgb(38 41 47 / 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt .edition-artwork { box-shadow: none; }
+}
+
+/* Scroll reveals: progressive enhancement over an already-visible default.
+   Browsers without scroll timelines simply show the lists. */
+@keyframes reveal-up {
+  from { opacity: 0.001; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-list > li,
+    .shelf-book-grid > li,
+    .shop-product-grid > .shop-product-tile {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-timing-function: var(--ease-out-soft);
+      animation-range: entry 0% entry 72%;
+    }
+    /* A quiet left-to-right wave across grid rows, capped at three steps. */
+    .reveal-list > li:nth-child(3n + 2),
+    .shelf-book-grid > li:nth-child(3n + 2),
+    .shop-product-grid > .shop-product-tile:nth-child(3n + 2) { animation-range: entry 8% entry 80%; }
+    .reveal-list > li:nth-child(3n),
+    .shelf-book-grid > li:nth-child(3n),
+    .shop-product-grid > .shop-product-tile:nth-child(3n) { animation-range: entry 16% entry 88%; }
+  }
+}
+
+/* Re-pressing the mark replays the press: drop, settle, rest. */
+.edition-stamp {
+  transform: rotate(var(--edition-stamp-rotation, 0deg));
+  transform-origin: center;
+  opacity: 1;
+}
+
+.edition-stamp[data-stamped="true"] {
+  animation: edition-stamp-in 420ms var(--ease-out-soft) both;
+}
+
+@keyframes edition-stamp-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2.5cqw) rotate(calc(var(--edition-stamp-rotation, 0deg) - 3deg)) scale(1.1);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(0.2778cqw) rotate(var(--edition-stamp-rotation, 0deg)) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--edition-stamp-rotation, 0deg)) scale(1);
+  }
 }

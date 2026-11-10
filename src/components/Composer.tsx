@@ -12,6 +12,7 @@ import { LINE_MAX } from "@/lib/site";
 import { LineCard } from "./LineCard";
 import { CardDesignPicker } from "./CardDesignPicker";
 import { ProofBoundary } from "./ProofBoundary";
+import { TiltCard } from "./TiltCard";
 import { useLocale } from "./LocaleProvider";
 
 type ComposerProps = {
@@ -155,7 +156,7 @@ function ComposerForm({ book, initialPayload, sourceId, creationMode = "public" 
         {(draft.lineIssue === "too-long" || draft.nameIssue === "too-long") && <p className="composer-proof-note mb-4 text-sm text-[var(--color-ink-soft)]">{t("c.proofInvalid")}</p>}
         <ProofBoundary resetKey={proofKey} message={t("c.proofUnavailable")} retryLabel={t("c.proofRetry")}>
           <div key={stampKey} className="mx-auto w-full max-w-[360px] animate-stamp-in">
-            <LineCard payload={preview} book={book} id={prefillId ?? "preview-preview"} actions={false} />
+            <TiltCard max={4}><LineCard payload={preview} book={book} id={prefillId ?? "preview-preview"} actions={false} /></TiltCard>
           </div>
         </ProofBoundary>
       </section>

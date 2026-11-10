@@ -48,7 +48,7 @@ export default function ShelfPage() {
         <label htmlFor="my-search" className="sr-only">{t("mine.search")}</label><input id="my-search" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("mine.search")} className="field-input min-w-0 flex-1" />
         <label htmlFor="my-sort" className="sr-only">{t("mine.sort")}</label><select id="my-sort" value={sort} onChange={(e) => setSort(e.target.value)} className="field-input sm:!w-auto"><option value="newest">{t("mine.newest")}</option><option value="oldest">{t("mine.oldest")}</option><option value="book">{t("mine.byBook")}</option></select>
       </div>
-      {results.length ? <ul className="mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">{results.map((entry) => <li key={entry.id}>
+      {results.length ? <ul className="reveal-list mt-8 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">{results.map((entry) => <li key={entry.id}>
         {bookForPayload(entry.payload) ? <LineCard payload={entry.payload} id={entry.id} asLink className="h-full" />
           : <Link href={`/l/${entry.id}`} className="panel block p-6"><p className="font-serif text-xl leading-relaxed">{entry.payload.q}</p><p className="mt-4 text-sm">{entry.payload.n}</p><p className="mt-3 text-[13px] text-[var(--color-ink-soft)]">{t("mine.legacy")}</p></Link>}
       </li>)}</ul>

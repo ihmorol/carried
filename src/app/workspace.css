@@ -176,8 +176,7 @@ body:has(.navigation-rail[data-expanded="true"]) {
 .recent-line-name { color: var(--color-ink); font-weight: 600; }
 .recent-line-book { overflow-wrap: anywhere; }
 .recent-line-meta time { margin-inline-start: auto; }
-.recent-lines-more { border-top: 1px solid var(--color-rule); }
-.recent-lines-more-link { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; margin-top: 4px; font-size: 14px; font-weight: 500; color: var(--color-ink); }
+.recent-lines-more-link { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding-block: 10px; font-size: 14px; font-weight: 500; color: var(--color-ink); }
 .recent-lines-more-link svg { transition: transform var(--dur) var(--ease-out-soft); }
 .recent-lines-more-link:hover svg { transform: translateX(3px); }
 
