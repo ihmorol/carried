@@ -21,22 +21,20 @@ export function CardDesignPicker({ book, payload, value, onChange, disabled = fa
 }) {
   const { t } = useLocale();
   return (
-    <fieldset className="mt-6" disabled={disabled}>
+    <fieldset className="edition-picker" disabled={disabled}>
       <legend className="text-sm font-medium">{t("c.4")}</legend>
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+      <div className="edition-picker-options">
         {CARD_TEMPLATES.map((id) => (
-          <label key={id}
-            className="flex cursor-pointer flex-col gap-2 rounded-[var(--radius-control)] border border-[var(--color-rule)] p-3 transition-colors hover:border-[var(--color-ink-soft)]"
-            style={value === id ? { borderColor: "var(--color-ink)" } : undefined}>
-            <span className="flex items-center gap-2">
-              <input type="radio" name="card-design" value={id} checked={value === id}
-                onChange={() => onChange(id)} className="h-4 w-4 accent-[var(--color-ink)]" />
-              <span className="text-sm font-medium">{t(`ct.${id}`)}</span>
-            </span>
-            <span aria-hidden="true" className="pointer-events-none mx-auto block w-full max-w-[128px] select-none">
+          <label key={id} className="edition-picker-option" data-selected={value === id}>
+            <input type="radio" name="card-design" value={id} checked={value === id}
+              onChange={() => onChange(id)} className="edition-picker-radio" />
+            <span aria-hidden="true" className="edition-picker-thumbnail">
               <LineCard payload={{ ...payload, ct: id }} book={book} id={`design-${id}`} actions={false} />
             </span>
-            <span className="text-[13px] leading-relaxed text-[var(--color-ink-soft)]">{t(`ct.${id}.desc`)}</span>
+            <span className="edition-picker-copy">
+              <span className="edition-picker-name">{t(`ct.${id}`)}</span>
+              <span className="edition-picker-description">{t(`ct.${id}.desc`)}</span>
+            </span>
           </label>
         ))}
       </div>
