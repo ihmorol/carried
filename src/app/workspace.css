@@ -90,9 +90,9 @@ body:has(.navigation-rail[data-expanded="true"]) {
   .workspace-shelf, .workspace-lines { padding-inline: 32px; }
 }
 .workspace-shelf:focus, .workspace-lines:focus { outline-offset: -4px; }
-.workspace-welcome { margin-block: 24px; }
-.workspace-welcome h1 { font-size: clamp(28px, 3vw, 32px); line-height: 1.35; font-weight: 600; text-wrap: balance; }
-.workspace-welcome p { margin-top: 10px; max-width: 48ch; font-size: 14px; line-height: 1.6; color: var(--color-ink-soft); }
+.workspace-welcome { margin-block: 28px 32px; }
+.workspace-welcome h1 { font-size: clamp(30px, 3.6vw, 44px); line-height: 1.15; font-weight: 600; letter-spacing: -0.03em; text-wrap: balance; }
+.workspace-welcome p { margin-top: 12px; max-width: 46ch; font-size: 15px; line-height: 1.6; color: var(--color-ink-soft); }
 .workspace-book {
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr);
@@ -114,10 +114,10 @@ body:has(.navigation-rail[data-expanded="true"]) {
 .workspace-book-link { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; font-weight: 500; }
 .workspace-book-link:hover { text-decoration: underline; text-underline-offset: 4px; }
 .workspace-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-.workspace-section-heading h2 { font-size: 20px; font-weight: 600; line-height: 1.5; }
-.workspace-daily-heading { margin-bottom: 20px; }
-.workspace-daily-heading h2 { margin-top: 6px; font-size: 24px; font-weight: 600; line-height: 1.45; }
-.workspace-daily-heading > p:last-child { margin-top: 8px; max-width: 45ch; font-size: 13px; line-height: 1.5; color: var(--color-ink-soft); }
+.workspace-section-heading h2 { font-size: 22px; font-weight: 600; line-height: 1.4; letter-spacing: -0.02em; text-wrap: balance; }
+.workspace-daily-heading { margin-bottom: 24px; }
+.workspace-daily-heading h2 { margin-top: 6px; font-size: clamp(24px, 2.2vw, 30px); font-weight: 600; line-height: 1.25; letter-spacing: -0.02em; }
+.workspace-daily-heading > p:last-child { margin-top: 10px; max-width: 45ch; font-size: 14px; line-height: 1.55; color: var(--color-ink-soft); }
 .workspace-daily-card { width: 100%; max-width: 430px; margin-inline: auto; }
 .workspace-daily-book { margin-top: 20px; }
 .workspace-daily-book > a { display: inline-flex; align-items: center; min-height: 44px; font-size: 17px; font-weight: 600; line-height: 1.55; }
@@ -131,11 +131,11 @@ body:has(.navigation-rail[data-expanded="true"]) {
 .shelf-search-field > svg { position: absolute; inset-inline-start: 14px; top: 50%; transform: translateY(-50%); color: var(--color-ink-soft); pointer-events: none; }
 .shelf-search-field .field-input { padding-inline-start: 44px; }
 .shelf-search-row > button { flex-shrink: 0; }
-.shelf-filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
-.shelf-filter-bar button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--color-rule); border-radius: 999px; font-size: 12px; line-height: 1.5; color: var(--color-ink-soft); }
+.shelf-filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.shelf-filter-bar button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--color-rule); border-radius: 999px; font-size: 12px; line-height: 1.5; color: var(--color-ink-soft); transition: background-color var(--dur) var(--ease-out-soft), color var(--dur) var(--ease-out-soft), border-color var(--dur) var(--ease-out-soft); }
 .shelf-filter-bar button[aria-pressed="true"] { border-color: var(--color-ink); background: var(--color-ink); color: var(--color-paper-raised); }
 .shelf-filter-bar button[aria-pressed="false"]:hover { background: var(--color-surface-soft); color: var(--color-ink); }
-.shelf-result-count { margin-top: 20px; font-size: 12px; line-height: 1.7; color: var(--color-ink-soft); }
+.shelf-result-count { margin-top: 16px; font-size: 12px; line-height: 1.7; color: var(--color-ink-soft); }
 .shelf-book-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 16px; margin-top: 20px; }
 .shelf-explorer .book-tile { display: flex; flex-direction: column; min-width: 0; }
 /* Cover-led tiles: the front cover stands on a shared ledge, no enclosing box. */
@@ -162,7 +162,7 @@ body:has(.navigation-rail[data-expanded="true"]) {
 .shelf-more { margin-top: 28px; text-align: center; }
 .shelf-empty-title { font-size: 20px; line-height: 1.5; }
 .recent-feed-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 20px; }
-.recent-feed-heading h2 { font-size: 20px; font-weight: 600; line-height: 1.5; }
+.recent-feed-heading h2 { font-size: 22px; font-weight: 600; line-height: 1.4; letter-spacing: -0.02em; }
 .recent-feed-heading p { font-size: 12px; line-height: 1.5; color: var(--color-ink-soft); }
 .recent-feed--list .recent-feed-heading { display: block; }
 .recent-feed--list .recent-feed-heading p { margin-top: 8px; }

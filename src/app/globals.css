@@ -29,6 +29,13 @@
 }
 
 html { scroll-behavior: smooth; }
+:root {
+  /* One easing and three durations carry every transition on the site. */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur: 240ms;
+  --dur-slow: 700ms;
+}
 body {
   --rail-width: 76px;
   background: var(--color-paper);
@@ -52,20 +59,21 @@ input, textarea { caret-color: var(--color-stamp); }
 
 .page-title, .display-xl {
   font-family: var(--font-sans);
-  font-size: clamp(30px, 3.2vw, 42px);
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 .section-title, .display-lg {
   font-family: var(--font-sans);
-  font-size: clamp(23px, 2.2vw, 30px);
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: -0.015em;
+  font-size: clamp(24px, 2.4vw, 31px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
   /* Reader-added titles may be one unbroken string; keep headings inside the page. */
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 :lang(bn) .page-title, :lang(bn) .section-title,
 :lang(bn) .display-xl, :lang(bn) .display-lg {
@@ -80,7 +88,7 @@ input, textarea { caret-color: var(--color-stamp); }
   margin-inline: auto;
   padding: 28px var(--space-page) 48px;
 }
-.panel { border-radius: var(--radius-panel); background: var(--color-paper-raised); padding: 24px; }
+.panel { border-radius: var(--radius-panel); background: var(--color-paper-raised); border: 1px solid var(--color-rule); padding: 24px; }
 .ui-button, .ui-button-secondary {
   display: inline-flex;
   align-items: center;
@@ -96,8 +104,10 @@ input, textarea { caret-color: var(--color-stamp); }
   line-height: 1.4;
   letter-spacing: normal;
   text-decoration: none;
-  transition: background-color 160ms, transform 160ms;
+  transition: background-color var(--dur) var(--ease-out-soft), border-color var(--dur) var(--ease-out-soft), color var(--dur) var(--ease-out-soft), transform var(--dur-fast) var(--ease-out-soft);
 }
+.ui-button:hover svg, .ui-button-secondary:hover svg { transform: translateX(2px); }
+.ui-button svg, .ui-button-secondary svg { transition: transform var(--dur) var(--ease-out-soft); }
 .ui-button { background: var(--color-ink); color: var(--color-paper-raised); }
 .ui-button-secondary { border-color: var(--color-rule); background: transparent; color: var(--color-ink); }
 .ui-button:hover { background: var(--color-night-raised); }
@@ -135,7 +145,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .spine-3d {
   transform: perspective(900px) rotateY(-6deg);
   transform-origin: 50% 88%;
-  transition: transform 180ms ease;
+  transition: transform var(--dur) var(--ease-out-soft);
 }
 @media (hover: hover) and (pointer: fine) {
   .spine-hover:hover .spine-3d, .book-tile:hover .spine-3d { transform: translateY(-4px); }
@@ -190,7 +200,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .local-save-notice[data-save-status="unavailable"] { border-color: var(--color-stamp); background: var(--color-paper-raised); }
 .edition-picker { margin-top: 24px; min-width: 0; }
 .edition-picker-options { display: grid; gap: 8px; margin-top: 12px; }
-.edition-picker-option { position: relative; display: grid; grid-template-columns: 16px 52px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; min-height: 88px; border: 1px solid var(--color-rule); border-radius: var(--radius-control); cursor: pointer; transition: border-color 160ms ease, background-color 160ms ease; }
+.edition-picker-option { position: relative; display: grid; grid-template-columns: 16px 52px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; min-height: 88px; border: 1px solid var(--color-rule); border-radius: var(--radius-control); cursor: pointer; transition: border-color var(--dur) var(--ease-out-soft), background-color var(--dur) var(--ease-out-soft); }
 .edition-picker-option:hover { border-color: var(--color-ink-soft); }
 .edition-picker-option[data-selected="true"] { border-color: var(--color-stamp); background: var(--color-stamp-soft); }
 .edition-picker-option:has(:focus-visible) { outline: 2px solid var(--color-stamp); outline-offset: 3px; }
