@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { Children, cloneElement, isValidElement, type ReactNode } from "react";
+import { Composer } from "../Composer";
+import { BOOKS } from "@/lib/books";
+import { accessionNo, encodePayload } from "@/lib/line";
+import { LineCard } from "../LineCard";
 import { Header } from "../Chrome";
 import { LocaleProvider } from "../LocaleProvider";
 import { ShelfExplorer } from "../ShelfExplorer";
@@ -12,6 +17,8 @@ const navigation = vi.hoisted(() => ({ pathname: "/", push: vi.fn() }));
 vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
   useRouter: () => ({ push: navigation.push }),
+  useSearchParams: () => new URLSearchParams(window.location.search),
+  notFound: () => { throw new Error("NEXT_NOT_FOUND"); },
 }));
 vi.mock("next/link", () => ({
   default: ({ href, onNavigate, children, ...props }: React.ComponentProps<"a"> & { href: string; onNavigate?: () => void }) => (
@@ -19,8 +26,23 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("@/lib/book-covers", () => ({ resolveCovers: async () => ({}) }));
+
 const wrap = (ui: React.ReactNode) => render(<LocaleProvider>{ui}</LocaleProvider>);
 const flush = () => act(async () => { await Promise.resolve(); });
+
+/** jsdom renders client trees, not async RSCs. Resolve only the async server
+ * children of Home's returned tree; leave every client component untouched. */
+async function resolveServerChildren(node: ReactNode): Promise<ReactNode> {
+  if (!isValidElement<{ children?: ReactNode }>(node)) return node;
+  if (typeof node.type === "function" && node.type.constructor.name === "AsyncFunction") {
+    const ServerChild = node.type as (props: object) => Promise<ReactNode>;
+    return resolveServerChildren(await ServerChild(node.props));
+  }
+  if (node.props.children === undefined) return node;
+  const children = await Promise.all(Children.toArray(node.props.children).map(resolveServerChildren));
+  return cloneElement(node, {}, ...children);
+}
 
 beforeEach(() => {
   navigation.pathname = "/";
@@ -177,9 +199,87 @@ describe("workspace recent lines", () => {
   });
 });
 
+describe("card action counts", () => {
+  it("keeps a card's underline summary on the same accepted count as its button", async () => {
+    vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ votes: 1, voted: true }) } as Response);
+    const onChange = vi.fn();
+    wrap(<LineCard payload={{ v: 1, b: BOOKS[0].slug, q: "One reader kept it.", n: "Mira", s: "paper", d: "2026-11-09" }} id="summary-card" votes={0} onChange={onChange} />); await flush();
+    expect(screen.getByText("not yet underlined")).toBeTruthy();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Underline · 0" })); });
+    expect(screen.getByRole("button", { name: "Underline · 1" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.queryByText("not yet underlined")).toBeNull();
+    expect(screen.getByText("underlined once")).toBeTruthy();
+    expect(onChange).toHaveBeenCalledWith("summary-card", 1, true);
+  });
+});
+
+describe("composer proof recovery", () => {
+  it("keeps a valid payload source id longer than 512 characters in legacy prefill", async () => {
+    const payload = { v: 1 as const, b: BOOKS[0].slug, q: "ব".repeat(180), n: "Reader", s: "paper" as const, d: "2026-11-09" };
+    const id = encodePayload(payload);
+    expect(id.length).toBeGreaterThan(512);
+    window.history.replaceState(null, "", `/b/${BOOKS[0].slug}?line=${id}&id=${id}`);
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    const proof = document.querySelector(".composer-proof");
+    expect(proof?.querySelector(".edition-accession")?.textContent).toBe(accessionNo(id));
+    expect((screen.getByLabelText("02. Sign it") as HTMLInputElement).value).toBe("Reader");
+  });
+  it("keeps a long paste editable with immediate validation in the real card and picker", async () => {
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    const field = screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement;
+    fireEvent.change(screen.getByLabelText("02. Sign it"), { target: { value: "Mira" } });
+    const pasted = "  A paragraph I still need to edit.\n".repeat(200);
+    fireEvent.change(field, { target: { value: pasted } });
+    expect(field.value).toBe(pasted);
+    expect(field.getAttribute("aria-invalid")).toBe("true");
+    expect(screen.getByRole("alert").textContent).toMatch(/220/);
+    expect(screen.getAllByRole("radio")).toHaveLength(6);
+    expect(document.querySelectorAll(".edition-artwork")).toHaveLength(4);
+    fireEvent.click(screen.getByRole("button", { name: "Stamp it & pass it on" }));
+    expect(fetch).not.toHaveBeenCalled();
+    expect(navigation.push).not.toHaveBeenCalled();
+    fireEvent.change(field, { target: { value: "The part I want to keep." } });
+    expect(field.getAttribute("aria-invalid")).toBe("false");
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(document.querySelector(".composer-proof .edition-artwork")?.getAttribute("aria-label")).toContain("The part I want to keep.");
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Stamp it & pass it on" })); });
+    const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]!.body as string);
+    expect(body).toMatchObject({ q: "The part I want to keep.", n: "Mira" });
+  });
+
+  it("uses normalized JavaScript length without trimming the raw line or signature", async () => {
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    const line = screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement;
+    const name = screen.getByLabelText("02. Sign it") as HTMLInputElement;
+    const raw = `  ${"ব".repeat(219)}   \n`;
+    fireEvent.change(line, { target: { value: raw } });
+    fireEvent.change(name, { target: { value: "  Mira    Noor  " } });
+    expect(line.value).toBe(raw);
+    expect(name.value).toBe("  Mira    Noor  ");
+    expect(document.getElementById("line-counter")?.textContent).toBe("219 / 220");
+    expect(line.getAttribute("aria-invalid")).toBe("false");
+    fireEvent.change(line, { target: { value: "😀".repeat(111) } });
+    expect(line.value).toBe("😀".repeat(111));
+    expect(document.getElementById("line-counter")?.textContent).toBe("222 / 220");
+    expect(line.getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("offers a focusable proof before the final mobile submit without nesting forms", async () => {
+    wrap(<Composer book={BOOKS[0]} />); await flush();
+    const jump = screen.getByRole("link", { name: "View proof" });
+    const proof = document.querySelector(".composer-proof")!;
+    expect(jump.getAttribute("href")).toBe(`#${proof.id}`);
+    fireEvent.click(jump);
+    expect(document.activeElement).toBe(proof);
+    const submit = screen.getByRole("button", { name: "Stamp it & pass it on" }) as HTMLButtonElement;
+    expect(submit.form).toBe(document.querySelector("form.composer-form"));
+    expect(proof.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
 describe("home workspace", () => {
   it("exposes sibling shelf and reader-line sectors, one search, and the daily write action", async () => {
-    wrap(<Home />); await flush();
+    wrap(await resolveServerChildren(Home())); await flush();
     const main = screen.getByRole("main");
     const shelf = within(main).getByRole("region", { name: "The shelf" });
     const lines = within(main).getByRole("region", { name: "Lines" });

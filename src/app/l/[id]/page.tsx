@@ -4,15 +4,19 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Tote } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
+import { Composer } from "@/components/Composer";
+import { LocalSaveNotice } from "@/components/LocalSaveNotice";
 import { ShareRow } from "@/components/ShareRow";
 import { T } from "@/components/T";
-import { encodePayload } from "@/lib/line";
 import { seedLinesFor } from "@/lib/seeds";
 import { originalName, getBook } from "@/lib/books";
 import { selectionHref } from "@/lib/commerce/personalization";
 import { resolveBookForLine, enrichLineBook, findBook, getStore, resolveLine } from "@/lib/store";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ restyle?: string | string[] }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -27,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function LinePage({ params }: Props) {
+export default async function LinePage({ params, searchParams }: Props) {
   const { id } = await params;
   const raw = await resolveLine(id);
   if (!raw) notFound();
@@ -37,8 +41,9 @@ export default async function LinePage({ params }: Props) {
   const others = seedLinesFor(payload.b).filter((line) => line.q !== payload.q).slice(0, 3);
   const counts = await getStore().getVoteCounts([id, ...others.map((line) => line.id)]).catch(() => new Map<string, number>());
   const merchandiseUrl = selectionHref("/shop", { payload, sourceId: id, isExample: false });
-  const recreateUrl = `/b/${book.slug}?line=${encodeURIComponent(encodePayload(payload))}&id=${encodeURIComponent(id)}#write`;
+  const recreateUrl = `/l/${id}?restyle=1#write`;
   const onShelf = getBook(book.slug) ?? await findBook(book.slug).catch(() => undefined);
+  const restyle = (await searchParams)?.restyle === "1";
 
   return (
     <>
@@ -49,6 +54,7 @@ export default async function LinePage({ params }: Props) {
           <div className="card-workspace-copy">
             <h1 className="page-title"><T k="card.ready" /></h1>
             <p><T k="card.travel" /></p>
+            <LocalSaveNotice id={id} payload={payload} />
             <div><ShareRow payload={payload} id={id} /></div>
             <p><Link href={recreateUrl} className="link-ledger inline-flex min-h-11 items-center"><T k="card.restyle" /></Link></p>
             <div className="border-t border-[var(--color-rule)] pt-6">
@@ -57,6 +63,11 @@ export default async function LinePage({ params }: Props) {
             </div>
           </div>
         </div>
+        {restyle && <section id="write" className="reading-section" aria-labelledby="restyle-heading">
+          <h2 id="restyle-heading" className="section-title mb-3"><T k="card.restyle" /></h2>
+          <p className="mb-6 text-sm text-[var(--color-ink-soft)]"><T k="card.restyleNote" /></p>
+          <Composer book={book} initialPayload={payload} sourceId={id} creationMode={onShelf ? "public" : "link-only"} />
+        </section>}
         <section className="card-loop">
           <h2 className="section-title"><T k="card.loop.h" v={{ title: originalName(book) }} /></h2>
           <p><T k="card.loop.sub" v={{ n: payload.n }} /></p>

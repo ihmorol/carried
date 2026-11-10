@@ -40,6 +40,26 @@ describe("store contracts", () => {
     fetcher.mockResolvedValue(new Response(JSON.stringify([{ error: "invalid command" }])));
     await expect(getStore().getVoteCounts(["line-one"])).rejects.toBeInstanceOf(StoreError);
   });
+  it("normalizes public input before applying the same JavaScript length limits as offline creation", () => {
+    const q = `  ${"ব".repeat(220)}\n  `;
+    expect(validateLineInput({ q, n: "  Mira    Noor  ", s: "paper" })).toEqual({ q: "ব".repeat(220), n: "Mira Noor" });
+    expect(() => validateLineInput({ q: "😀".repeat(111), n: "Reader", s: "paper" })).toThrow(StoreError);
+    expect(() => validateLineInput({ q: "A line", n: "ন".repeat(25), s: "paper" })).toThrow(StoreError);
+  });
+  it("dates a restyled public copy today without changing the source record", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-11-09T10:00:00Z"));
+      const store = new MemoryStore();
+      const source = await store.addLine("the-alchemist", { q: "Still carried.", n: "Mira", s: "paper", ct: "bookplate-v1" });
+      vi.setSystemTime(new Date("2026-11-10T12:00:00Z"));
+      const copy = await store.addLine("the-alchemist", { q: source.payload.q, n: source.payload.n, s: source.payload.s, ct: "ticket-v1" });
+      expect(copy.id).not.toBe(source.id);
+      expect(copy.payload).toMatchObject({ q: "Still carried.", n: "Mira", d: "2026-11-10", ct: "ticket-v1" });
+      expect(await store.getLineById(source.id)).toEqual(source.payload);
+      expect(source.payload).toMatchObject({ d: "2026-11-09", ct: "bookplate-v1" });
+    } finally { vi.useRealTimers(); }
+  });
   it("treats the same words in different editions as distinct cards", async () => {
     const store = new MemoryStore();
     const legacy = await store.addLine("the-alchemist", { q: "Same words, new frame.", n: "Reader", s: "paper" });

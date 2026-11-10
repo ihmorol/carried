@@ -1,8 +1,26 @@
 import { describe, expect, it } from "vitest";
 import { encodeLine, decodeLine, encodePayload, validateLinePayload, lineSlugId, LineError } from "@/lib/line";
 import { searchBooks } from "@/lib/books";
+import { inspectDraftInput } from "@/lib/draft-input";
 
 const base = { bookSlug: "the-alchemist", text: "A line", name: "Reader", ink: "paper" as const, date: "2026-11-09" };
+
+describe("draft projection", () => {
+  it("keeps normalization separate from safe display projection without truncation", () => {
+    const draft = inspectDraftInput("  A\n  line  ", "  Mira    Noor  ");
+    expect(draft).toEqual({ q: "A line", n: "Mira Noor", lineLength: 6, nameLength: 9, lineIssue: null, nameIssue: null, proofLine: "A line", proofName: "Mira Noor" });
+  });
+  it("never projects over-limit or empty content into a card renderer", () => {
+    const long = "ব".repeat(221);
+    expect(inspectDraftInput(long, "ন".repeat(25))).toMatchObject({ q: long, lineLength: 221, lineIssue: "too-long", nameIssue: "too-long", proofLine: null, proofName: null });
+    expect(inspectDraftInput(" \n ", " \t ")).toMatchObject({ q: "", n: "", lineIssue: "empty", nameIssue: "empty", proofLine: null, proofName: null });
+  });
+  it("counts UTF-16 code units exactly like encodeLine, not graphemes or bytes", () => {
+    expect(inspectDraftInput("😀".repeat(110), "ন".repeat(24))).toMatchObject({ lineLength: 220, nameLength: 24, lineIssue: null, nameIssue: null });
+    expect(inspectDraftInput("😀".repeat(111), "Reader")).toMatchObject({ lineLength: 222, lineIssue: "too-long", proofLine: null });
+    expect(inspectDraftInput("  " + "ব".repeat(220) + " \n", "Reader")).toMatchObject({ lineLength: 220, lineIssue: null });
+  });
+});
 
 describe("accepted line boundaries", () => {
   it("round trips maximum Bengali content and book metadata", () => {

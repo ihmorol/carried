@@ -1,47 +1,59 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { decodeLine, encodeLine, type LinePayload } from "@/lib/line";
+import { decodeLine, encodeLine, LINE_ID_MAX, validateLinePayload, type LinePayload } from "@/lib/line";
+import { inspectDraftInput } from "@/lib/draft-input";
 import { DEFAULT_CARD_TEMPLATE, type CardTemplateId } from "@/lib/card-templates";
 import { getBook, type Book } from "@/lib/books";
 import { INKS, INK_IDS, type InkId } from "@/lib/inks";
-import { addToShelf, getRememberedName, rememberName } from "@/lib/shelf";
-import { LINE_MAX, NAME_MAX } from "@/lib/site";
+import { addToShelf, getRememberedName, rememberName, rememberShelfSave } from "@/lib/shelf";
+import { LINE_MAX } from "@/lib/site";
 import { LineCard } from "./LineCard";
 import { CardDesignPicker } from "./CardDesignPicker";
+import { ProofBoundary } from "./ProofBoundary";
 import { useLocale } from "./LocaleProvider";
+
+type ComposerProps = {
+  book: Book;
+  /** Resolved and validated by the card route; legacy ?line= still works. */
+  initialPayload?: LinePayload;
+  sourceId?: string;
+  creationMode?: "public" | "link-only";
+};
 
 /** Search params suspend during prerender, so the whole composer sits
  * behind its own Suspense boundary (Next.js requirement for static pages). */
-export function Composer({ book }: { book: Book }) {
+export function Composer(props: ComposerProps) {
   return (
     <Suspense fallback={null}>
-      <ComposerForm book={book} />
+      <ComposerForm key={`${props.book.slug}:${props.sourceId ?? "new"}`} {...props} />
     </Suspense>
   );
 }
 
-function ComposerForm({ book }: { book: Book }) {
+function ComposerForm({ book, initialPayload, sourceId, creationMode = "public" }: ComposerProps) {
   const router = useRouter();
   const params = useSearchParams();
   const { t } = useLocale();
-  // Prefill a recreation link (?line=<payload>&id=<line id>). Only a payload
-  // that belongs to this book fills the form; anything else is ignored.
+  const formId = useId();
+  const proofId = `${formId}-proof`;
+  // The resolved card route takes precedence over untrusted query prefills.
+  // A different book's payload never fills this form or claims its source id.
   const prefill = useMemo<LinePayload | null>(() => {
-    const raw = params.get("line");
-    if (!raw) return null;
     try {
-      const payload = decodeLine(raw);
-      return payload.b === book.slug ? payload : null;
+      const raw = params.get("line");
+      const payload = initialPayload ? validateLinePayload(initialPayload) : raw ? decodeLine(raw) : null;
+      return payload?.b === book.slug ? payload : null;
     } catch { return null; }
-  }, [params, book.slug]);
+  }, [initialPayload, params, book.slug]);
   const prefillId = useMemo(() => {
-    const raw = params.get("id");
-    return raw && /^[a-zA-Z0-9_-]{1,512}$/.test(raw) ? raw : undefined;
-  }, [params]);
+    const raw = initialPayload ? sourceId : params.get("id");
+    return prefill && raw && raw.length <= LINE_ID_MAX && /^[a-zA-Z0-9_-]+$/.test(raw) ? raw : undefined;
+  }, [initialPayload, sourceId, prefill, params]);
   const [text, setText] = useState(() => prefill?.q ?? "");
   const [name, setName] = useState(() => prefill?.n ?? "");
+  const nameChosen = useRef(!!prefill);
   const [ink, setInk] = useState<InkId>(() => prefill?.s ?? "paper");
   const [template, setTemplate] = useState<CardTemplateId>(() => prefill?.ct ?? DEFAULT_CARD_TEMPLATE);
   const [stampKey, setStampKey] = useState(0);
@@ -50,38 +62,47 @@ function ComposerForm({ book }: { book: Book }) {
   const pending = useRef<AbortController | null>(null);
   useEffect(() => {
     let mounted = true;
-    void Promise.resolve().then(() => { if (mounted) setName((current) => current || getRememberedName()); });
+    void Promise.resolve().then(() => { if (mounted && !nameChosen.current) setName((current) => current || getRememberedName()); });
     return () => { mounted = false; pending.current?.abort(); };
   }, []);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const bookMeta = getBook(book.slug) ? undefined : { title: book.title, author: book.author, year: book.year };
+  const draft = inspectDraftInput(text, name);
+  const lineError = draft.lineIssue === "too-long" ? t("err.length") : errors.line;
+  const nameError = draft.nameIssue === "too-long" ? t("err.nameLength") : errors.name;
   const preview: LinePayload = {
-    v: 1, b: book.slug, q: text.trim().replace(/\s+/g, " ") || t("c.previewLine"),
-    n: name.trim().replace(/\s+/g, " ") || t("c.previewName"), s: ink, d: today,
+    v: 1, b: book.slug, q: draft.proofLine ?? t("c.previewLine"),
+    n: draft.proofName ?? t("c.previewName"), s: ink, d: today,
     ...(bookMeta ? { bt: bookMeta.title, ba: bookMeta.author, by: bookMeta.year } : {}),
     ct: template,
   };
+  const proofKey = JSON.stringify(preview);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (pending.current) return;
-    const q = text.trim().replace(/\s+/g, " ");
-    const n = name.trim().replace(/\s+/g, " ");
-    const nextErrors = { line: !q ? t("err.line") : q.length > LINE_MAX ? t("err.length") : undefined,
-      name: !n ? t("err.name") : n.length > NAME_MAX ? t("err.nameLength") : undefined };
+    const { n, lineIssue, nameIssue } = inspectDraftInput(text, name);
+    const nextErrors = { line: lineIssue === "empty" ? t("err.line") : lineIssue === "too-long" ? t("err.length") : undefined,
+      name: nameIssue === "empty" ? t("err.name") : nameIssue === "too-long" ? t("err.nameLength") : undefined };
     setErrors(nextErrors);
     if (nextErrors.line || nextErrors.name) return;
     let carried: { id: string; payload: LinePayload };
-    try { carried = encodeLine({ bookSlug: book.slug, text, name, ink, date: today, book: bookMeta, template }); }
+    // New copies use the creation date, never a restyled source's date or id.
+    try { carried = encodeLine({ bookSlug: book.slug, text, name, ink, book: bookMeta, template }); }
     catch { setErrors({ form: t("err.generic") }); return; }
     const controller = new AbortController();
     pending.current = controller;
     setBusy(true);
     function finish(id: string, payload: LinePayload) {
       if (controller.signal.aborted) return;
-      rememberName(n); addToShelf({ id, payload }); setStampKey((k) => k + 1); router.push(`/l/${id}`);
+      const saved = addToShelf({ id, payload });
+      rememberShelfSave(id, saved);
+      rememberName(n);
+      setStampKey((k) => k + 1);
+      router.push(`/l/${id}`);
     }
     try {
+      if (creationMode === "link-only") { finish(carried.id, carried.payload); return; }
       const res = await fetch(`/api/books/${encodeURIComponent(book.slug)}/lines`, {
         method: "POST", signal: controller.signal, headers: { "content-type": "application/json" },
         body: JSON.stringify({ q: text, n: name, s: ink, ct: template }),
@@ -98,20 +119,21 @@ function ComposerForm({ book }: { book: Book }) {
   }
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:gap-12">
-      <form onSubmit={submit} noValidate className="panel max-w-xl p-5 sm:p-7">
+    <div className="composer-workspace">
+      <form id={formId} onSubmit={submit} noValidate className="composer-form panel p-5 sm:p-7">
+        <a href={`#${proofId}`} className="composer-proof-link link-ledger mb-4 inline-flex min-h-11 items-center" onClick={() => document.getElementById(proofId)?.focus()}>{t("c.viewProof")}</a>
         <label htmlFor="line" className="block text-sm font-medium">{t("c.1")}</label>
         <textarea id="line" value={text} onChange={(e) => { setText(e.target.value); setErrors((v) => ({ ...v, line: undefined })); }}
           rows={5} required disabled={busy} className="field-input mt-3 resize-y leading-relaxed" placeholder={t("c.1.ph")}
-          aria-invalid={!!errors.line} aria-describedby={`line-counter${errors.line ? " line-error" : ""}`} />
-        {errors.line && <p id="line-error" role="alert" className="mt-2 text-sm text-[var(--color-stamp)]">{errors.line}</p>}
-        <p id="line-counter" className={`mt-2 text-right text-[13px] tabular-nums ${text.length > LINE_MAX ? "text-[var(--color-stamp)]" : "text-[var(--color-ink-soft)]"}`}>{text.length} / {LINE_MAX}</p>
+          aria-invalid={!!lineError} aria-describedby={`line-counter${lineError ? " line-error" : ""}`} />
+        {lineError && <p id="line-error" role="alert" className="mt-2 text-sm text-[var(--color-stamp)]">{lineError}</p>}
+        <p id="line-counter" className={`mt-2 text-right text-[13px] tabular-nums ${draft.lineIssue === "too-long" ? "text-[var(--color-stamp)]" : "text-[var(--color-ink-soft)]"}`}>{draft.lineLength} / {LINE_MAX}</p>
         <div className="mt-6">
           <label htmlFor="name" className="block text-sm font-medium">{t("c.2")}</label>
-          <input id="name" type="text" value={name} onChange={(e) => { setName(e.target.value); setErrors((v) => ({ ...v, name: undefined })); }}
-            required disabled={busy} maxLength={NAME_MAX} className="field-input mt-3" placeholder={t("c.2.ph")} autoComplete="name"
-            aria-invalid={!!errors.name} aria-describedby={errors.name ? "name-error name-note" : "name-note"} />
-          {errors.name && <p id="name-error" role="alert" className="mt-2 text-sm text-[var(--color-stamp)]">{errors.name}</p>}
+          <input id="name" type="text" value={name} onChange={(e) => { nameChosen.current = true; setName(e.target.value); setErrors((v) => ({ ...v, name: undefined })); }}
+            required disabled={busy} className="field-input mt-3" placeholder={t("c.2.ph")} autoComplete="name"
+            aria-invalid={!!nameError} aria-describedby={nameError ? "name-error name-note" : "name-note"} />
+          {nameError && <p id="name-error" role="alert" className="mt-2 text-sm text-[var(--color-stamp)]">{nameError}</p>}
           <p id="name-note" className="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">{t("c.2.note")}</p>
         </div>
         <fieldset className="mt-6" disabled={busy}>
@@ -124,16 +146,23 @@ function ComposerForm({ book }: { book: Book }) {
             </label>)}
           </div>
         </fieldset>
-        <CardDesignPicker book={book} payload={preview} value={template} onChange={setTemplate} disabled={busy} />
-        {errors.form && <p role="alert" className="mt-4 text-sm text-[var(--color-stamp)]">{errors.form}</p>}
-        <button type="submit" disabled={busy} className="ui-button mt-7 w-full sm:w-auto">{busy ? t("c.stamping") : t("c.submit")}</button>
-        <p className="mt-3 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">{t("c.note")}</p>
+        <ProofBoundary resetKey={proofKey} message={t("c.proofUnavailable")} retryLabel={t("c.proofRetry")}>
+          <CardDesignPicker book={book} payload={preview} value={template} onChange={setTemplate} disabled={busy} />
+        </ProofBoundary>
       </form>
-      <div className="min-w-0 lg:sticky lg:top-[100px]">
-        <p className="mb-4 text-sm text-[var(--color-ink-soft)]">{t("c.proof")}</p>
-        <div key={stampKey} className="mx-auto w-full max-w-[360px] animate-stamp-in">
-          <LineCard payload={preview} book={book} id={prefillId ?? "preview-preview"} actions={false} />
-        </div>
+      <section id={proofId} className="composer-proof min-w-0" tabIndex={-1} aria-labelledby={`${proofId}-heading`}>
+        <h3 id={`${proofId}-heading`} className="mb-4 text-sm text-[var(--color-ink-soft)]">{t("c.proof")}</h3>
+        {(draft.lineIssue === "too-long" || draft.nameIssue === "too-long") && <p className="composer-proof-note mb-4 text-sm text-[var(--color-ink-soft)]">{t("c.proofInvalid")}</p>}
+        <ProofBoundary resetKey={proofKey} message={t("c.proofUnavailable")} retryLabel={t("c.proofRetry")}>
+          <div key={stampKey} className="mx-auto w-full max-w-[360px] animate-stamp-in">
+            <LineCard payload={preview} book={book} id={prefillId ?? "preview-preview"} actions={false} />
+          </div>
+        </ProofBoundary>
+      </section>
+      <div className="composer-submit">
+        {errors.form && <p role="alert" className="mb-4 text-sm text-[var(--color-stamp)]">{errors.form}</p>}
+        <button type="submit" form={formId} disabled={busy} className="ui-button w-full sm:w-auto">{busy ? t("c.stamping") : t("c.submit")}</button>
+        <p className="mt-3 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">{t(creationMode === "link-only" ? "c.linkOnly" : "c.note")}</p>
       </div>
     </div>
   );
