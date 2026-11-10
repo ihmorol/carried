@@ -776,6 +776,12 @@ input, textarea { caret-color: var(--color-stamp); }
     .shelf-book-grid > li:nth-child(3n),
     .shop-product-grid > .shop-product-tile:nth-child(3n) { animation-range: entry 16% entry 88%; }
   }
+  /* Print and high-contrast modes get the plain page, never a half-revealed one. */
+  @media print {
+    .reveal-list > li,
+    .shelf-book-grid > li,
+    .shop-product-grid > .shop-product-tile { animation: none; }
+  }
 }
 
 /* Re-pressing the mark replays the press: drop, settle, rest. */
