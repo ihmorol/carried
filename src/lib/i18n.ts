@@ -116,6 +116,7 @@ const EN: Dict = {
   "feed.count": "{n} {lines} · {sort} · {state}",
   "feed.line": "line",
   "feed.lines": "lines",
+  "feed.allLines": "All reader lines",
   "feed.empty.title": "No lines yet.",
   "feed.empty.sub": "This one's margins are still clean. Yours could be the first sentence ever filed here.",
 
@@ -366,6 +367,7 @@ const BN: Dict = {
   "feed.count": "{n} {lines} · {sort} · {state}",
   "feed.line": "লাইন",
   "feed.lines": "লাইন",
+  "feed.allLines": "সব পাঠকের লাইন",
   "feed.empty.title": "এখনো কোনো লাইন নেই।",
   "feed.empty.sub": "বইটার মার্জিন এখনো পরিষ্কার। এখানে প্রথম বাক্যটা তোমারই হতে পারে।",
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { bookForPayload, originalName } from "@/lib/books";
 import { isBengali } from "@/lib/line";
 import { LineCard } from "./LineCard";
@@ -57,6 +58,12 @@ export function RecentFeed({ seeds, variant = "cards" }: RecentFeedProps) {
           </Link>
         </li>;
       })}
+      <li className="recent-lines-more">
+        <Link href="/lines" className="recent-lines-more-link">
+          {t("feed.allLines")}
+          <ArrowRight size={16} weight="regular" aria-hidden="true" />
+        </Link>
+      </li>
     </ul> : <ul className="recent-lines-grid grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {lines.map((line) => <li key={line.id}><LineCard payload={line.payload} id={line.id} votes={line.votes} asLink onChange={onVote} className="h-full" /></li>)}
     </ul> : <p className="panel p-6 text-sm">{t("feed.empty.title")}</p>}

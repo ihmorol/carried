@@ -45,7 +45,7 @@ export default async function BookPage({ params }: { params: Promise<{ slug: str
       <main id="main-content" className="page-content">
         <nav className="breadcrumbs" aria-label="Breadcrumb"><Link href="/books"><T k="nav.shelf" /></Link><span aria-hidden="true">/</span><span>{originalName(book)}</span></nav>
         <section className="book-introduction">
-          <div className="justify-self-center"><BookSpine book={book} height={180} /></div>
+          <div className="justify-self-center"><BookSpine book={book} height={210} /></div>
           <div>
             <div className="book-tags">{book.tags.slice(0, 3).map((tag) => <span key={tag}><T k={`tag.${tag}`} /></span>)}</div>
             <h1 className="page-title">{originalName(book)}</h1>

@@ -44,9 +44,9 @@ export function ShopExplorer({ initial, example }: { initial: Personalization; e
           <div className="shop-product-grid">
             {products.map(product => <article key={product.slug} className="shop-product-tile">
               <Link href={selectionHref(`/shop/${product.slug}`, selection)} className="shop-product-media-link" aria-label={`${c("explore")} · ${text(product.name)}`}>
-                <ProductPreview product={product.slug} selection={selection} label={c("diagram")} />
+                <ProductPreview product={product.slug} selection={selection} />
               </Link>
-              <div className="shop-product-details"><Link href={selectionHref(`/shop/${product.slug}`, selection)}><h3>{text(product.name)}</h3><ConceptArrow /></Link><p>{text(product.description)}</p><span className="shop-note">{c("noPrice")}</span></div>
+              <div className="shop-product-details"><Link href={selectionHref(`/shop/${product.slug}`, selection)}><h3>{text(product.name)}</h3><ConceptArrow /></Link><p>{text(product.description)}</p></div>
             </article>)}
           </div>
         </section>

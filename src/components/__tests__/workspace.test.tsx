@@ -177,7 +177,7 @@ describe("workspace recent lines", () => {
     expect(screen.getByRole("heading", { name: "Reader lines" })).toBeTruthy();
     expect(screen.getByRole("status").textContent).toContain("Editorial collection");
     const items = screen.getAllByRole("listitem");
-    expect(items).toHaveLength(2);
+    expect(items).toHaveLength(3); // two lines plus the all-lines link row
     expect(within(items[0]).getByText("The road made room for my own voice.")).toBeTruthy();
     expect(within(items[0]).getByText("Mira")).toBeTruthy();
     expect(within(items[0]).getByText("The Alchemist")).toBeTruthy();
@@ -185,6 +185,7 @@ describe("workspace recent lines", () => {
     expect(within(items[0]).getByRole("link").getAttribute("href")).toBe("/l/curated-line");
     expect(within(items[1]).getByText("A Reader’s Book")).toBeTruthy();
     expect(within(items[1]).getByText("Rafi")).toBeTruthy();
+    expect(within(items[2]).getByRole("link").getAttribute("href")).toBe("/lines");
     expect(screen.queryByRole("button")).toBeNull();
     expect(screen.queryByRole("img")).toBeNull();
   });
@@ -198,7 +199,7 @@ describe("workspace recent lines", () => {
     expect(screen.queryByText("An editorial reflection.")).toBeNull();
     expect(screen.getByText("A public reader’s reflection.")).toBeTruthy();
     expect(screen.getByRole("status").textContent).toBe("live, just carried");
-    expect(screen.getByRole("link").getAttribute("href")).toBe("/l/public-line");
+    expect(screen.getByRole("link", { name: "Read Rafi’s line" }).getAttribute("href")).toBe("/l/public-line");
   });
 });
 
@@ -298,6 +299,6 @@ describe("home workspace", () => {
     expect(within(jumps).getByRole("link", { name: "Lines" }).getAttribute("href")).toBe("#reader-lines");
     expect(within(lines).getByRole("link", { name: "Write your line" }).getAttribute("href")).toMatch(/^\/b\/[^/]+#write$/);
     expect(within(lines).queryByRole("button", { name: /Underline/ })).toBeNull();
-    expect(within(lines).getAllByRole("listitem")).toHaveLength(3);
+    expect(within(lines).getAllByRole("listitem")).toHaveLength(4); // three lines plus the all-lines link row
   });
 });

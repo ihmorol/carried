@@ -154,8 +154,8 @@ input, textarea { caret-color: var(--color-stamp); }
 .reading-section { margin-top: 36px; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .section-heading > a { font-size: 14px; display: inline-flex; min-height: 44px; align-items: center; gap: 8px; }
-.book-introduction { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 24px; padding-block: 24px 32px; }
-.book-introduction .page-title { font-size: clamp(27px, 3.2vw, 38px); }
+.book-introduction { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 24px; padding-block: 24px 32px; }
+.book-introduction .page-title { font-size: clamp(30px, 3.4vw, 42px); }
 .book-tags { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--color-ink-soft); margin-bottom: 12px; }
 .book-tags span { padding: 4px 10px; border-radius: 999px; background: var(--color-surface-soft); }
 .breadcrumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--color-ink-soft); }
@@ -174,7 +174,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .skeleton { background: var(--color-surface-soft); border-radius: 10px; min-height: 24px; }
 
 @media (min-width: 640px) {
-  .book-introduction { grid-template-columns: 120px minmax(0, 1fr); gap: 32px; }
+  .book-introduction { grid-template-columns: 136px minmax(0, 1fr); gap: 32px; }
 }
 @media (min-width: 1024px) {
   body { padding-inline-start: var(--rail-width); }
