@@ -1,5 +1,6 @@
 import { bookForPayload, originalName, type Book } from "./books";
-import { formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
+import { accessionNo, formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
+import type { EditionText } from "./text-layout";
 import { DEFAULT_CARD_TEMPLATE, type CardTemplateId } from "./card-templates";
 
 export type CardScript = "latin" | "bengali";
@@ -30,6 +31,15 @@ export function cardPresentation(payload: LinePayload, resolvedBook?: Book) {
     titleScript: cardScript(title),
     authorScript: cardScript(author),
     dateScript: quoteScript,
+  };
+}
+
+export function editionText(content: NonNullable<ReturnType<typeof cardPresentation>>, id: string): EditionText {
+  return {
+    quote: content.quote, name: content.name, book: content.title, author: content.author,
+    date: content.date, accession: accessionNo(id), language: content.quoteScript,
+    quoteScript: content.quoteScript, nameScript: content.nameScript,
+    bookScript: content.titleScript, authorScript: content.authorScript, dateScript: content.dateScript,
   };
 }
 
