@@ -21,6 +21,10 @@ export function ShopExplorer({ initial, example }: { initial: Personalization; e
     <div className="shop-page-heading"><h1 className="page-title">{c("shop")}</h1><p>{c("introBody")}</p></div>
     {initial.issue && <p className="shop-error shop-link-error" role="alert">{c("invalidLink")}</p>}
     <div className="shop-dashboard">
+      <aside className="shop-sidebar panel" aria-label={c("selected")}>
+        <LinePicker selection={selection} saved={saved} example={example} onChange={setSelection} />
+        <div className="shop-sidebar-download"><p className="shop-note">{c("digital")}</p><DownloadCard selection={selection} /></div>
+      </aside>
       <div className="shop-main-column">
         <section className="shop-feature">
           <ProductPreview product="art-print" selection={selection} featured label={c("diagram")} />
@@ -48,10 +52,6 @@ export function ShopExplorer({ initial, example }: { initial: Personalization; e
         </section>
         <OrderingNote />
       </div>
-      <aside className="shop-sidebar panel">
-        <LinePicker selection={selection} saved={saved} example={example} onChange={setSelection} />
-        <div className="shop-sidebar-download"><p className="shop-note">{c("digital")}</p><DownloadCard selection={selection} /></div>
-      </aside>
     </div>
   </div>;
 }

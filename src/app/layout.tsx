@@ -40,7 +40,7 @@ export const viewport: Viewport = { themeColor: "#f1f1e7" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${manrope.variable} ${anekBangla.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${manrope.variable} ${anekBangla.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col"><LocaleProvider>{children}</LocaleProvider></body>
     </html>
   );

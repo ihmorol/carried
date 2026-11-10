@@ -9,5 +9,5 @@ export const metadata: Metadata = { title: "The reading room shop · Carried", d
 export default async function ShopPage({ searchParams }: { searchParams: Promise<ShopQuery> }) {
   const query = await searchParams;
   const seed = SEED_LINES.find(line => line.b === "the-alchemist") ?? SEED_LINES[0];
-  return <><Header /><main className="shop-page"><ShopExplorer key={JSON.stringify(query)} initial={parsePersonalization(query)} example={{ payload: seed, sourceId: seed.id, isExample: true }} /></main><Footer /></>;
+  return <><Header /><main id="main-content" tabIndex={-1} className="shop-page"><ShopExplorer key={JSON.stringify(query)} initial={parsePersonalization(query)} example={{ payload: seed, sourceId: seed.id, isExample: true }} /></main><Footer /></>;
 }

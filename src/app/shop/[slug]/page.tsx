@@ -17,5 +17,5 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   if (!product) notFound();
   const seed = SEED_LINES.find(line => line.b === "the-alchemist") ?? SEED_LINES[0];
   const initial = parsePersonalization(query);
-  return <><Header /><main className="shop-page"><Personalizer key={`${slug}:${JSON.stringify(query)}`} product={product} initial={initial} example={{ payload: seed, sourceId: seed.id, isExample: true }} /></main><Footer /></>;
+  return <><Header /><main id="main-content" tabIndex={-1} className="shop-page"><Personalizer key={`${slug}:${JSON.stringify(query)}`} product={product} initial={initial} example={{ payload: seed, sourceId: seed.id, isExample: true }} /></main><Footer /></>;
 }

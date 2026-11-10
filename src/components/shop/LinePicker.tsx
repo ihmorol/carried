@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useId } from "react";
 import { LineCard } from "@/components/LineCard";
 import { CARD_TEMPLATES, DEFAULT_CARD_TEMPLATE } from "@/lib/card-templates";
 import { INKS, INK_IDS } from "@/lib/inks";
@@ -39,14 +40,14 @@ export function LinePicker({ selection, saved, example, onChange, showCard = tru
   selection: Selection; saved: Selection[]; example: Selection; onChange: (next: Selection) => void; showCard?: boolean;
 }) {
   const { c } = useShopCopy();
+  const hintId = useId();
   const choices = saved.some(line => line.sourceId === selection.sourceId) || selection.isExample ? saved : [selection, ...saved];
   return <section className="shop-line-picker">
     <h2 className="section-title">{c("selected")}</h2>
     <p className={`shop-source-label${selection.isExample ? " is-example" : ""}`}>{c(selection.isExample ? "example" : "own")}</p>
-    {showCard && <LineCard payload={selection.payload} id={selection.sourceId} actions={false} className="shop-sidebar-card" />}
     <label className="shop-field">
       <span>{c("choose")}</span>
-      <select className="field-input" value={selection.isExample ? "example" : selection.sourceId} onChange={event => {
+      <select className="field-input" aria-describedby={hintId} value={selection.isExample ? "example" : selection.sourceId} onChange={event => {
         const next = event.target.value === "example" ? example : choices.find(line => line.sourceId === event.target.value);
         if (next) onChange(next);
       }}>
@@ -54,9 +55,10 @@ export function LinePicker({ selection, saved, example, onChange, showCard = tru
         {choices.map(line => <option key={line.sourceId} value={line.sourceId}>{bookForPayload(line.payload)?.title} · {line.payload.n} · {line.payload.q.slice(0, 48)}</option>)}
       </select>
     </label>
-    <p className="shop-note">{c(saved.length ? "chooseHint" : "noLines")}</p>
+    <p id={hintId} className="shop-note">{c(saved.length ? "chooseHint" : "noLines")}</p>
     <InkSelector selection={selection} onChange={onChange} />
     <DesignSelector selection={selection} onChange={onChange} />
     <Link className="shop-text-link" href="/#shelf">{c("write")}</Link>
+    {showCard && <LineCard payload={selection.payload} id={selection.sourceId} actions={false} className="shop-sidebar-card" />}
   </section>;
 }

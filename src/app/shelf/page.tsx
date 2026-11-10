@@ -36,7 +36,7 @@ export default function ShelfPage() {
     return matches;
   }, [lines, query, sort]);
 
-  return <><Header /><main className="page-shell mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:py-14">
+  return <><Header /><main id="main-content" tabIndex={-1} className="page-shell mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:py-14">
     <h1 className="page-title">{t("mine.title")}</h1>
     <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--color-ink-soft)]">{t("mine.sub")}</p>
     {blocked && <p role="status" className="panel mt-6 p-4 text-sm">{t("mine.blocked")}</p>}

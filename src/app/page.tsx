@@ -58,10 +58,13 @@ export default function Home() {
                   </Suspense>
                 </div>
                 <div className="workspace-book-copy">
+                  <p className="workspace-eyebrow"><T k="home.featuredBook" /></p>
                   <h2 lang={isBengali(title) ? "bn" : "en"}>{title}</h2>
                   <p className="workspace-book-author" lang={isBengali(author) ? "bn" : "en"}>{author}</p>
-                  <p className="workspace-eyebrow"><T k="home.featuredBook" /></p>
-                  <Link href={`/b/${featured.b}`} className="workspace-book-link"><T k="home.openBook" /><ArrowRight size={16} weight="regular" aria-hidden="true" /></Link>
+                </div>
+                <div className="workspace-book-actions">
+                  <Link href={`/b/${featured.b}#write`} className="ui-button"><T k="nav.write" /><ArrowRight size={18} weight="regular" aria-hidden="true" /></Link>
+                  <Link href={`/b/${featured.b}`} className="workspace-book-link"><T k="home.openBook" /></Link>
                 </div>
               </div>
               <div className="workspace-section-heading"><h2 id="workspace-shelf-heading"><T k="shelf.title" /></h2></div>
