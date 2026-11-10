@@ -124,7 +124,8 @@ describe("shared card content and edition resolution", () => {
 describe("three edition DOM compositions", () => {
   async function renderLineCard(payload: LinePayload, props: Record<string, unknown> = {}) {
     const { LineCard } = await import("@/components/LineCard");
-    return renderToStaticMarkup(createElement(LineCard, { payload, book: nativeBook, id: "test-id", actions: false, ...props }));
+    const { LocaleProvider } = await import("@/components/LocaleProvider");
+    return renderToStaticMarkup(createElement(LocaleProvider, null, createElement(LineCard, { payload, book: nativeBook, id: "test-id", actions: false, ...props })));
   }
 
   it("renders every edition with its full content and its approved furniture", async () => {
@@ -525,6 +526,46 @@ describe("explicit canvas font registration and per-edition export", () => {
       assert(mock);
     }
   });
+  it("keeps centered Bookplate text inside the card and shares its vertical alignment", async () => {
+    vi.resetModules();
+    const { exportLineCard } = await import("@/lib/canvas");
+    const mock = mockCanvas();
+    const payload: LinePayload = { ...base, ct: "bookplate-v1", q: "I remember." };
+    await exportLineCard(payload, "centered", getBook(base.b));
+    const quote = mock.textCalls.find((call) => call.value === payload.q)!;
+    expect(quote.x).toBe(540);
+    expect(quote.y).toBeGreaterThan(300);
+    const label = mock.textCalls.find((call) => call.value === "After reading")!;
+    expect(Number(/([\d.]+)px/.exec(label.font)![1])).toBeGreaterThanOrEqual(28.5);
+  });
+  it("uses a full-size Ticket cancellation mark rather than a CSS percentage as pixels", async () => {
+    vi.resetModules();
+    const { exportLineCard } = await import("@/lib/canvas");
+    const mock = mockCanvas();
+    await exportLineCard({ ...base, ct: "ticket-v1" }, "ticket", getBook(base.b));
+    expect(mock.ctx.scale).toHaveBeenCalledWith(108 / 132 * 3, 108 / 132 * 3);
+  });
+  it("keeps the dense Poster band below the credit rather than painting over it", async () => {
+    vi.resetModules();
+    const { exportLineCard } = await import("@/lib/canvas");
+    const mock = mockCanvas();
+    await exportLineCard(atLimit("poster-v1"), "dense", limitBook(false));
+    expect(mock.ctx.fillRect).toHaveBeenCalledWith(0, 1110, 1080, 240);
+    expect(mock.ctx.fillRect).not.toHaveBeenCalledWith(0, 999, 1080, 351);
+  });
+  it("uses canonical portrait line breaks even when browser measurements differ", async () => {
+    vi.resetModules();
+    const { exportLineCard } = await import("@/lib/canvas");
+    const payload: LinePayload = { ...base, ct: "poster-v1", q: "Fear loses its power when I name it and keep walking." };
+    const mock = mockCanvas();
+    mock.ctx.measureText.mockImplementation(function (this: { font: string }, value: string) {
+      const size = Number(/([\d.]+)px/.exec(this.font)?.[1] ?? 20);
+      return { width: estimateTextWidth(value, size) * 0.82 };
+    });
+    await exportLineCard(payload, "canonical", getBook(base.b));
+    const lines = mock.textCalls.filter((call) => call.y > 200 && call.y < 900 && /600 /.test(call.font) && Number(/([\d.]+)px/.exec(call.font)![1]) > 80);
+    expect(lines.map((call) => call.value.trim())).toEqual(["Fear loses its", "power when I", "name it and", "keep walking."]);
+  });
   it("draws the fitted quote at its layout position without decorative italics or tracking", async () => {
     vi.resetModules();
     const { exportLineCard } = await import("@/lib/canvas");
@@ -535,7 +576,7 @@ describe("explicit canvas font registration and per-edition export", () => {
     const layout = layoutEditionArtwork(text, content.edition);
     await exportLineCard(payload, "compact", nativeBook);
     const quote = mock.textCalls.find((call) => call.value === payload.q)!;
-    expect(quote.y).toBe(layout.quoteTop * EDITION_ARTWORK.scale);
+    expect(quote.y).toBeCloseTo((layout.quoteY + layout.quote.lineHeight / 2 + layout.quote.fontSize * 0.3) * EDITION_ARTWORK.scale);
     expect(mock.textCalls.every((call) => call.spacing === "0px" && !/italic|Fraunces|Plex|Noto/.test(call.font))).toBe(true);
     expect(mock.drawn).not.toContain("“");
   });

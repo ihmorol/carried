@@ -126,7 +126,7 @@ const EDITION_TYPE_REGIONS: Record<CardTemplateId, Record<Exclude<EditionRole, "
   },
   "ticket-v1": {
     quote: { width: 300, height: 196, size: 34, min: 14 },
-    name: { width: 78, height: 54, size: 21, min: 9 },
+    name: { width: 78, height: 54, size: 20, min: 9 },
     book: { width: 196, height: 76, size: 14, min: 8 },
     author: { width: 196, height: 52, size: 11, min: 8 },
   },
@@ -145,6 +145,10 @@ export type EditionLayout = {
   quoteLeading: number; nameLeading: number; bookLeading: number; authorLeading: number;
   /** Quote block position in print-space pixels. */
   quoteTop: number; quoteInset: number; quoteHeight: number;
+  quoteY: number;
+  credit: { top: number; inset: number; width: number; labelHeight: number; gap: number };
+  ownership: { top: number; height: number; nameHeight: number; gap: number };
+  bandTop: number;
   nameBreaks: boolean;
 };
 
@@ -218,10 +222,7 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
     quoteHeight = 264;
     quote = editionFit("quote", m, text.quote, { ...regions.quote, width: EDITION_ARTWORK.width - quoteInset * 2, height: quoteHeight }, quoteLeading, true);
     if (edition !== "ticket-v1") {
-      // The extreme block pulls the credits inline and drops their floor to
-      // 8px so the 90/60 limits still clear the ownership seal. The label
-      // flows inline with the title (at most one extra wrapped line), and
-      // 3 + 2 lines of 8px metadata always clear the reserved zone.
+      // Dense credits keep a compact, explicit stack above the ownership mark.
       const creditWidth = EDITION_ARTWORK.width - quoteInset * 2;
       book = editionFit("book", m, text.book, { width: creditWidth, height: 34, size: 8, min: 8 }, bookLeading, true);
       author = editionFit("author", m, text.author, { width: creditWidth, height: 24, size: 8, min: 8 }, authorLeading, true);
@@ -237,11 +238,29 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
     nameBreaks = true;
     name = editionFit("name", m, text.name, nameRegion, nameLeading, true);
   }
+  const labelHeight = dense && edition !== "ticket-v1" ? 10.4 : 14.3;
+  const creditGap = dense ? 1 : 3;
+  const creditSize = labelHeight + creditGap + book.height + author.height;
+  const bandTop = dense && edition === "poster-v1" ? 370 : 333;
+  const creditTop = edition === "ticket-v1"
+    ? 333 + (117 - creditSize) / 2
+    : dense ? 307 : (edition === "bookplate-v1" ? 330 : 326) - creditSize;
   return {
     dense,
     quote, name, book, author,
     quoteLeading, nameLeading, bookLeading, authorLeading,
     quoteTop, quoteInset, quoteHeight,
+    quoteY: quoteTop + Math.max(0, (quoteHeight - quote.height) / 2),
+    credit: {
+      top: creditTop,
+      inset: edition === "ticket-v1" ? 27 : dense ? 12 : edition === "bookplate-v1" ? 36 : 28,
+      width: edition === "ticket-v1" ? 196 : dense ? 336 : regions.book.width,
+      labelHeight, gap: creditGap,
+    },
+    ownership: { top: dense && edition !== "ticket-v1" ? 376 : edition === "poster-v1" ? 340 : 338,
+      height: dense && edition !== "ticket-v1" ? 68 : edition === "poster-v1" ? 88 : 86,
+      nameHeight: dense && edition !== "ticket-v1" ? 28 : Math.max(30, name.height), gap: dense ? 1 : 2 },
+    bandTop,
     nameBreaks,
   };
 }
