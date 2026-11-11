@@ -53,5 +53,22 @@ Depth works the same way. Cards toss with a small hand-laid lean and straighten 
 - **Do** keep the wordmark small; the reader's name is the loudest thing on the card.
 - **Do** let paper grain (`/grain` overlay) sit over everything at low opacity.
 - **Don't** add gradients, glassmorphism, drop-shadowed floating blobs, or emoji in UI copy.
-- **Don't** introduce a fourth ink or a second accent color.
-- **Don't** require an account for anything. The device remembers the name; the link carries the line.
+- **Don't** add an ink anywhere but `lib/inks.ts`, or give a card a second accent color. More curated designs are planned; readers never upload their own.
+- **Don't** require an account to write, stamp or share. The device remembers the name; the link carries the line. Sign-in is offered, never demanded, and only at checkout or to earn credits.
+
+## Physical products
+
+The printed card is the same card, held. Products follow the card rules above
+(curated inks, one accent, no gradients).
+
+- **Quality bar:** Moo and Minted. Premium differs from standard only in
+  materials (stock, finish, the stamp pressed or foiled), never in design.
+- **Packaging signature:** a kraft envelope or box stamped "CARRIED" in red,
+  with the order's accession number stamped by hand.
+- **Catalog products** carry no reader's name; their stamp reads "CARRIED" plus
+  the accession number. Custom orders carry the buyer's own name.
+- **Totes and T-shirts:** text colour comes from a short set of preset swatches,
+  and each shirt colour only offers the ones that stay readable on it.
+- **Wallpapers** carry the "CARRIED BY" stamp and no watermark.
+- Voice holds on the shop too: no fake urgency, no countdowns, no "only 3 left"
+  unless it's true.
