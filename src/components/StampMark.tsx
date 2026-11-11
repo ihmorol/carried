@@ -1,5 +1,7 @@
 import { formatStampDate } from "@/lib/line";
 import type { Ink } from "@/lib/inks";
+import { cssFamily, type CardFont } from "@/lib/card-fonts";
+import { isBengali } from "@/lib/line";
 
 /**
  * The rubber stamp, the ownership moment. Ink-textured via mask,
@@ -9,12 +11,15 @@ export function StampMark({
   name,
   date,
   ink,
+  font,
   animate = false,
   scale = 1,
 }: {
   name: string;
   date: string;
   ink: Ink;
+  /** the card typeface; the signature is set in it */
+  font?: CardFont;
   animate?: boolean;
   scale?: number;
 }) {
@@ -44,7 +49,14 @@ export function StampMark({
       <span
         className="font-serif font-semibold leading-tight"
         style={{
-          fontSize: 20 * scale,
+          ...(font && font.id !== "fraunces" && !isBengali(name)
+            ? {
+                fontFamily: cssFamily(font),
+                fontWeight: font.name.weight,
+                fontStyle: font.name.style,
+              }
+            : {}),
+          fontSize: 20 * scale * (font && !isBengali(name) ? font.scale : 1),
           letterSpacing: "0.02em",
           marginTop: 2 * scale,
           maxWidth: 220 * scale,

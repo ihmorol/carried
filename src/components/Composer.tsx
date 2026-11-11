@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { encodeLine, LineError, type LinePayload } from "@/lib/line";
-import { INKS, INK_IDS, type InkId } from "@/lib/inks";
+import { groupDefaults, styleFields, type CardStyle, type StyleGroupId } from "@/lib/card-style";
 import type { Book } from "@/lib/books";
 import { addToShelf, getRememberedName, rememberName } from "@/lib/shelf";
 import { LINE_MAX, NAME_MAX } from "@/lib/site";
 import { LineCard } from "./LineCard";
+import { StylePicker } from "./StylePicker";
 import { useLocale } from "./LocaleProvider";
 
 /**
@@ -20,7 +21,10 @@ export function Composer({ book }: { book: Book }) {
   const { t } = useLocale();
   const [text, setText] = useState("");
   const [name, setName] = useState("");
-  const [ink, setInk] = useState<InkId>("paper");
+  const [group, setGroup] = useState<StyleGroupId>("library");
+  const [style, setStyle] = useState<CardStyle>(() => groupDefaults("library"));
+  const ink = style.ink;
+  const look = styleFields(style);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,8 +50,9 @@ export function Composer({ book }: { book: Book }) {
       n: name.trim() || "Your name",
       s: ink,
       d: today,
+      ...styleFields(style),
     }),
-    [book.slug, text, name, ink, today],
+    [book.slug, text, name, ink, style, today],
   );
 
   async function submit(e: React.FormEvent) {
@@ -57,7 +62,7 @@ export function Composer({ book }: { book: Book }) {
 
     // validate cheaply first so both paths share the same rules
     try {
-      encodeLine({ bookSlug: book.slug, text, name, ink, date: today });
+      encodeLine({ bookSlug: book.slug, text, name, ...style, date: today });
     } catch (err) {
       if (err instanceof LineError) {
         const msg = err.message;
@@ -82,7 +87,7 @@ export function Composer({ book }: { book: Book }) {
       const res = await fetch(`/api/books/${encodeURIComponent(book.slug)}/lines`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ q: text, n: name, s: ink }),
+        body: JSON.stringify({ q: text, n: name, s: ink, ...look }),
       });
       if (res.ok) {
         const record = (await res.json()) as { id: string; payload: LinePayload };
@@ -98,7 +103,7 @@ export function Composer({ book }: { book: Book }) {
       throw new Error("live shelf unreachable");
     } catch {
       // live shelf offline, the URL still carries the whole line
-      const { id, payload } = encodeLine({ bookSlug: book.slug, text, name, ink, date: today });
+      const { id, payload } = encodeLine({ bookSlug: book.slug, text, name, ...style, date: today });
       finish(id, payload);
     }
   }
@@ -170,35 +175,11 @@ export function Composer({ book }: { book: Book }) {
           <legend className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-ink-soft)]">
             {t("c.3")}
           </legend>
-          <div className="mt-3 flex gap-2" role="radiogroup" aria-label={t("c.3")}>
-            {INK_IDS.map((id) => {
-              const active = ink === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setInk(id)}
-                  className={`flex items-center gap-2 rounded-full border px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
-                    active
-                      ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)]"
-                      : "border-[var(--color-rule)] text-[var(--color-ink-soft)] hover:border-[var(--color-ink-soft)]"
-                  }`}
-                >
-                  <span
-                    className="inline-block h-3 w-3 rounded-full border"
-                    style={{
-                      backgroundColor: INKS[id].bg,
-                      borderColor: INKS[id].rule,
-                    }}
-                    aria-hidden="true"
-                  />
-                  {t(`ink.${id}`)}
-                </button>
-              );
-            })}
+          {/* phones: the proof sits under the form, so restyle it in view here */}
+          <div className="mx-auto mt-4 w-[280px] max-w-full lg:hidden">
+            <LineCard payload={preview} id="preview-preview" actions={false} />
           </div>
+          <StylePicker group={group} style={style} onGroup={setGroup} onChange={setStyle} />
         </fieldset>
 
         {error && (
@@ -222,7 +203,7 @@ export function Composer({ book }: { book: Book }) {
         </p>
       </form>
 
-      <div className="lg:sticky lg:top-10 lg:self-start">
+      <div className="hidden lg:sticky lg:top-10 lg:block lg:self-start">
         <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--color-ink-soft)]">
           {t("c.proof")}
         </p>

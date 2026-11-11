@@ -1,4 +1,6 @@
-import { INKS } from "./inks";
+import { resolveStyle } from "./card-style";
+import { cardArtSvg, svgDataUri } from "./card-art";
+import type { CardFont } from "./card-fonts";
 import { getBook, originalName } from "./books";
 import { accessionNo, formatStampDate, formatStampDateBn, isBengali, type LinePayload } from "./line";
 import { SITE_NAME } from "./site";
@@ -16,12 +18,47 @@ const W = 1080;
 const H = 1350;
 const M = 92; // outer margin
 
-async function loadFont(family: string, file: string, weight: string, style: string): Promise<void> {
-  if (typeof document === "undefined") return;
-  if (document.fonts.check(`${style === "italic" ? "italic " : ""}${weight} 16px "${family}"`)) return;
-  const face = new FontFace(family, `url(/fonts/${file})`, { weight, style });
-  await face.load();
-  document.fonts.add(face);
+// document.fonts.check() answers true for a family that was never
+// registered at all, so it can't tell us whether a face is loaded;
+// remember what we registered instead.
+const registered = new Map<string, Promise<void>>();
+
+function loadFont(family: string, file: string, weight: string, style: string): Promise<void> {
+  if (typeof document === "undefined") return Promise.resolve();
+  const key = `${family}|${file}|${weight}|${style}`;
+  let p = registered.get(key);
+  if (!p) {
+    const face = new FontFace(family, `url(/fonts/${file})`, { weight, style });
+    p = face.load().then((f) => {
+      document.fonts.add(f);
+    });
+    p.catch(() => registered.delete(key));
+    registered.set(key, p);
+  }
+  return p;
+}
+
+/** Register the card's chosen face(s) for the export. Fraunces is already loaded. */
+async function loadCardFont(font: CardFont): Promise<void> {
+  if (font.id === "fraunces") return;
+  const specs = font.quote.file === font.name.file ? [font.quote] : [font.quote, font.name];
+  await Promise.all(specs.map((f) => loadFont(exportFamily(font), f.file, String(f.weight), f.style)));
+}
+
+function exportFamily(font: CardFont): string {
+  return font.id === "fraunces" ? "Fraunces Export" : `${font.family} Export`;
+}
+
+function cssFont(font: CardFont, face: "quote" | "name", px: number): string {
+  const f = font[face];
+  return `${f.style === "italic" ? "italic " : ""}${f.weight} ${px}px "${exportFamily(font)}"`;
+}
+
+async function loadSvg(svg: string): Promise<HTMLImageElement> {
+  const img = new Image();
+  img.src = svgDataUri(svg);
+  await img.decode();
+  return img;
 }
 
 function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
@@ -42,7 +79,7 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): st
 }
 
 export async function exportLineCard(payload: LinePayload, id: string): Promise<Blob> {
-  const ink = INKS[payload.s];
+  const { ink, pattern, font } = resolveStyle(payload);
   const book = getBook(payload.b);
   if (!book) throw new Error("Book not found");
 
@@ -59,6 +96,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
     loadFont("Noto Sans Bengali Export", "NotoSansBengali-400.ttf", "400", "normal"),
     loadFont("Noto Sans Bengali Export", "NotoSansBengali-500.ttf", "500", "normal"),
     loadFont("Noto Sans Bengali Export", "NotoSansBengali-600.ttf", "600", "normal"),
+    loadCardFont(font),
   ]);
   await document.fonts.ready;
 
@@ -72,12 +110,18 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   ctx.fillStyle = ink.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // double rule border
-  ctx.strokeStyle = ink.rule;
-  ctx.lineWidth = 2;
-  ctx.strokeRect(M - 34, M - 34, W - 2 * (M - 34), H - 2 * (M - 34));
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(M - 22, M - 22, W - 2 * (M - 22), H - 2 * (M - 22));
+  // the printed pattern, the same SVG the DOM card and OG image paint
+  const art = cardArtSvg(pattern.id, ink, W, H);
+  if (art) ctx.drawImage(await loadSvg(art), 0, 0, W, H);
+
+  // double rule border, unless the pattern draws its own frame
+  if (!pattern.frame) {
+    ctx.strokeStyle = ink.rule;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(M - 34, M - 34, W - 2 * (M - 34), H - 2 * (M - 34));
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(M - 22, M - 22, W - 2 * (M - 22), H - 2 * (M - 22));
+  }
 
   // ledger head
   ctx.fillStyle = ink.text;
@@ -95,20 +139,21 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   const len = payload.q.length;
   const bn = isBengali(payload.q);
   const quoteSize = Math.round(
-    (len > 170 ? 44 : len > 110 ? 50 : len > 60 ? 56 : 62) * (bn ? 0.88 : 1),
+    (len > 170 ? 44 : len > 110 ? 50 : len > 60 ? 56 : 62) * (bn ? 0.88 : font.scale),
   );
   const quoteFont = bn
     ? `500 ${quoteSize}px "Noto Serif Bengali Export"`
-    : `italic 500 ${quoteSize}px "Fraunces Export"`;
+    : cssFont(font, "quote", quoteSize);
   ctx.font = quoteFont;
   const quoteLines = wrap(ctx, payload.q, W - 2 * M);
-  const quoteLH = quoteSize * (bn ? 1.75 : 1.42);
-  let y = M + 96;
+  // the DOM leads at font.leading; the export runs a touch tighter, as before
+  const quoteLH = quoteSize * (bn ? 1.75 : font.leading * (1.42 / 1.5));
+  let y = M + 176;
 
   // oversized open-quote mark (latin cards only, Bangla has no quote glyph style here)
   ctx.fillStyle = ink.rule;
   ctx.font = 'italic 500 150px "Fraunces Export"';
-  if (!bn) ctx.fillText("\u201C", M - 10, y - 18);
+  if (!bn) ctx.fillText("\u201C", M - 10, y - 44);
 
   ctx.fillStyle = ink.text;
   ctx.font = quoteFont;
@@ -118,7 +163,8 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   }
 
   // provenance
-  const provY = Math.min(H - M - 320, y + 40);
+  // anchored to the foot like the DOM card, the longest line still clears it
+  const provY = Math.max(H - M - 400, y + 40);
   ctx.strokeStyle = ink.rule;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -137,7 +183,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   const provTitleBn = isBengali(provTitle);
   ctx.font = provTitleBn
     ? '600 34px "Noto Serif Bengali Export"'
-    : '600 40px "Fraunces Export"';
+    : cssFont(font, "name", Math.round(40 * font.scale));
   ctx.fillText(provTitle, M, provY + 112);
 
   ctx.fillStyle = ink.soft;
@@ -171,7 +217,7 @@ export async function exportLineCard(payload: LinePayload, id: string): Promise<
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "0px";
   ctx.font = bnName
     ? '600 46px "Noto Serif Bengali Export"'
-    : '600 52px "Fraunces Export"';
+    : cssFont(font, "name", Math.round(52 * font.scale));
   ctx.fillText(payload.n, 0, 22);
   ctx.font = '500 16px "Plex Export"';
   (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = "5px";

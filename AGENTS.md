@@ -27,13 +27,15 @@ Single-context: `CONTEXT.md` at the root + `docs/adr/`. See `docs/agents/domain.
    or auth.
 2. **The three rendering surfaces of a line must stay identical**: DOM card,
    canvas PNG, satori OG. Changes to card design must update `LineCard`,
-   `lib/canvas.ts`, and `l/[id]/opengraph-image.tsx` together.
+   `lib/canvas.ts`, and `l/[id]/opengraph-image.tsx` together, and every
+   `lib/card-art.ts` pattern must render on all three surfaces.
 3. **Validate at the boundary.** `decodeLine` validates structure (404 on
    garbage); `findBook` decides book existence; the store re-validates
    server-side (`validateLineInput` / `validateBookInput`). Never trust the URL
    or the body.
-4. **Design rules are in the brand doc.** Two typefaces, three inks, one accent.
-   If a diff introduces a gradient or a fourth color scheme, it's wrong.
+4. **Design rules are in the brand doc.** The UI uses two typefaces and one
+   accent; cards use the curated inks, faces and patterns in `lib/`. A
+   gradient on any surface is wrong.
 5. **Tests for pure logic.** The payload codec, search, and store validation
    have vitest coverage (`npm test`); keep it that way.
 

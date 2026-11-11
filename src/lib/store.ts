@@ -2,6 +2,12 @@ import { BOOKS, getBook, SPINE_COLORS, type Book, type SpineColor } from "./book
 import { decodeLine, lineSlugId, type LinePayload } from "./line";
 import { SEED_LINES, SEED_LINE_BY_ID } from "./seeds";
 import { isInkId, type InkId } from "./inks";
+import { isPatternId, type PatternId } from "./card-art";
+import { isCardFontId, type CardFontId } from "./card-fonts";
+import { styleFields } from "./card-style";
+
+/** What a reader submits: the line, the name and the card style. */
+export type LineInput = { q: string; n: string; s: InkId; p?: PatternId; f?: CardFontId };
 import { LINE_MAX, NAME_MAX } from "./site";
 
 /**
@@ -23,7 +29,7 @@ export interface Store {
   readonly kind: "redis" | "memory";
   getLines(slug: string, limit?: number): Promise<LineRecord[]>;
   countLines(slug: string): Promise<number>;
-  addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord>;
+  addLine(slug: string, input: LineInput): Promise<LineRecord>;
   /** Resolve a short slug id to its payload. */
   getLineById(id: string): Promise<LinePayload | undefined>;
   /** Toggle a reader's "underline" on a line, one vote per voter id. */
@@ -37,7 +43,7 @@ export interface Store {
 }
 
 function samePayload(a: LinePayload, b: LinePayload): boolean {
-  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d;
+  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d && a.p === b.p && a.f === b.f;
 }
 
 /** Voters identify themselves with an anonymous, persistent device id. */
@@ -55,14 +61,16 @@ export class StoreError extends Error {
 
 /* ── shared validation (server side mirror of encodeLine's rules) ── */
 
-export function validateLineInput(input: { q: string; n: string; s: InkId }): { q: string; n: string } {
+export function validateLineInput(input: LineInput): { q: string; n: string; p?: PatternId; f?: CardFontId } {
   const q = String(input?.q ?? "").trim().replace(/\s+/g, " ");
   const n = String(input?.n ?? "").trim().replace(/\s+/g, " ");
   if (!q) throw new StoreError("Write the line first.", 400);
   if (q.length > LINE_MAX) throw new StoreError(`Lines carry at most ${LINE_MAX} characters.`, 400);
   if (!n) throw new StoreError("Sign your name.", 400);
   if (n.length > NAME_MAX) throw new StoreError(`Names are at most ${NAME_MAX} characters.`, 400);
-  return { q, n };
+  if (input.p !== undefined && (typeof input.p !== "string" || !isPatternId(input.p))) throw new StoreError("Unknown pattern.", 400);
+  if (input.f !== undefined && (typeof input.f !== "string" || !isCardFontId(input.f))) throw new StoreError("Unknown typeface.", 400);
+  return { q, n, ...styleFields({ pattern: input.p, font: input.f }) };
 }
 
 export function validateBookInput(input: { title: string; author: string; year?: number }): {
@@ -148,16 +156,21 @@ class RedisStore implements Store {
     return this.cmd<number>("LLEN", `carried:lines:${slug}`);
   }
 
-  async addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord> {
+  async addLine(slug: string, input: LineInput): Promise<LineRecord> {
     const book = (await this.getUserBook(slug)) ?? getBook(slug);
     if (!book) throw new StoreError("That book is not on the shelf.", 404);
-    const { q, n } = validateLineInput(input);
+    const { q, n, p, f } = validateLineInput(input);
     if (!isInkId(input.s)) throw new StoreError("Unknown ink.", 400);
 
     // idempotent-ish: return the existing record for an exact repeat
     const existing = await this.getLines(slug, 20);
     const dup = existing.find(
-      (r) => r.payload.q.toLowerCase() === q.toLowerCase() && r.payload.n.toLowerCase() === n.toLowerCase(),
+      (r) =>
+        r.payload.q.toLowerCase() === q.toLowerCase() &&
+        r.payload.n.toLowerCase() === n.toLowerCase() &&
+        r.payload.s === input.s &&
+        r.payload.p === p &&
+        r.payload.f === f,
     );
     if (dup) return dup;
 
@@ -168,6 +181,7 @@ class RedisStore implements Store {
       n,
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
+      ...styleFields({ pattern: p, font: f }),
     };
 
     // short meaningful id, extend the hash suffix only if a different
@@ -285,9 +299,9 @@ export class MemoryStore implements Store {
     return (this.lines.get(`carried:lines:${slug}`) ?? []).length;
   }
 
-  async addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord> {
+  async addLine(slug: string, input: LineInput): Promise<LineRecord> {
     if (!isInkId(input.s)) throw new StoreError("Unknown ink.", 400);
-    const { q, n } = validateLineInput(input);
+    const { q, n, p, f } = validateLineInput(input);
     const payload: LinePayload = {
       v: 1,
       b: slug,
@@ -295,6 +309,7 @@ export class MemoryStore implements Store {
       n,
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
+      ...styleFields({ pattern: p, font: f }),
     };
 
     let suffixChars = 5;

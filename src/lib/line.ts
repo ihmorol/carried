@@ -1,4 +1,7 @@
 import { isInkId, type InkId } from "./inks";
+import { isPatternId, type PatternId } from "./card-art";
+import { isCardFontId, type CardFontId } from "./card-fonts";
+import { styleFields } from "./card-style";
 import { LINE_MAX, NAME_MAX } from "./site";
 
 /**
@@ -23,6 +26,10 @@ export type LinePayload = {
   s: InkId;
   /** date the line was stamped, YYYY-MM-DD */
   d: string;
+  /** card pattern; omitted for the classic double rule */
+  p?: PatternId;
+  /** card typeface; omitted for Fraunces */
+  f?: CardFontId;
 };
 
 export class LineError extends Error {}
@@ -49,6 +56,8 @@ export function encodeLine(input: {
   text: string;
   name: string;
   ink: InkId;
+  pattern?: PatternId;
+  font?: CardFontId;
   date?: string;
 }): { id: string; payload: LinePayload } {
   const text = input.text.trim().replace(/\s+/g, " ");
@@ -64,6 +73,7 @@ export function encodeLine(input: {
     n: name,
     s: input.ink,
     d: input.date ?? new Date().toISOString().slice(0, 10),
+    ...styleFields({ pattern: input.pattern, font: input.font }),
   };
   return { id: encodePayload(payload), payload };
 }
@@ -137,7 +147,17 @@ export function decodeLine(id: string): LinePayload {
   if (typeof p.n !== "string" || !p.n.trim() || p.n.length > NAME_MAX) throw new LineError("This line has no readable signature.");
   if (typeof p.s !== "string" || !isInkId(p.s)) throw new LineError("This line uses an unknown ink.");
   if (typeof p.d !== "string" || !DATE_RE.test(p.d)) throw new LineError("This line lost its date.");
-  return { v: 1, b: p.b, q: p.q.trim(), n: p.n.trim(), s: p.s, d: p.d };
+  if (p.p !== undefined && (typeof p.p !== "string" || !isPatternId(p.p))) throw new LineError("This line uses an unknown pattern.");
+  if (p.f !== undefined && (typeof p.f !== "string" || !isCardFontId(p.f))) throw new LineError("This line uses an unknown typeface.");
+  return {
+    v: 1,
+    b: p.b,
+    q: p.q.trim(),
+    n: p.n.trim(),
+    s: p.s,
+    d: p.d,
+    ...styleFields({ pattern: p.p, font: p.f }),
+  };
 }
 
 /** FNV-1a over the encoded payload → short accession number, ledger style. */

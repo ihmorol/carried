@@ -14,7 +14,11 @@ live in Redis, resolve at request time via `findBook`, and carry the
 `reader-added` tag.
 
 **Line** (`lib/line.ts`), the core entity. A reader's takeaway: `b` (book slug),
-`q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1).
+`q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1),
+and two optional style fields: `p` (pattern) and `f` (card typeface). Both are
+omitted when they're the defaults (`classic`, `fraunces`), so every payload and
+id minted before they existed stays byte-identical; `decodeLine` rejects an
+unknown `p` or `f`.
 The codec (`encodeLine` / `decodeLine` / `encodePayload`) validates **structure only**,
 whether the book exists is decided by `findBook` against the current shelf, so
 the shelf can grow without invalidating old links. Consequences:
@@ -47,10 +51,29 @@ toggles; `getVoteCounts` batch-reads. Book-page margins sort by count desc,
 newest-first on ties. Trade-off accepted: a determined user can rotate device
 ids, the IP rate limit (240/h) is the second layer, not a hard guarantee.
 
-**Ink** (`lib/inks.ts`), one of three card color schemes: `paper | midnight | moss`.
-The single source of truth for the DOM card (`LineCard`), the canvas export
-(`lib/canvas.ts`) and the satori OG renderers. Add a fourth nowhere without
-changing all three surfaces + `isInkId`.
+**Ink** (`lib/inks.ts`), one of 20 flat card color schemes, each five colors:
+`bg, text, soft, rule, stamp`. They sit in five collections (see Card style);
+the original `paper | midnight | moss` are unchanged, so old links keep their
+look. The single source of truth for the DOM card (`LineCard`), the canvas
+export (`lib/canvas.ts`) and the satori OG renderers. Add one nowhere without
+changing all three surfaces, its collection, and the tests (contrast and
+membership in `card-style.test.ts`).
+
+**Card style** (`lib/card-style.ts`), how a card looks, as three independent
+choices in the payload: ink (`s`), pattern (`p`), typeface (`f`).
+
+- **Collections** (`STYLE_GROUPS`): Library, Modern, Retro, Vintage, Keepsake.
+  Each lists the inks, patterns and faces that belong together; every ink lives
+  in exactly one. Picking a collection applies its first ink, pattern and face,
+  but readers can mix freely. `resolveStyle` tolerates anything unknown;
+  `styleFields` drops defaults before encoding.
+- **Patterns** (`lib/card-art.ts`), 12 of them, `classic` (the double rule) by
+  default. `cardArtSvg(id, ink, w, h)` returns one SVG string, and that same
+  string is painted by the DOM card (`CardArt`), the canvas export and satori,
+  so the three surfaces cannot drift. Frame patterns replace the double rule.
+- **Typefaces** (`lib/card-fonts.ts`), 9 faces for the line and signature,
+  Fraunces by default. TTFs in `public/fonts` (OFL, Google Fonts). Ledger
+  labels stay in IBM Plex Mono; Bangla lines fall back to Noto Serif Bengali.
 
 **Seed lines** (`lib/seeds/`), editorial corpus: **ten original reader-voice
 lines per book** (~1,100 total, across canon/modern/more/ideas data files),
@@ -81,5 +104,5 @@ wall, no interstitial).
 
 - No accounts, no server-side user data. A line's identity is its payload + a name; the device remembers the name, nothing more.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
-- Fraunces + IBM Plex Mono only; stamp red is the only accent.
+- Fraunces + IBM Plex Mono for the site UI; card faces come from `lib/card-fonts.ts`; the stamp is the only accent on a card.
 - ADRs for significant decisions live in `docs/adr/`.

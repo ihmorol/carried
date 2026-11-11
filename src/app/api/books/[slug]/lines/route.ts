@@ -6,6 +6,8 @@ import {
   findBook,
 } from "@/lib/store";
 import type { InkId } from "@/lib/inks";
+import type { PatternId } from "@/lib/card-art";
+import type { CardFontId } from "@/lib/card-fonts";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +50,14 @@ export async function POST(req: Request, { params }: Params) {
     }
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
     await checkRate("line", ip, 8);
-    const body = (await req.json()) as { q?: string; n?: string; s?: InkId };
+    const body = (await req.json()) as { q?: string; n?: string; s?: InkId; p?: PatternId; f?: CardFontId };
     const record = await getStore().addLine(slug, {
       q: String(body.q ?? ""),
       n: String(body.n ?? ""),
       s: (body.s ?? "paper") as InkId,
+      // style fields are validated by the store, unknown values are a 400
+      ...(body.p !== undefined ? { p: body.p } : {}),
+      ...(body.f !== undefined ? { f: body.f } : {}),
     });
     return NextResponse.json(record, { status: 201 });
   } catch (err) {

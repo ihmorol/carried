@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import { getBook, originalName } from "@/lib/books";
 import { accessionNo, formatStampDate, formatStampDateBn, isBengali } from "@/lib/line";
-import { INKS } from "@/lib/inks";
+import { resolveStyle } from "@/lib/card-style";
+import { cardArtSvg, svgDataUri } from "@/lib/card-art";
 import { loadOgFonts } from "@/lib/og-fonts";
 import { SITE_NAME } from "@/lib/site";
 import { findBook, resolveLine } from "@/lib/store";
@@ -20,29 +21,31 @@ export default async function OgImage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const fonts = loadOgFonts();
   const payload = await resolveLine(id);
   if (!payload || !(await findBook(payload.b))) {
-    return new ImageResponse(<Unreadable />, { ...size, fonts });
+    return new ImageResponse(<Unreadable />, { ...size, fonts: loadOgFonts() });
   }
 
-  const ink = INKS[payload.s];
+  const { ink, pattern, font } = resolveStyle(payload);
+  const fonts = loadOgFonts(font);
+  const art = cardArtSvg(pattern.id, ink, size.width, size.height);
   const book = getBook(payload.b);
   const origTitle = book ? originalName(book) : "";
   const titleBn = isBengali(origTitle);
   const len = payload.q.length;
   const bn = isBengali(payload.q);
-  const quoteSize = Math.round((len > 170 ? 42 : len > 110 ? 50 : len > 60 ? 58 : 64) * (bn ? 0.88 : 1));
+  const quoteSize = Math.round((len > 170 ? 42 : len > 110 ? 50 : len > 60 ? 58 : 64) * (bn ? 0.88 : font.scale));
   const quoteFont = bn
     ? { fontFamily: "Noto Serif Bengali", fontWeight: 500 }
-    : { fontFamily: "Fraunces", fontStyle: "italic" as const, fontWeight: 500 };
+    : { fontFamily: font.family, fontStyle: font.quote.style, fontWeight: font.quote.weight };
+  const faceName = { fontFamily: font.family, fontStyle: font.name.style, fontWeight: font.name.weight };
   const stampDate = bn ? formatStampDateBn(payload.d) : formatStampDate(payload.d);
   const nameFont = isBengali(payload.n) || bn
     ? { fontFamily: "Noto Serif Bengali", fontWeight: 600 }
-    : { fontFamily: "Fraunces", fontWeight: 600 };
+    : faceName;
   const titleFont = titleBn
     ? { fontFamily: "Noto Serif Bengali", fontWeight: 600, fontSize: 32 }
-    : { fontFamily: "Fraunces", fontWeight: 600, fontSize: 38 };
+    : { ...faceName, fontSize: Math.round(38 * font.scale) };
 
   return new ImageResponse(
     (
@@ -54,14 +57,24 @@ export default async function OgImage({
           flexDirection: "column",
           backgroundColor: ink.bg,
           padding: 26,
+          position: "relative",
         }}
       >
+        {art && (
+          <img
+            src={svgDataUri(art)}
+            width={size.width}
+            height={size.height}
+            alt=""
+            style={{ position: "absolute", top: 0, left: 0 }}
+          />
+        )}
         <div
           style={{
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            border: `1.5px solid ${ink.rule}`,
+            border: pattern.frame ? "1.5px solid transparent" : `1.5px solid ${ink.rule}`,
             padding: "54px 64px",
           }}
         >
@@ -87,7 +100,7 @@ export default async function OgImage({
               style={{
                 ...quoteFont,
                 fontSize: quoteSize,
-                lineHeight: bn ? 1.75 : 1.35,
+                lineHeight: bn ? 1.75 : font.leading * (1.35 / 1.5),
                 color: ink.text,
                 margin: 0,
               }}
@@ -124,7 +137,7 @@ export default async function OgImage({
               <span style={{ fontFamily: "Plex", fontWeight: 600, fontSize: 15, letterSpacing: 6 }}>
                 CARRIED BY
               </span>
-              <span style={{ ...nameFont, fontSize: 34, marginTop: 6 }}>
+              <span style={{ ...nameFont, fontSize: Math.round(34 * (nameFont === faceName ? font.scale : 1)), marginTop: 6 }}>
                 {payload.n}
               </span>
               <span style={{ fontFamily: "Plex", fontWeight: 500, fontSize: 14, letterSpacing: 4, marginTop: 6 }}>

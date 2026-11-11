@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { getBook } from "@/lib/books";
 import { accessionNo, isBengali, formatStampDate, formatStampDateBn } from "@/lib/line";
-import { INKS } from "@/lib/inks";
+import { resolveStyle } from "@/lib/card-style";
+import { cssFamily } from "@/lib/card-fonts";
 import type { LinePayload } from "@/lib/line";
 import { StampMark } from "./StampMark";
 import { UnderlineButton } from "./UnderlineButton";
+import { CardArt } from "./CardArt";
 
 /**
  * The catalog card, the artifact people share. Same design language as
@@ -36,14 +38,15 @@ export function LineCard({
   /** fired after a vote lands, feeds use it to re-sort */
   onChange?: (lineId: string, votes: number, voted: boolean) => void;
 }) {
-  const ink = INKS[payload.s];
+  const { ink, pattern, font } = resolveStyle(payload);
   const book = getBook(payload.b);
   if (!book) return null;
 
   const s = size === "lg" ? 1.3 : 1;
   const len = payload.q.length;
   const bn = isBengali(payload.q);
-  const quoteSize = (len > 170 ? 15 : len > 110 ? 17 : len > 60 ? 19 : 21) * s;
+  const quoteSize = (len > 170 ? 15 : len > 110 ? 17 : len > 60 ? 19 : 21) * s * (bn ? 1 : font.scale);
+  const family = cssFamily(font);
 
   const head = (
     <div
@@ -71,12 +74,14 @@ export function LineCard({
         &ldquo;
       </span>
       <p
-        className="relative font-serif"
+        className="relative"
         style={{
+          fontFamily: bn ? "var(--font-serif)" : family,
           fontSize: quoteSize,
-          lineHeight: bn ? 1.7 : 1.5,
+          lineHeight: bn ? 1.7 : font.leading,
           paddingTop: 14 * s,
-          fontStyle: bn ? "normal" : "italic",
+          fontStyle: bn ? "normal" : font.quote.style,
+          fontWeight: bn ? 500 : font.quote.weight,
           textWrap: "pretty",
         }}
       >
@@ -95,8 +100,14 @@ export function LineCard({
           Carried out of
         </div>
         <div
-          className="font-serif font-semibold"
-          style={{ fontSize: 15 * s, lineHeight: 1.25, marginTop: 3 * s }}
+          style={{
+            fontFamily: family,
+            fontWeight: font.name.weight,
+            fontStyle: font.name.style,
+            fontSize: 15 * s * font.scale,
+            lineHeight: 1.25,
+            marginTop: 3 * s,
+          }}
         >
           {book.title}
         </div>
@@ -131,6 +142,7 @@ export function LineCard({
         name={payload.n}
         date={bn ? formatStampDateBn(payload.d) : formatStampDate(payload.d)}
         ink={ink}
+        font={font}
         animate={animateStamp}
         scale={s * 0.92}
       />
@@ -138,7 +150,7 @@ export function LineCard({
   );
 
   const inner = (
-    <>
+    <div className="relative flex flex-1 flex-col">
       {asLink ? (
         <Link
           href={`/l/${id}`}
@@ -158,23 +170,29 @@ export function LineCard({
       )}
       {voteStrip}
       {stamp}
-    </>
+    </div>
   );
 
   const card = (
     <div
-      className="card-rule relative flex h-full flex-col rounded-[4px]"
+      className={`${pattern.frame ? "" : "card-rule"} relative flex h-full flex-col rounded-[4px]`}
+      data-pattern={pattern.id}
+      data-font={font.id}
       style={{
         backgroundColor: ink.bg,
         color: ink.text,
         borderColor: ink.rule,
         // The drop shadow is page dressing: the canvas export and the
         // OG image render the card edge to edge, no shadow, and that
-        // is the artifact people download and share.
-        boxShadow: `inset 0 0 0 4px ${ink.bg}, inset 0 0 0 5px ${ink.rule}b3, 0 1px 2px rgba(28,22,12,0.10), 0 18px 36px -18px rgba(28,22,12,0.28)`,
+        // is the artifact people download and share. Patterns that
+        // draw their own frame drop the double rule.
+        boxShadow: pattern.frame
+          ? "0 1px 2px rgba(28,22,12,0.10), 0 18px 36px -18px rgba(28,22,12,0.28)"
+          : `inset 0 0 0 4px ${ink.bg}, inset 0 0 0 5px ${ink.rule}b3, 0 1px 2px rgba(28,22,12,0.10), 0 18px 36px -18px rgba(28,22,12,0.28)`,
         padding: 22 * s,
       }}
     >
+      {pattern.id !== "classic" && <CardArt pattern={pattern.id} ink={ink} />}
       {inner}
     </div>
   );
