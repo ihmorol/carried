@@ -1,6 +1,9 @@
 # Context
 
-Carried is a no-account, no-backend quote-card site. This is the domain model.
+Carried is a quote-card site that guests use without an account, and, from the
+1 January 2027 launch, a shop for printed products in Bangladesh. This is the
+domain model. Commerce decisions live in `docs/adr/` (0001 to 0006); the
+entities marked *planned* below are decided but not built yet.
 
 ## Entities
 
@@ -75,21 +78,57 @@ choices in the payload: ink (`s`), pattern (`p`), typeface (`f`).
   Fraunces by default. TTFs in `public/fonts` (OFL, Google Fonts). Ledger
   labels stay in IBM Plex Mono; Bangla lines fall back to Noto Serif Bengali.
 
-**Seed lines** (`lib/seeds/`), editorial corpus: **ten original reader-voice
-lines per book** (~1,100 total, across canon/modern/more/ideas data files),
-written in-house. They are reactions to books, **not excerpts from them**,
-no scraped or quoted user content, so they're safe to ship. Fixed fields keep
-ids stable; a coverage test (`npm test`) enforces 10 per book. They populate
-book pages, the home ticker (capped rotation), and the daily front-page pick.
+**Seed lines** (`lib/seeds/`), editorial corpus: **ten lines per book**
+(~1,100 total, across canon/modern/more/ideas data files). They were
+**AI-generated**, not written in-house, and are reactions to books rather than
+excerpts. Before launch they are replaced with real lines picked by the team
+(ADR 0003). Fixed fields keep ids stable; a coverage test (`npm test`) enforces
+10 per book. They populate book pages, the home ticker (capped rotation), and
+the daily front-page pick.
 
 **Shelf** (`lib/shelf.ts`), the visitor's own lines, localStorage only
-(`carried.shelf.v1`, name in `carried.name.v1`). No server ever sees it.
+(`carried.shelf.v1`, name in `carried.name.v1`). A guest's shelf never leaves
+the device; signing in (planned) merges it into the account so it syncs.
+
+## Commerce entities (planned, ADRs 0001 to 0006)
+
+**Reader**, a person behind lines. A guest is the anonymous device id
+(`lib/voter.ts`); an **Account** is optional, passwordless (one-time code by
+SMS or email), offered only at checkout and as "Sign in to earn credits" at
+stamping. Signing in merges the device's reader id and shelf into the account.
+No fingerprinting, no IP identity. Accounts, reader ids, orders, catalog lines
+and credits live in Postgres; Redis keeps feeds and votes.
+
+**Terms acceptance**, a per-device tick, required the first time someone
+stamps. It lets Carried use stamped lines on products.
+
+**Catalog line**, a line picked by the team for products, recording the reader
+who stamped it first (they earn its credits). Day-one themed boxes use real
+lines from books picked by the team.
+
+**Product**, a physical format: line sticker, stamp-only sticker, bookmark
+(~50 × 150 mm), premium card (3 × 5 in), card box (10–20 cards, 56 × 87 mm),
+gift a line, tote bag, T-shirt (S to XXL). Cards and boxes come in a standard
+and a premium tier: same design, different materials. Tote and T-shirt text
+colours come from preset swatches, only readable ones per shirt colour.
+
+**Order**, a paid basket: Bangladesh only, two flat delivery rates (inside and
+outside Dhaka), cash on delivery (delivery charge paid up front), bKash, Nagad
+or card. Gifts ship to a recipient with a note and are prepaid. Every order is
+printed by a third party in a weekly batch. Custom items need an exact print
+preview and a "This is what we'll print" tick before payment.
+
+**Credits**, 10 per item sold carrying your line, for lines stamped while
+signed in. 1,000 credits = 100 taka off, capped at about 20% of the product
+total and 200 taka per order.
 
 ## Rendering surfaces of a Line (must stay visually identical)
 
 1. `LineCard` (DOM), page display, marquee, grids
 2. `lib/canvas.ts` (1080×1350 PNG), "Save the card"
 3. `l/[id]/opengraph-image.tsx` (satori, 1200×630), link previews
+4. *Planned:* print-ready PDFs and the matching checkout preview, one per
+   product format (ADR 0006), built from the same `lib/` design source
 
 All read fonts from `public/fonts/*.ttf`; those files are kept in the deploy
 bundle via `outputFileTracingIncludes` in `next.config.ts`.
@@ -97,12 +136,14 @@ bundle via `outputFileTracingIncludes` in `next.config.ts`.
 ## The viral loop
 
 Every shared card page ends in: "What did ⟨book⟩ leave in *you*?" → composer →
-new card → new share. Nothing may interrupt that loop (no signup, no cookie
-wall, no interstitial).
+new card → new share. Nothing may interrupt that loop (no required signup, no
+cookie wall, no interstitial, no paywall). Sign-in may be offered beside the
+stamp button, never in front of it; the terms tick appears once per device.
 
 ## Invariants
 
-- No accounts, no server-side user data. A line's identity is its payload + a name; the device remembers the name, nothing more.
+- Guests never need an account to write, stamp or share. A line's identity is its payload + a name. Server-side reader data (accounts, orders, credits) exists only for readers who sign in, as ADR 0002 describes; no tracking or fingerprinting.
+- Every digital output (card designs, PNGs, wallpapers) is free.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
 - Fraunces + IBM Plex Mono for the site UI; card faces come from `lib/card-fonts.ts`; the stamp is the only accent on a card.
 - ADRs for significant decisions live in `docs/adr/`.
