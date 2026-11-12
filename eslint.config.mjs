@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     ".zcode/review/**",
+    // Vendored agent skills are tooling, not application source.
+    ".agents/skills/**",
   ]),
 ]);
 
