@@ -297,6 +297,7 @@ describe("home workspace", () => {
     const jumps = within(main).getByRole("navigation", { name: "Jump to a section" });
     expect(within(jumps).getByRole("link", { name: "Shelf" }).getAttribute("href")).toBe("#shelf");
     expect(within(jumps).getByRole("link", { name: "Lines" }).getAttribute("href")).toBe("#reader-lines");
+    expect(within(jumps).getByRole("link", { name: "Write your line" }).getAttribute("href")).toMatch(/^\/b\/[^/]+#write$/);
     expect(within(lines).getByRole("link", { name: "Write your line" }).getAttribute("href")).toMatch(/^\/b\/[^/]+#write$/);
     expect(within(lines).queryByRole("button", { name: /Underline/ })).toBeNull();
     expect(within(lines).getAllByRole("listitem")).toHaveLength(4); // three lines plus the all-lines link row

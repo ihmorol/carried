@@ -44,6 +44,7 @@ export default function Home() {
           <span id="workspace-jump-label" className="sr-only"><T k="home.jump" /></span>
           <a href="#shelf"><Books size={18} weight="regular" aria-hidden="true" /><T k="home.jumpShelf" /></a>
           <a href="#reader-lines"><Quotes size={18} weight="regular" aria-hidden="true" /><T k="home.jumpLines" /></a>
+          <Link href={`/b/${featured.b}#write`}><T k="nav.write" /><ArrowRight size={18} weight="regular" aria-hidden="true" /></Link>
         </nav>
         <div className="workspace-columns">
           <section id="shelf" className="workspace-shelf" aria-labelledby="workspace-shelf-heading" tabIndex={-1}>

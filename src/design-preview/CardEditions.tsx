@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { INKS } from "@/lib/inks";
-import { estimateTextWidth, fitText } from "@/lib/text-layout";
+import { estimateTextWidth, fitText, type TextFitRole } from "@/lib/text-layout";
 import type { EditionId, EditionProps, PreviewLanguage, PreviewLine } from "./types";
 import "./editions.css";
 
@@ -61,7 +61,7 @@ function leading(language: PreviewLanguage, edition: EditionId, role: "quote" | 
   return role === "name" ? 1.15 : 1.35;
 }
 
-function fittedText(text: string, region: FitRegion, lineHeight: number, breakAnywhere = false) {
+function fittedText(text: string, region: FitRegion, lineHeight: number, breakAnywhere = false, fitRole?: TextFitRole) {
   const normalized = text.replace(/\s+/gu, " ");
   // The emergency layout permits grapheme-safe breaks instead of unreadable type.
   // Join words for measuring that wrapping policy only; never rewrite rendered text.
@@ -72,7 +72,7 @@ function fittedText(text: string, region: FitRegion, lineHeight: number, breakAn
     maxFontSize: region.size,
     minFontSize: region.min,
     leading: lineHeight,
-    measure: (value, size) => estimateTextWidth(breakAnywhere ? value.replace(/\u2060/gu, " ") : value, size),
+    measure: (value, size) => estimateTextWidth(breakAnywhere ? value.replace(/\u2060/gu, " ") : value, size, fitRole),
   });
 }
 
@@ -86,7 +86,7 @@ function typesetting(content: PreviewLine, edition: EditionId): { style: Edition
   const nameLeading = leading(languageOf(content.name, content.language), edition, "name");
   const bookLeading = leading(languageOf(content.book, content.language), edition, "metadata");
   const authorLeading = leading(languageOf(content.author, content.language), edition, "metadata");
-  let book = fittedText(content.book, regions.book, bookLeading);
+  let book = fittedText(content.book, regions.book, bookLeading, false, "book");
   let author = fittedText(content.author, regions.author, authorLeading);
   let nameRegion = regions.name;
   let quoteTop = edition === "bookplate" ? 74 : edition === "poster" ? 70 : 95;
@@ -96,18 +96,18 @@ function typesetting(content: PreviewLine, edition: EditionId): { style: Edition
   let dense = false;
   let quote;
   try {
-    quote = fittedText(content.quote, { ...regions.quote, height: quoteHeight }, quoteLeading);
+    quote = fittedText(content.quote, { ...regions.quote, height: quoteHeight }, quoteLeading, false, "quote");
   } catch (error) {
     if (!(error instanceof RangeError)) throw error;
     dense = true;
     quoteTop = edition === "bookplate" ? 46 : edition === "poster" ? 44 : 40;
     quoteInset = edition === "bookplate" ? 22 : 16;
     quoteHeight = 264;
-    quote = fittedText(content.quote, { ...regions.quote, width: 360 - quoteInset * 2, height: quoteHeight }, quoteLeading, true);
+    quote = fittedText(content.quote, { ...regions.quote, width: 360 - quoteInset * 2, height: quoteHeight }, quoteLeading, true, "quote");
     if (edition !== "ticket") {
       const creditWidth = edition === "bookplate" ? 316 : 304;
       const labelWidth = estimateTextWidth(LABELS[content.language].afterReading, 9);
-      book = fittedText(content.book, { width: creditWidth - labelWidth - 4, height: 28, size: 9, min: 9 }, bookLeading, true);
+      book = fittedText(content.book, { width: creditWidth - labelWidth - 4, height: 28, size: 9, min: 9 }, bookLeading, true, "book");
       author = fittedText(content.author, { width: creditWidth, height: 28, size: 9, min: 9 }, authorLeading, true);
       nameRegion = { ...nameRegion, height: 28, size: 18 };
     }

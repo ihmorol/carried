@@ -95,7 +95,7 @@ wall, no interstitial).
 
 - No accounts or private server-side customer data. The optional public shelf stores submitted lines/names and anonymous votes; the personal shelf, language choice, and merchandise selections stay device-local. No orders, addresses, payments, or tracking are added.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
-- Manrope and Anek Bangla are the two active house faces, with normal letter spacing. The current user-approved palette uses neutral/near-white surfaces and one coral accent family; the former letterpress fonts and wide tracking are superseded.
+- Noto Serif Bengali is the display/quote face across both scripts; Manrope and Anek Bangla remain the interface pair. All three are locally hosted at 400/500/600 with normal prose and Bengali letter spacing. The current user-approved palette uses neutral/near-white surfaces and one coral accent family; the former letterpress fonts and wide tracking are superseded.
 - Encoded line IDs are bounded at 4096 characters to accommodate maximum valid UTF-8 content. New offline public lines use payload IDs; seed and existing short IDs remain valid.
 - Merchandise concepts: `/shop`, `/shop/[slug]`, `/shop/cart`; validated `carried.cart.v1` selections only, no checkout. All digital styles/downloads/sharing remain free. See `docs/adr/0002-free-digital-local-merchandise.md`.
 - ADRs for significant decisions live in `docs/adr/`.

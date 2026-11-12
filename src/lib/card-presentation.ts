@@ -72,14 +72,33 @@ export const EDITION_WEIGHTS = {
  * the edition compositions refine quote/metadata leadings on top of this. */
 export const cardLeading = (script: CardScript) => script === "bengali" ? 1.5 : 1.4;
 
-/** The role argument remains for callers; both roles now use proportional sans.
- * Each script has the other shipped family as its explicit glyph fallback. */
-export function cardFontFamily(script: CardScript, _role: "serif" | "mono", surface: "dom" | "canvas" | "og") {
+/** The two card voices: "text" (quote, book title, wordmark) speaks in the
+ * serif book face; "meta" (labels, reader name, author, date, accession,
+ * language name) stays in the proportional sans. */
+export type CardFontRole = "text" | "meta";
+
+/** "text" leads with Noto Serif Bengali — it covers BOTH Bengali and Latin
+ * glyphs — while every script keeps the other shipped sans family as an
+ * explicit glyph fallback after it. "meta" is the sans stack alone,
+ * script-ordered so the text's own script resolves first. */
+export function cardFontFamily(script: CardScript, role: CardFontRole, surface: "dom" | "canvas" | "og") {
+  if (role === "meta") {
+    if (surface === "dom") {
+      const en = "var(--font-manrope)", bn = "var(--font-anek-bangla)";
+      return `${script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`}, sans-serif`;
+    }
+    const suffix = surface === "canvas" ? " Export" : "";
+    const en = `"Manrope${suffix}"`, bn = `"Anek Bangla${suffix}"`;
+    return script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`;
+  }
   if (surface === "dom") {
     const en = "var(--font-manrope)", bn = "var(--font-anek-bangla)";
-    return `${script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`}, sans-serif`;
+    return script === "bengali"
+      ? `var(--font-book), ${bn}, ${en}, sans-serif`
+      : `var(--font-book), ${en}, ${bn}, sans-serif`;
   }
   const suffix = surface === "canvas" ? " Export" : "";
+  const serif = `"Noto Serif Bengali${suffix}"`;
   const en = `"Manrope${suffix}"`, bn = `"Anek Bangla${suffix}"`;
-  return script === "bengali" ? `${bn}, ${en}` : `${en}, ${bn}`;
+  return script === "bengali" ? `${serif}, ${bn}, ${en}` : `${serif}, ${en}, ${bn}`;
 }

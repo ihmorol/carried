@@ -133,7 +133,7 @@ export function LineCard({
             {credit}
             <div key={stampKey ?? 0} className="edition-stamp edition-ticket-cancellation" data-stamped={stampKey ? "true" : undefined}>
               <svg className="edition-cancellation-mark" viewBox="0 0 132 112" aria-hidden="true" focusable="false">
-                <circle className="edition-cancellation-outer" cx="66" cy="56" r="50" />
+                <circle className="edition-cancellation-outer" cx="66" cy="56" r="64" />
               </svg>
               <span className="edition-reader-label" style={label}>{shared.carriedBy[text.language]}</span>
               {readerName}

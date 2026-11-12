@@ -38,14 +38,14 @@ export default function OgImage() {
             width: "100%",
           }}
         >
-          <span style={{ fontFamily: cardFontFamily("latin", "mono", "og"), fontWeight: 500, fontSize: 24, color: ink.soft }}>
+          <span style={{ fontFamily: cardFontFamily("latin", "meta", "og"), fontWeight: 500, fontSize: 24, color: ink.soft }}>
             No account · Just a line
           </span>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <span style={{ fontFamily: cardFontFamily("latin", "serif", "og"), fontWeight: 600, fontSize: 80, lineHeight: 1.4, color: ink.text }}>
+            <span style={{ fontFamily: cardFontFamily("latin", "text", "og"), fontWeight: 600, fontSize: 80, lineHeight: 1.4, color: ink.text }}>
               {SITE_NAME}
             </span>
-            <span style={{ fontFamily: cardFontFamily("latin", "serif", "og"), fontWeight: 400, fontSize: 32, lineHeight: 1.4, color: ink.soft, marginTop: 16 }}>
+            <span style={{ fontFamily: cardFontFamily("latin", "meta", "og"), fontWeight: 400, fontSize: 32, lineHeight: 1.4, color: ink.soft, marginTop: 16 }}>
               the line a book left in you
             </span>
           </div>

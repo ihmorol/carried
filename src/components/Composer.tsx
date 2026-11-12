@@ -121,7 +121,7 @@ function ComposerForm({ book, initialPayload, sourceId, creationMode = "public" 
 
   return (
     <div className="composer-workspace">
-      <form id={formId} onSubmit={submit} noValidate className="composer-form panel p-5 sm:p-7">
+      <form id={formId} onSubmit={submit} noValidate className="composer-form">
         <a href={`#${proofId}`} className="composer-proof-link link-ledger mb-4 inline-flex min-h-11 items-center" onClick={() => document.getElementById(proofId)?.focus()}>{t("c.viewProof")}</a>
         <label htmlFor="line" className="block text-sm font-medium">{t("c.1")}</label>
         <textarea id="line" value={text} onChange={(e) => { setText(e.target.value); setErrors((v) => ({ ...v, line: undefined })); }}

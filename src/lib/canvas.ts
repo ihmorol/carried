@@ -2,7 +2,8 @@ import { INKS, type Ink } from "./inks";
 import type { Book } from "./books";
 import { accessionNo, type LinePayload } from "./line";
 import {
-  EDITION_COPY, EDITION_SHARED_COPY, EDITION_WEIGHTS, cardFontFamily, cardPresentation, editionText, type CardScript,
+  EDITION_COPY, EDITION_SHARED_COPY, EDITION_WEIGHTS, cardFontFamily, cardPresentation, editionText,
+  type CardFontRole, type CardScript,
 } from "./card-presentation";
 import { EDITION_ARTWORK, layoutEditionArtwork, type EditionLayout, type EditionText, type TextFit } from "./text-layout";
 import { SITE_NAME } from "./site";
@@ -26,6 +27,7 @@ export function loadCanvasFont(family: string, file: string, weight: string, sty
 
 export async function loadCanvasFonts(): Promise<void> {
   await Promise.all([
+    ...[400, 500, 600].map((weight) => loadCanvasFont("Noto Serif Bengali Export", `NotoSerifBengali-${weight}.ttf`, String(weight), "normal")),
     ...[400, 500, 600].map((weight) => loadCanvasFont("Manrope Export", `Manrope-${weight}.ttf`, String(weight), "normal")),
     ...[400, 500, 600].map((weight) => loadCanvasFont("Anek Bangla Export", `AnekBangla-${weight}.ttf`, String(weight), "normal")),
   ]);
@@ -33,7 +35,8 @@ export async function loadCanvasFonts(): Promise<void> {
 }
 
 type Ctx = CanvasRenderingContext2D;
-const font = (script: CardScript, size: number, weight: number) => `${weight} ${size * S}px ${cardFontFamily(script, "serif", "canvas")}, sans-serif`;
+const font = (script: CardScript, size: number, weight: number, role: CardFontRole = "meta") =>
+  `${weight} ${size * S}px ${cardFontFamily(script, role, "canvas")}, sans-serif`;
 
 /** Traces the straight-edge frame paths in their own coordinate system. */
 function tracePath(ctx: Ctx, d: string, unit: number): void {
@@ -51,13 +54,13 @@ function tracePath(ctx: Ctx, d: string, unit: number): void {
   }
 }
 
-type DrawOptions = { script: CardScript; weight: number; color: string; align?: CanvasTextAlign };
+type DrawOptions = { script: CardScript; weight: number; color: string; align?: CanvasTextAlign; role?: CardFontRole };
 
 /** Paint the same line boxes as the DOM, with the loaded face's baseline.
  * Refitting here would change the card's line breaks after the reader saves it. */
 function drawFit(ctx: Ctx, fit: TextFit, x: number, y: number, options: DrawOptions): void {
   ctx.fillStyle = options.color;
-  ctx.font = font(options.script, fit.fontSize, options.weight);
+  ctx.font = font(options.script, fit.fontSize, options.weight, options.role ?? "meta");
   ctx.textAlign = options.align ?? "left";
   ctx.textBaseline = "alphabetic";
   fit.lines.forEach((line, index) => {
@@ -74,7 +77,7 @@ function drawLabel(ctx: Ctx, value: string, x: number, y: number, options: Parti
   const size = options.size ?? 11;
   const lineHeight = size * (options.leading ?? 1.3);
   drawFit(ctx, { lines: [value], fontSize: size, lineHeight, height: lineHeight }, x, y,
-    { script: options.script ?? "latin", weight: options.weight ?? EDITION_WEIGHTS.label, color: options.color, align: options.align });
+    { script: options.script ?? "latin", weight: options.weight ?? EDITION_WEIGHTS.label, color: options.color, align: options.align, role: options.role });
 }
 
 function drawCredit(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, edition: "bookplate" | "poster" | "ticket"): void {
@@ -87,7 +90,7 @@ function drawCredit(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   drawLabel(ctx, EDITION_SHARED_COPY.afterReading[text.language], x, top,
     { color: soft, script: text.language, align, size: layout.dense ? 8 : 11 });
   const bookTop = top + layout.credit.labelHeight + layout.credit.gap;
-  drawFit(ctx, layout.book, x, bookTop, { script: text.bookScript, weight: EDITION_WEIGHTS.book, color, align });
+  drawFit(ctx, layout.book, x, bookTop, { script: text.bookScript, weight: EDITION_WEIGHTS.book, color, align, role: "text" });
   drawFit(ctx, layout.author, x, bookTop + layout.book.height, { script: text.authorScript, weight: EDITION_WEIGHTS.author, color: soft, align });
 }
 
@@ -128,13 +131,13 @@ function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLay
 
   const cx = PW / 2;
   if (layout.dense) {
-    drawLabel(ctx, SITE_NAME, 36, 23, { color: ink.text, size: 16, weight: EDITION_WEIGHTS.wordmark, leading: 1.1 });
+    drawLabel(ctx, SITE_NAME, 36, 23, { color: ink.text, size: 16, weight: EDITION_WEIGHTS.wordmark, leading: 1.1, role: "text" });
     drawLabel(ctx, copy, 324, 27, { color: ink.soft, script: text.language, size: 9, align: "right", leading: 1.4 });
   } else {
-    drawLabel(ctx, SITE_NAME, cx, 30, { color: ink.text, align: "center", size: 20, weight: EDITION_WEIGHTS.wordmark, leading: 1.1 });
-    drawLabel(ctx, copy, cx, 55, { color: ink.soft, script: text.language, align: "center", size: 11, leading: 1.4 });
+    drawLabel(ctx, SITE_NAME, cx, 30, { color: ink.text, align: "center", size: 16, weight: EDITION_WEIGHTS.wordmark, leading: 1.1, role: "text" });
+    drawLabel(ctx, copy, cx, 50.6, { color: ink.soft, script: text.language, align: "center", size: 10, leading: 1.4 });
   }
-  drawFit(ctx, layout.quote, cx, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.quote, color: ink.text, align: "center" });
+  drawFit(ctx, layout.quote, cx, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.quote, color: ink.text, align: "center", role: "text" });
   drawCredit(ctx, ink, text, layout, "bookplate");
 
   const { top, height } = layout.ownership;
@@ -152,9 +155,9 @@ function drawPoster(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   const textColor = ink.id === "midnight" ? ink.text : ink.bg;
   ctx.fillStyle = fieldColor;
   ctx.fillRect(0, 0, PW * S, PH * S);
-  drawLabel(ctx, SITE_NAME, 28, layout.dense ? 12 : 22, { color: textColor, size: 18, weight: EDITION_WEIGHTS.wordmark, leading: 1.2 });
+  drawLabel(ctx, SITE_NAME, 28, layout.dense ? 12 : 22, { color: textColor, size: 18, weight: EDITION_WEIGHTS.wordmark, leading: 1.2, role: "text" });
   drawLabel(ctx, text.accession, PW - 28, layout.dense ? 16 : 26, { color: textColor, size: 10, align: "right" });
-  drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.posterQuote, color: textColor });
+  drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.posterQuote, color: textColor, role: "text" });
   drawCredit(ctx, ink, text, layout, "poster");
 
   ctx.fillStyle = ink.stamp;
@@ -164,7 +167,7 @@ function drawPoster(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   // the quote. Ink-pale text keeps 4.5:1 on every coral.
   const bandHeight = PH - layout.bandTop;
   const rowsTop = layout.bandTop + (bandHeight - ownershipBlockHeight(layout, false)) / 2;
-  drawOwnershipRows(ctx, ink, text, layout, 28, rowsTop, "left", false,
+  drawOwnershipRows(ctx, ink, text, layout, layout.dense ? 12 : 28, rowsTop, "left", false,
     { label: ink.bg, name: ink.bg, date: ink.bg });
 }
 
@@ -196,16 +199,16 @@ function drawTicket(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
 
   const headingTop = layout.dense ? 12 : 22;
   const headingInset = layout.dense ? 16 : 30;
-  drawLabel(ctx, SITE_NAME, headingInset, headingTop, { color: ink.text, size: 18, weight: EDITION_WEIGHTS.wordmark, leading: 1.2 });
+  drawLabel(ctx, SITE_NAME, headingInset, headingTop, { color: ink.text, size: 18, weight: EDITION_WEIGHTS.wordmark, leading: 1.2, role: "text" });
   drawLabel(ctx, text.accession, PW - headingInset, headingTop + 4, { color: ink.text, size: 10, align: "right" });
   ctx.lineWidth = S;
   tracePath(ctx, `M${headingInset} ${headingTop + (layout.dense ? 26 : 33)}H${PW - headingInset}`, S); ctx.stroke();
   drawLabel(ctx, copy, 30, layout.dense ? 315 : 67, { color: ink.stamp, script: text.language, size: layout.dense ? 9 : 12, weight: EDITION_WEIGHTS.book, leading: 1.4 });
-  drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.ticketQuote, color: ink.text });
-  const datelineTop = layout.dense ? 303 : 299;
-  drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, 30, datelineTop,
-    { color: ink.soft, script: text.dateScript, size: 10, leading: 1.4 });
-  drawLabel(ctx, EDITION_SHARED_COPY.languageName[text.language], PW - 30, datelineTop,
+  drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.ticketQuote, color: ink.text, role: "text" });
+  const datelineTop = layout.dense ? 315 : 299;
+  drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, layout.dense ? PW - 30 : 30, datelineTop,
+    { color: ink.soft, script: text.dateScript, size: 10, leading: 1.4, align: layout.dense ? "right" : "left" });
+  if (!layout.dense) drawLabel(ctx, EDITION_SHARED_COPY.languageName[text.language], PW - 30, datelineTop,
     { color: ink.soft, script: text.language, align: "right", size: 10 });
   drawCredit(ctx, ink, text, layout, "ticket");
 
@@ -216,7 +219,7 @@ function drawTicket(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   ctx.save(); ctx.translate(297 * S, 391.5 * S); ctx.rotate(-5 * Math.PI / 180);
   // One coral ring; the inner circle and tick marks are gone.
   const k = 108 / 132;
-  ctx.beginPath(); ctx.arc(0, 0, 50 * k * S, 0, Math.PI * 2);
+  ctx.beginPath(); ctx.arc(0, 0, 64 * k * S, 0, Math.PI * 2);
   ctx.fillStyle = ink.bg; ctx.fill();
   ctx.strokeStyle = ink.stamp; ctx.lineWidth = 1.4 * k * S; ctx.stroke();
   const rowsTop = -(12.35 + 2 + layout.name.height) / 2;

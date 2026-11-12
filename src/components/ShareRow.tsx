@@ -78,8 +78,8 @@ function CardShare({ payload, id }: { payload: LinePayload; id: string }) {
       <button type="button" onClick={save} disabled={busy !== null} className="ui-button">{t(busy === "save" ? "share.saving" : "share.save")}</button>
       <button type="button" onClick={copy} disabled={busy !== null} aria-live="polite" className="ui-button-secondary">{t(copied ? "share.copied" : "share.copy")}</button>
       {canShare && <button type="button" onClick={nativeShare} disabled={busy !== null} className="ui-button-secondary">{t(busy === "share" ? "share.sharing" : "share.share")}</button>}
-      <a href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="ui-button-secondary">{t("share.x")}</a>
-      <a href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="ui-button-secondary">{t("share.wa")}</a>
+      <a href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="share-destination">{t("share.x")}</a>
+      <a href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="share-destination">{t("share.wa")}</a>
     </div>
     {error && <p role="alert" className="mt-3 text-sm text-[var(--color-stamp)]">{error}</p>}
     {fallback && <div className="mt-3"><label htmlFor={`copy-${id}`} className="mb-2 block text-sm">{t("share.fallback")}</label>

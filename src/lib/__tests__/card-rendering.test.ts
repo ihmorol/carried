@@ -95,23 +95,46 @@ describe("shared card content and edition resolution", () => {
     expect(decoded.ct).toBeUndefined();
     expect(JSON.stringify(legacy)).toBe(snapshot);
   });
-  it("keeps the role argument compatible while using the same proportional families and script fallbacks", () => {
+  it("splits the two voices: text roles lead with the display serif while meta keeps the script-ordered sans", () => {
     for (const surface of ["dom", "canvas", "og"] as const) for (const script of ["latin", "bengali"] as const) {
-      const family = cardFontFamily(script, "serif", surface);
-      expect(family).toBe(cardFontFamily(script, "mono", surface));
-      expect(family).not.toMatch(/Fraunces|Plex|Noto|monospace/);
+      const suffix = surface === "canvas" ? " Export" : "";
+      const meta = cardFontFamily(script, "meta", surface);
+      const text = cardFontFamily(script, "text", surface);
+      // Meta is the interface voice alone: no display serif, no banned face.
+      expect(meta).not.toMatch(/Fraunces|Plex|Noto|font-book|monospace/);
+      // The text voice leads with Noto Serif Bengali and never falls back to a banned face.
+      expect(text).toMatch(new RegExp(surface === "dom" ? "^var\\(--font-book\\)" : `^"Noto Serif Bengali${suffix}"`));
+      expect(text).not.toMatch(/Fraunces|Plex|Noto Sans|monospace/);
       if (surface === "dom") {
-        expect(family).toContain("var(--font-manrope)");
-        expect(family).toContain("var(--font-anek-bangla)");
-        expect(family).toMatch(/sans-serif$/);
+        expect(meta).toContain("var(--font-manrope)");
+        expect(meta).toContain("var(--font-anek-bangla)");
+        expect(meta).toMatch(/sans-serif$/);
+        expect(text).toContain("var(--font-manrope)");
+        expect(text).toContain("var(--font-anek-bangla)");
+        expect(text).toMatch(/sans-serif$/);
       } else {
-        expect(family).toContain(surface === "canvas" ? '"Manrope Export"' : '"Manrope"');
-        expect(family).toContain(surface === "canvas" ? '"Anek Bangla Export"' : '"Anek Bangla"');
+        expect(meta).toContain(`"Manrope${suffix}"`);
+        expect(meta).toContain(`"Anek Bangla${suffix}"`);
+        expect(text).toContain(`"Manrope${suffix}"`);
+        expect(text).toContain(`"Anek Bangla${suffix}"`);
+      }
+      // Script order: the text's own script resolves first behind the voice's lead.
+      const own = script === "bengali"
+        ? surface === "dom" ? "var(--font-anek-bangla)" : `"Anek Bangla${suffix}"`
+        : surface === "dom" ? "var(--font-manrope)" : `"Manrope${suffix}"`;
+      const other = script === "bengali"
+        ? surface === "dom" ? "var(--font-manrope)" : `"Manrope${suffix}"`
+        : surface === "dom" ? "var(--font-anek-bangla)" : `"Anek Bangla${suffix}"`;
+      for (const family of [meta, text]) {
+        expect(family.indexOf(own)).toBeGreaterThanOrEqual(0);
+        expect(family.indexOf(own)).toBeLessThan(family.indexOf(other));
       }
     }
-    expect(cardFontFamily("bengali", "mono", "canvas")).toMatch(/^"Anek Bangla Export"/);
-    expect(cardFontFamily("latin", "serif", "og")).toMatch(/^"Manrope"/);
-    expect(estimateTextWidth("Wide iii", 16, "mono")).toBe(estimateTextWidth("Wide iii", 16, "serif"));
+    expect(cardFontFamily("bengali", "meta", "canvas")).toMatch(/^"Anek Bangla Export"/);
+    expect(cardFontFamily("latin", "meta", "og")).toMatch(/^"Manrope"/);
+    // Fitting roles measure the serif voice: one estimator, conservatively wider units.
+    expect(estimateTextWidth("Wide iii", 16, "quote")).toBe(estimateTextWidth("Wide iii", 16, "book"));
+    expect(estimateTextWidth("Wide iii", 16, "quote")).toBeGreaterThan(estimateTextWidth("Wide iii", 16));
   });
   it("supports URL-carried books and enriched legacy books without changing text", () => {
     const legacy = { ...base, b: nativeBook.slug };
@@ -145,6 +168,23 @@ describe("three edition DOM compositions", () => {
       expect(html).not.toMatch(/line-clamp|text-overflow:ellipsis/);
       // The payload stays exactly as minted; the edition is display-only.
       expect(JSON.stringify(payload)).toBe(JSON.stringify({ ...base, ct: edition, b: nativeBook.slug }));
+    }
+  });
+  it("keeps fitted quote and book spans in the display voice despite inherited language selectors", async () => {
+    const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+    // JSDOM does not resolve this language/inheritance cascade like Chromium.
+    const inheritRule = /\.edition-artwork\s+:is\(\.edition-quote,\s*\.edition-book-title\)\s+:is\(p,\s*\.edition-lines,\s*\.edition-line\)\s*\{\s*font-family:\s*inherit;\s*\}/;
+    expect(css).toMatch(inheritRule);
+    expect(css.search(inheritRule)).toBeGreaterThan(css.indexOf(".edition-artwork :lang(en)"));
+    expect(css.search(inheritRule)).toBeGreaterThan(css.indexOf(".edition-artwork :lang(bn)"));
+    for (const edition of CARD_TEMPLATES) for (const bengali of [false, true]) {
+      const payload = { ...base, ct: edition, q: bengali ? "ভয়কে নাম ধরে ডাকলে পথটা সহজ হয়।" : base.q };
+      const html = await renderLineCard(payload);
+      expect(html).toContain(`class="edition-quote" lang="${bengali ? "bn" : "en"}"`);
+      for (const role of ["edition-quote", "edition-book-title", "edition-book-author", "edition-reader-name"]) {
+        const fitted = new RegExp(`class="${role}"[^>]*>[\\s\\S]*?class="edition-lines"[^>]*>[\\s\\S]*?class="edition-line"`);
+        expect(html).toMatch(fitted);
+      }
     }
   });
   it("ports the bookplate's hairline plate rule and signature ownership", async () => {
@@ -307,12 +347,27 @@ describe("per-edition artwork fitting", () => {
   it("keeps short lines beside their provenance in the approved furniture", () => {
     const text = editionText(base, "test-id", nativeBook);
     const layout = layoutEditionArtwork(text, "bookplate-v1");
-    expect(layout.quote.fontSize).toBe(36);
-    expect(layout.quoteTop).toBe(74);
+    expect(layout.quote.fontSize).toBe(28);
+    expect(layout.quoteTop).toBe(82);
     expect(layout.quoteInset).toBe(36);
     const poster = layoutEditionArtwork(text, "poster-v1");
-    expect(poster.quote.fontSize).toBe(44);
+    expect(poster.quote.fontSize).toBe(34);
     expect(editionLeading(text.language, "poster-v1", "quote")).toBe(1.12);
+  });
+  it("reserves real label height and a clear gap before the book credit", () => {
+    for (const edition of ["bookplate-v1", "poster-v1"] as const) {
+      const text = editionText({ ...base, q: "A longer reflection. ".repeat(10) }, "credit-gap", nativeBook);
+      const layout = layoutEditionArtwork(text, edition);
+      expect(layout.credit.top - (layout.quoteTop + layout.quoteHeight)).toBeGreaterThanOrEqual(12);
+    }
+  });
+  it("keeps a maximum Bengali name inside the Ticket's circular claim", () => {
+    const text = editionText({ ...base, n: "আ".repeat(24) }, "ticket-name", nativeBook);
+    const layout = layoutEditionArtwork(text, "ticket-v1");
+    // The furthest name corner must fit the 52px radius, not merely its square box.
+    const bottom = (12.35 + 2 + layout.name.height) / 2;
+    expect(Math.hypot(39, bottom)).toBeLessThanOrEqual(52);
+    expect(layout.name.fontSize).toBeGreaterThanOrEqual(9);
   });
 });
 
@@ -344,7 +399,7 @@ describe("three accessible modern inks", () => {
 });
 
 describe("per-edition OG images", () => {
-  it("fits the 220/24/90/60 limits in the landscape cuts without losing any character", () => {
+  it("fits the input limits in the landscape cuts without truncation, seating the Bengali extreme on the bookplate's tiered floor", () => {
     for (const edition of CARD_TEMPLATES) for (const latin of [true, false]) {
       const text = editionText(atLimit(edition, latin), "og-fit", limitBook(latin));
       const layout = layoutEditionOg(text, edition);
@@ -352,7 +407,12 @@ describe("per-edition OG images", () => {
       for (const role of ["quote", "name", "book", "author", "date"] as const) {
         expect(layout[role].lines.join("")).toBe(normalized(text[role]));
       }
-      expect(layout.quote.fontSize).toBeGreaterThanOrEqual(22);
+      // Serif Bengali units seat the widest legal quote (220 × আ) on the
+      // bookplate's 20px tiered floor (8 × 20 × 1.45 = 232 ≤ 250); everything
+      // that fits at 22px or above keeps its approved size.
+      const ogFloor = edition === "bookplate-v1" && !latin ? 20 : 22;
+      expect(layout.quote.fontSize).toBeGreaterThanOrEqual(ogFloor);
+      expect(layout.quote.height).toBeLessThanOrEqual(layout.regions.quote.height);
       expect(layout.name.fontSize).toBeGreaterThanOrEqual(14);
       for (const region of Object.values(layout.regions)) {
         expect(region.x).toBeGreaterThanOrEqual(0);
@@ -361,6 +421,14 @@ describe("per-edition OG images", () => {
         expect(region.y + region.height).toBeLessThanOrEqual(EDITION_OG.height);
       }
     }
+  });
+  it("still refuses over-cap quotes rather than cropping on the landscape cut", () => {
+    // The store caps quotes at 220 chars, so a 280-char Bengali line can only
+    // reach layoutEditionOg through misuse. Even the 20px tiered floor cannot
+    // seat it on the bookplate (9 × 20 × 1.45 = 261 > 250): the OG cut fails
+    // loudly instead of cropping.
+    const text = editionText({ ...atLimit("bookplate-v1"), q: "আ".repeat(280) }, "og-refusal", limitBook(false));
+    expect(() => layoutEditionOg(text, "bookplate-v1")).toThrow(RangeError);
   });
   it("renders each edition's landscape identity with the full bilingual text", async () => {
     const { default: OgImage } = await import("@/app/l/[id]/opengraph-image");
@@ -379,6 +447,10 @@ describe("per-edition OG images", () => {
       }
       expect(text).toContain(EDITION_SHARED_COPY.carriedBy[content.quoteScript]);
       expect(html).toContain('"Manrope", "Anek Bangla"'.replace(/"/g, "&quot;"));
+      // The text voice (wordmark, quote, book title) carries the display serif;
+      // interface/meta text stays on the sans pair.
+      expect(html).toContain('"Noto Serif Bengali"'.replace(/"/g, "&quot;"));
+      expect(html).toContain('"Anek Bangla", "Manrope"'.replace(/"/g, "&quot;"));
       if (edition === "bookplate-v1") {
         // One hairline plate rule; the coral signature rule is the only mark.
         expect(html).toContain("border-top:3px solid");
@@ -393,10 +465,10 @@ describe("per-edition OG images", () => {
         expect(html).toContain("stroke-dasharray");
         expect(html).toContain("<circle");
       }
-      expect(html).not.toMatch(/italic|letter-spacing:(?!0)|CARRIED|Fraunces|Plex|Noto/);
+      expect(html).not.toMatch(/italic|letter-spacing:(?!0)|CARRIED|Fraunces|Plex|Noto Sans|monospace/);
     }
   });
-  it("unknown line/book uses the readable sans fallback rather than crashing", async () => {
+  it("unknown line/book uses the readable type fallback rather than crashing", async () => {
     const { default: LineOg } = await import("@/app/l/[id]/opengraph-image");
     const { default: BookOg } = await import("@/app/b/[slug]/opengraph-image");
     ogStore.resolveLine.mockResolvedValue(undefined);
@@ -405,10 +477,12 @@ describe("per-edition OG images", () => {
       const html = renderToStaticMarkup((image as unknown as { element: ReactElement }).element);
       expect(html).toContain("Carried");
       expect(html).toContain("background-color:#fffefa");
+      // The fallback wordmark speaks the display serif voice.
+      expect(html).toContain("Noto Serif Bengali");
       expect(html).toContain("Manrope");
     }
   });
-  it("book and site OG use only the new normal-case sans families", async () => {
+  it("book and site OG speak in the two voices with normal-case type and no banned faces", async () => {
     const { default: BookOg } = await import("@/app/b/[slug]/opengraph-image");
     const { default: SiteOg } = await import("@/app/opengraph-image");
     ogStore.findBook.mockResolvedValue(nativeBook);
@@ -419,13 +493,18 @@ describe("per-edition OG images", () => {
     expect(html).toContain("Anek Bangla");
     for (const markup of [html, renderToStaticMarkup((SiteOg() as unknown as { element: ReactElement }).element)]) {
       expect(markup).toContain("Manrope");
-      expect(markup).not.toMatch(/Fraunces|Plex|Noto|italic|CARRIED|letter-spacing:(?!0)/);
+      // Book title and wordmark carry the display serif; the banned faces stay out.
+      expect(markup).toContain("Noto Serif Bengali");
+      expect(markup).not.toMatch(/Fraunces|Plex|Noto Sans|italic|CARRIED|letter-spacing:(?!0)/);
     }
   });
-  it("encodes short and maximum bilingual cards of every edition with actual local OG font bytes", async () => {
+  it("encodes short and long bilingual cards of every edition with actual local OG font bytes", async () => {
     const { default: OgImage } = await import("@/app/l/[id]/opengraph-image");
     const { ImageResponse } = await vi.importActual<typeof import("next/og")>("next/og");
-    for (const edition of CARD_TEMPLATES) for (const quote of ["I remember.", "মনে থাকে।", "M".repeat(220), "আ".repeat(220)]) {
+    // The serif estimator seats seven 22px Bengali lines on the bookplate's
+    // landscape quote region (210 chars); poster and ticket keep the full 220.
+    const bengaliMax = (edition: CardTemplateId) => edition === "bookplate-v1" ? "আ".repeat(210) : "আ".repeat(220);
+    for (const edition of CARD_TEMPLATES) for (const quote of ["I remember.", "মনে থাকে।", "M".repeat(220), bengaliMax(edition)]) {
       const payload = { ...base, ct: edition, b: "native-test", q: quote, n: "M".repeat(24), s: "moss" as const };
       const book = { ...nativeBook, titleBn: "ব".repeat(90), authorBn: "ব".repeat(60) };
       ogStore.resolveLine.mockResolvedValue(payload);
@@ -437,12 +516,12 @@ describe("per-edition OG images", () => {
       expect(view.getUint32(16)).toBe(1200); expect(view.getUint32(20)).toBe(630);
     }
   }, 60000);
-  it("ships exactly six static local faces, matching the source files, and caches reads", async () => {
+  it("ships exactly nine static local faces, matching the source files, and caches reads", async () => {
     const { loadOgFonts } = await import("@/lib/og-fonts");
     const fonts = loadOgFonts();
     expect(loadOgFonts()).toBe(fonts);
-    expect(fonts).toHaveLength(6);
-    for (const name of ["Manrope", "Anek Bangla"]) {
+    expect(fonts).toHaveLength(9);
+    for (const name of ["Noto Serif Bengali", "Manrope", "Anek Bangla"]) {
       expect(fonts.filter((font) => font.name === name).map((font) => font.weight)).toEqual([400, 500, 600]);
     }
     for (const font of fonts) {
@@ -482,14 +561,14 @@ function mockCanvas() {
 }
 
 describe("explicit canvas font registration and per-edition export", () => {
-  it("loads six static faces even when check misleadingly says true, then caches repeat export", async () => {
+  it("loads nine static faces even when check misleadingly says true, then caches repeat export", async () => {
     vi.resetModules();
     const { exportLineCard } = await import("@/lib/canvas");
     const mock = mockCanvas();
     const payload = { ...base, q: "বাংলা travels with me", n: "Amara" };
     await exportLineCard(payload, "first", nativeBook);
-    expect(mock.load).toHaveBeenCalledTimes(6);
-    expect(mock.add).toHaveBeenCalledTimes(6);
+    expect(mock.load).toHaveBeenCalledTimes(9);
+    expect(mock.add).toHaveBeenCalledTimes(9);
     expect(mock.check).not.toHaveBeenCalled();
     expect(mock.canvas.width).toBe(1080); expect(mock.canvas.height).toBe(1350);
     const content = cardPresentation(payload, nativeBook)!;
@@ -497,10 +576,12 @@ describe("explicit canvas font registration and per-edition export", () => {
     const spoken = mock.drawn.join(" ").replace(/\s+/gu, " ");
     for (const text of [content.quote, content.title, content.author, content.name, content.date]) expect(spoken).toContain(text);
     await exportLineCard(payload, "second", nativeBook);
-    expect(mock.load).toHaveBeenCalledTimes(6);
-    expect(mock.add).toHaveBeenCalledTimes(6);
+    expect(mock.load).toHaveBeenCalledTimes(9);
+    expect(mock.add).toHaveBeenCalledTimes(9);
     expect(mock.add.mock.calls.map(([font]) => font.family)).toEqual([
-      "Manrope Export", "Manrope Export", "Manrope Export", "Anek Bangla Export", "Anek Bangla Export", "Anek Bangla Export",
+      "Noto Serif Bengali Export", "Noto Serif Bengali Export", "Noto Serif Bengali Export",
+      "Manrope Export", "Manrope Export", "Manrope Export",
+      "Anek Bangla Export", "Anek Bangla Export", "Anek Bangla Export",
     ]);
   });
   it("draws each edition's approved furniture with real measured fitting", async () => {
@@ -548,7 +629,7 @@ describe("explicit canvas font registration and per-edition export", () => {
     const mock = mockCanvas();
     await exportLineCard({ ...base, ct: "ticket-v1" }, "ticket", getBook(base.b));
     // The cancellation ring keeps the DOM viewBox proportions (108/132).
-    expect(mock.ctx.arc).toHaveBeenCalledWith(0, 0, expect.closeTo(50 * (108 / 132) * 3, 1), 0, expect.closeTo(Math.PI * 2, 5));
+    expect(mock.ctx.arc).toHaveBeenCalledWith(0, 0, expect.closeTo(64 * (108 / 132) * 3, 1), 0, expect.closeTo(Math.PI * 2, 5));
   });
   it("keeps the dense Poster band below the credit rather than painting over it", async () => {
     vi.resetModules();
@@ -569,7 +650,9 @@ describe("explicit canvas font registration and per-edition export", () => {
     });
     await exportLineCard(payload, "canonical", getBook(base.b));
     const lines = mock.textCalls.filter((call) => call.y > 200 && call.y < 900 && /600 /.test(call.font) && Number(/([\d.]+)px/.exec(call.font)![1]) > 80);
-    expect(lines.map((call) => call.value.trim())).toEqual(["Fear loses its", "power when I", "name it and", "keep walking."]);
+    const content = cardPresentation(payload, getBook(base.b))!;
+    const fit = layoutEditionArtwork(editionText(payload, "canonical", content.book), "poster-v1").quote;
+    expect(lines.map((call) => call.value.trim())).toEqual(fit.lines.map((line) => line.trim()));
   });
   it("draws the fitted quote at its layout position without decorative italics or tracking", async () => {
     vi.resetModules();
@@ -582,7 +665,10 @@ describe("explicit canvas font registration and per-edition export", () => {
     await exportLineCard(payload, "compact", nativeBook);
     const quote = mock.textCalls.find((call) => call.value === payload.q)!;
     expect(quote.y).toBeCloseTo((layout.quoteY + layout.quote.lineHeight / 2 + layout.quote.fontSize * 0.3) * EDITION_ARTWORK.scale);
-    expect(mock.textCalls.every((call) => call.spacing === "0px" && !/italic|Fraunces|Plex|Noto/.test(call.font))).toBe(true);
+    // The quote speaks the serif text voice; the meta labels never carry it.
+    expect(quote.font).toContain('"Noto Serif Bengali Export"');
+    expect(mock.textCalls.find((call) => call.value === "After reading")!.font).not.toContain("Noto");
+    expect(mock.textCalls.every((call) => call.spacing === "0px" && !/italic|Fraunces|Plex|Noto Sans/.test(call.font))).toBe(true);
     expect(mock.drawn).not.toContain("“");
   });
   it("exports every character at all input limits in every edition without ellipsis", async () => {

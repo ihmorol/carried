@@ -31,7 +31,7 @@ export function FrontCover({
   const showImage = Boolean(src && failedSrc !== src);
   const cloth = SPINE_COLORS[spine] ?? SPINE_COLORS.charcoal;
   // Long titles step down so the fallback stays fully readable in the box.
-  const titleSize = title.length > 26 ? "clamp(13px, 14cqi, 24px)" : title.length > 13 ? "clamp(15px, 18cqi, 30px)" : "clamp(17px, 22cqi, 36px)";
+  const titleSize = title.length > 26 ? "clamp(11px, 10cqi, 18px)" : title.length > 11 ? "clamp(11px, 11cqi, 19px)" : "clamp(14px, 16cqi, 28px)";
 
   return (
     <span className={`front-cover @container relative inline-block w-full align-bottom ${className}`} data-slug={slug}>
@@ -76,7 +76,7 @@ export function FrontCover({
               <span className="font-medium" style={{ fontSize: "clamp(9px, 7cqi, 14px)", lineHeight: 1.5 }}>{author}</span>
               <span
                 className="font-semibold"
-                style={{ fontSize: titleSize, lineHeight: 1.15, marginTop: "9%", textWrap: "balance" }}
+                style={{ fontSize: titleSize, lineHeight: 1.3, marginTop: "9%", textWrap: "balance", overflowWrap: "anywhere" }}
               >
                 {title}
               </span>

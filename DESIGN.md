@@ -14,11 +14,11 @@ colors:
   accent: "#e66b77"
 typography:
   display:
-    fontFamily: "Manrope, Anek Bangla, sans-serif"
+    fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, serif"
     fontSize: "clamp(30px, 3.2vw, 42px)"
     fontWeight: 500
     lineHeight: 1.2
-    letterSpacing: "-0.025em"
+    letterSpacing: "-0.01em"
   body:
     fontFamily: "Manrope, Anek Bangla, sans-serif"
     fontSize: "16px"
@@ -53,7 +53,7 @@ components:
 
 Carried is a modern bilingual reading workspace. Its two sectors put the shelf on the left and the daily line plus reader reflections on the right. The product remains a place to author and share a line, not a reading tracker, social profile, or payment application.
 
-This revision explicitly replaces the former letterpress type, sepia palette, wide tracking, and oversized card gaps. Do not restore those rules from historical documents.
+This revision explicitly replaces the former letterpress type, sepia palette, wide tracking, and oversized card gaps. Do not restore those rules from historical documents. The November 2026 refinement adds Noto Serif Bengali as the display voice; it does not restore any letterpress rule.
 
 ## Colors
 
@@ -69,19 +69,19 @@ Payloads without `ct` predate editions: their serialization and identity never c
 
 ## Typography
 
-Use locally hosted **Manrope** for Latin and **Anek Bangla** for Bengali, weights 400/500/600. See [research and licenses](docs/design/modern-bangla-typography.md). Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
+**Noto Serif Bengali** is the display voice: headlines, section titles, and the card quote, book title, and wordmark. It covers Bengali and Latin glyphs, so quote and book title keep one face across scripts. The interface voice remains locally hosted **Manrope** for Latin and **Anek Bangla** for Bengali, weights 400/500/600, for UI, body, labels, metadata, and reader names. All three faces are locally hosted static instances under the OFL, weights 400/500/600 only. See [research and licenses](docs/design/modern-bangla-typography.md). Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
 
-Body and fields are 16px, UI/metadata 12–14px, card quotes 20–24px, and headings approximately 30–42px. Bengali tracking is always normal; card labels and signatures also use normal tracking. No forced all-caps labels, monospace prose, ornamental italics, or oversized quote marks. Bengali card leading is 1.5 and Latin card leading is 1.4. Script-specific font choices remain independent for quote, book, author, and name.
+Body and fields are 16px, UI/metadata 12–14px, card quotes 20–24px, and headings approximately 30–42px — the home welcome headline scales up to ~48px in the serif display voice. Bengali tracking is always normal; card labels and signatures also use normal tracking. Serif display tracking is at most -0.01em, and Bengali display tracking stays normal. No forced all-caps labels, monospace prose, ornamental italics, or oversized quote marks. Bengali card leading is 1.5 and Latin card leading is 1.4. On the card, quote, book title, and wordmark are serif; labels, reader name, author, date, and accession stay sans for legibility at 8–12px, and card geometry, weights (400–600), inks, and editions are unchanged. Author, reader name, and metadata remain script-specific between Manrope and Anek Bangla.
 
-WOFF2 files serve web text; matching static TTFs serve canvas/OG. Bengali weights load as needed. Old font files remain historical assets, not the active type system.
+`--font-book` is registered in `src/app/layout.tsx` and exposed as the `--font-serif` theme token in `globals.css`. WOFF2 files serve web text; matching static TTFs serve canvas/OG. For canvas PNG export the serif is registered as "Noto Serif Bengali Export" from the same TTFs; satori OG uses "Noto Serif Bengali". `public/fonts` ships `NotoSerifBengali-400.woff2/.ttf` (newly instantiated at wght 400 / wdth 100 with fontTools) alongside the pre-existing 500/600 static instances now in active use (700 stays historical) and `NotoSerifBengali-OFL.txt`. Weights load as needed. Old font files remain historical assets, not the active type system.
 
 ## Layout
 
-The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 58% shelf and 42% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
+The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 56% shelf and 44% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
 
-The shelf is cover-led: front-facing 2:3 covers on a shared ledge with title/author captions, a featured book with its real cover, and resolved-cover artwork only for displayed books. Cover lookups go through `/api/covers` (bounded, identity-checked, cached) with labeled authored typographic fallbacks in the book's cloth color; unresolved books never fall back to spines or random art. Cover images are display-only and never merchandise assets.
+The shelf is cover-led: front-facing 2:3 covers on a shared ledge with title/author captions, a featured book, unboxed, with its real cover at a larger size, and resolved-cover artwork only for displayed books. Cover lookups go through `/api/covers` (bounded, identity-checked, cached) with labeled authored typographic fallbacks in the book's cloth color; unresolved books never fall back to spines or random art. Cover images are display-only and never merchandise assets.
 
-The left sector has one search, compact welcome and book spotlight, genre filters, eight initial books and show-more. The right has the actual daily line, book/writing action, and three linked reader reflections. No duplicate marketing bands, calendars, reading-progress bars, invented profiles, or avatar rows.
+The left sector has one search, compact welcome and book spotlight, genre filters, eight initial books and show-more; the search and genre filter chips are soft-filled and borderless. The right has the actual daily line in a card widened to ~440px, book/writing action, and three linked reader reflections. No duplicate marketing bands, calendars, reading-progress bars, invented profiles, or avatar rows.
 
 General page gutters use 20–40px, groups 16–24px, and sections 28–36px. Component grids respond to sector width, not only viewport width. Original URLs, `#shelf`, `#write`, `#lines`, and `#main-content` remain; home adds `#reader-lines`.
 
@@ -100,6 +100,16 @@ Controls are 10px and panels 14px. The active rail icon is a 44px circle. Card a
 - Exports: shared print-space geometry and canonical portrait line breaks place complete text and ownership marks consistently in DOM/PNG. OG uses the same content and visual identity in an explicit landscape adaptation. Test actual raster output, font shaping, units, and alignment, not only file dimensions.
 - Shop previews: actual card artwork fits within the product print area with a ResizeObserver; do not stretch it to fill a fixed-height mockup.
 - Forms and feeds: retain native radios, serial visible-tab polling, local-storage validation/fallback, useful empty/error states, and truthful offline/editorial status.
+
+## Card refinement, November 2026
+
+Keep the reading-room structure and all three edition identities. The card should feel like a literary keepsake, not an administrative certificate. Quote hierarchy is controlled: short Bookplate/Poster/Ticket quotes start at 28/34/26 print pixels; longer inputs step down through length tiers before fitting. Full valid content and the 14px quote floor remain. Ordinary Bookplate and Poster credits use a stronger book title, 12px author, and a real 12px clearance after the quote region. Extreme input still has an explicit dense layout, not cropping.
+
+Bookplate ownership has a bounded name width. Ticket's single-ring claim reserves the actual name corners, not just a rectangular fit; dense caption/date share a separated horizontal row below the quote. DOM and PNG carry these decisions together. OG keeps the same calmer hierarchy in landscape.
+
+The featured book and composer are unboxed. Align groups with their own content edges; preserve field borders and visible selection/focus. Mobile jump links include writing before the catalogue. Save is primary, while individual external share destinations are quiet links. Do not turn these refinements into a replacement landing page.
+
+Bangladesh-first channel research and its limitations are recorded in [the audience note](docs/design/bangladesh-first-refinement.md). No reader research has established a national visual preference; bilingual, mobile-safe cards are a design hypothesis supported by the product, not a demographic claim.
 
 ## Do's and Don'ts
 

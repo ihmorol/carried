@@ -28,3 +28,9 @@ Both ship under SIL Open Font License 1.1. Full notices are preserved in `public
 - Compact cards group the quote, provenance, and ownership details; valid long text still wraps without truncation.
 - Web, PNG, and OG use the same font versions and shared content/script decisions.
 - Former fonts remain in source history and existing assets for compatibility but are no longer the active visual system.
+
+## Addendum: November 2026 — display serif
+
+Noto Serif Bengali joins the system as the display voice: headlines, section titles, and the card quote, book title, and wordmark. It covers both Bengali and Latin glyphs, so the display keeps one face across scripts. The interface pair is unchanged — Manrope for Latin and Anek Bangla for Bengali remain the voice of UI, body, labels, metadata, and reader names.
+
+The 400 weight was newly instantiated locally with the fontTools instancer at wght 400 / wdth 100, taken from the Google Fonts variable font (`NotoSerifBengali[wdth,wght].ttf`) using the same static-instance method as above. `public/fonts` now ships `NotoSerifBengali-400.woff2` and `NotoSerifBengali-400.ttf` next to the pre-existing static 500 and 600 instances, which are now in active use (700 stays historical), and `NotoSerifBengali-OFL.txt` preserves the license notice. Weights remain 400/500/600 across all three faces. Serif display tracking is at most -0.01em; Bengali display tracking stays normal with script-safe line height. The applied rules above are otherwise unchanged.

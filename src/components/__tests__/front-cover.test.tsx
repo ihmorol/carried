@@ -31,6 +31,13 @@ describe("front cover tile", () => {
     expect(screen.getByText("Carried cover")).toBeTruthy();
   });
 
+  it("wraps long fallback titles inside the artwork instead of clipping words", () => {
+    render(<FrontCover {...book} title="The Alchemist" />);
+    const title = screen.getByText("The Alchemist");
+    expect(title.style.overflowWrap).toBe("anywhere");
+    expect(title.style.fontSize).toBe("clamp(11px, 11cqi, 19px)");
+  });
+
   it("swaps to the authored cover when the image fails, and retries with a new source", () => {
     const view = render(<FrontCover {...book} src="/broken.jpg" />);
     fireEvent.error(screen.getByRole("img"));

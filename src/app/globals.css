@@ -18,7 +18,7 @@
   --space-page: clamp(20px, 3vw, 40px);
 
   --font-sans: var(--font-manrope), var(--font-anek-bangla), sans-serif;
-  --font-serif: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  --font-serif: var(--font-book), var(--font-manrope), var(--font-anek-bangla), sans-serif;
   --font-mono: var(--font-manrope), var(--font-anek-bangla), sans-serif;
 
   --animate-rise-in: rise-in 180ms ease-out both;
@@ -58,19 +58,19 @@ input, textarea { caret-color: var(--color-stamp); }
 * { scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
 
 .page-title, .display-xl {
-  font-family: var(--font-sans);
-  font-size: clamp(32px, 4vw, 48px);
+  font-family: var(--font-serif);
+  font-size: clamp(34px, 4.2vw, 54px);
   font-weight: 600;
   line-height: 1.12;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 .section-title, .display-lg {
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-size: clamp(24px, 2.4vw, 31px);
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   /* Reader-added titles may be one unbroken string; keep headings inside the page. */
   overflow-wrap: anywhere;
   text-wrap: balance;
@@ -114,6 +114,8 @@ input, textarea { caret-color: var(--color-stamp); }
 .ui-button-secondary:hover { background: var(--color-surface-soft); }
 .ui-button:active, .ui-button-secondary:active { transform: translateY(1px); }
 .ui-button:disabled, .ui-button-secondary:disabled { opacity: 0.55; }
+.share-destination { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; font-size: 13px; color: var(--color-ink-soft); text-decoration: underline; text-underline-offset: 4px; }
+.share-destination:hover { color: var(--color-ink); }
 .field-input {
   width: 100%;
   min-height: 48px;
@@ -200,12 +202,13 @@ input, textarea { caret-color: var(--color-stamp); }
 .local-save-notice[data-save-status="unavailable"] { border-color: var(--color-stamp); background: var(--color-paper-raised); }
 .edition-picker { margin-top: 24px; min-width: 0; }
 .edition-picker-options { display: grid; gap: 8px; margin-top: 12px; }
-.edition-picker-option { position: relative; display: grid; grid-template-columns: 16px 52px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; min-height: 88px; border: 1px solid var(--color-rule); border-radius: var(--radius-control); cursor: pointer; transition: border-color var(--dur) var(--ease-out-soft), background-color var(--dur) var(--ease-out-soft); }
-.edition-picker-option:hover { border-color: var(--color-ink-soft); }
-.edition-picker-option[data-selected="true"] { border-color: var(--color-stamp); background: var(--color-stamp-soft); }
+.edition-picker-option { position: relative; display: grid; grid-template-columns: 16px 40px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 4px; min-height: 72px; border-bottom: 1px solid var(--color-rule); cursor: pointer; transition: background-color var(--dur) var(--ease-out-soft); }
+.edition-picker-option:hover { background: var(--color-surface-soft); }
+.edition-picker-option[data-selected="true"] { background: var(--color-paper-raised); }
+.edition-picker-option[data-selected="true"] .edition-picker-name { color: var(--color-stamp); }
 .edition-picker-option:has(:focus-visible) { outline: 2px solid var(--color-stamp); outline-offset: 3px; }
 .edition-picker-radio { width: 16px; height: 16px; accent-color: var(--color-stamp); }
-.edition-picker-thumbnail { display: block; width: 52px; pointer-events: none; user-select: none; }
+.edition-picker-thumbnail { display: block; width: 40px; pointer-events: none; user-select: none; }
 .edition-picker-copy { display: grid; gap: 4px; }
 .edition-picker-name { font-size: 14px; font-weight: 600; }
 .edition-picker-description { font-size: 12px; line-height: 1.5; color: var(--color-ink-soft); }
@@ -224,7 +227,7 @@ input, textarea { caret-color: var(--color-stamp); }
   .composer-workspace { grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); grid-template-areas: "form proof" "submit proof"; column-gap: clamp(32px, 5vw, 72px); row-gap: 20px; }
   .composer-form { grid-area: form; }
   .composer-proof { grid-area: proof; position: sticky; top: 32px; }
-  .composer-submit { grid-area: submit; padding-inline: 28px; }
+  .composer-submit { grid-area: submit; }
   .composer-proof-link { display: none; }
 }
 
@@ -278,6 +281,20 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-artwork ::selection {
   color: var(--edition-bg);
   background: var(--edition-text);
+}
+
+/* The literary voice: quote, book title and wordmark carry the display serif;
+   labels, reader name, author and metadata stay in the interface sans. These
+   elements carry their own lang attributes, so the (0,2,0) serif rule below is
+   restated AFTER the .edition-artwork :lang(en|bn) sans overrides and wins the
+   source-order tie — regardless of how deeply the text nests in the artwork. */
+:is(.edition-quote, .edition-book-title, .edition-bookplate-wordmark, .edition-poster-wordmark, .edition-ticket-wordmark),
+.edition-artwork :is(.edition-quote, .edition-book-title, .edition-bookplate-wordmark, .edition-poster-wordmark, .edition-ticket-wordmark) {
+  font-family: var(--font-serif);
+}
+
+.edition-artwork :is(.edition-quote, .edition-book-title) :is(p, .edition-lines, .edition-line) {
+  font-family: inherit;
 }
 
 .edition-quote {
@@ -383,7 +400,7 @@ input, textarea { caret-color: var(--color-stamp); }
 }
 
 .edition-bookplate-wordmark {
-  font-size: 5.5556cqw;
+  font-size: 4.444444cqw;
   font-weight: 600;
   line-height: 1.1;
 }
@@ -426,6 +443,7 @@ input, textarea { caret-color: var(--color-stamp); }
 /* The ownership mark is typography, not a box: label, name, one coral
    signature rule, then the date. The accent appears exactly once. */
 .edition-bookplate-mark {
+  inline-size: 46.111111cqw;
   display: grid;
   grid-template-rows: 3.972222cqw var(--edition-name-row) 0.416667cqw 3.888889cqw;
   gap: var(--edition-ownership-gap);
@@ -652,6 +670,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-ticket-cancellation .edition-reader-label { font-size: 2.638889cqw; }
 
 .edition-cancellation-mark {
+  overflow: visible;
   position: absolute;
   z-index: -1;
   inset: 0;
@@ -703,14 +722,17 @@ input, textarea { caret-color: var(--color-stamp); }
 }
 
 .edition-artwork[data-density="dense"] .edition-ticket-title {
-  inset-block: auto 1.3889cqw;
-  inset-inline: 8.3333cqw;
+  inset-block: 87.5cqw auto;
+  inset-inline: 8.3333cqw auto;
   font-size: 2.5cqw;
 }
 
 .edition-artwork[data-density="dense"] .edition-ticket-dateline {
-  inset-block-end: 4.4444cqw;
+  inset-block: 87.5cqw auto;
+  inset-inline: 38.888889cqw 8.3333cqw;
+  justify-content: flex-end;
 }
+.edition-artwork[data-density="dense"] .edition-ticket-language { display: none; }
 
 /* Vote/actions row: page furniture, never ink colors. */
 .edition-actions {

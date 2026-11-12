@@ -58,27 +58,32 @@ export function fitText(text: string, options: {
 
 /** Conservative proportional-sans metrics for SSR, bounded against the
  * shipped Manrope/Anek Bangla 400–600 advances. Bengali spacing marks DO
- * have width; only nonspacing marks and joiners can be omitted. Canvas uses
- * the loaded faces' shaped metrics instead. */
-export function estimateTextWidth(text: string, fontSize: number, role?: "serif" | "mono"): number {
-  // Legacy role arguments no longer select monospaced metrics.
-  void role;
+ * have width; only nonspacing marks and joiners can be omitted. Fitting
+ * roles ("quote"/"book") measure the serif text voice instead: every serif
+ * unit below is conservatively WIDER than its sans unit (never narrower),
+ * because this estimator is the shared source of truth for line breaks on
+ * DOM and canvas — overestimating only breaks a line earlier, while
+ * underestimating would overflow. Canvas uses the loaded faces' shaped
+ * metrics instead. */
+export type TextFitRole = "quote" | "book";
+export function estimateTextWidth(text: string, fontSize: number, role?: TextFitRole): number {
+  const serif = role !== undefined;
   let units = 0;
   for (const char of Array.from(text)) {
     if (/[\u0980-\u09ff]/u.test(char)) {
-      if (/[\u09cb\u09cc\u09e2\u09e3]/u.test(char)) units += 0.8;
-      else if (/[\u0982\u0983]/u.test(char)) units += 0.55;
-      else if (/\p{Mc}/u.test(char)) units += 0.36;
-      else if (!/\p{Mark}/u.test(char)) units += char === "আ" ? 1.3 : char === "ঞ" ? 1.06 : 1;
+      if (/[\u09cb\u09cc\u09e2\u09e3]/u.test(char)) units += serif ? 0.84 : 0.8;
+      else if (/[\u0982\u0983]/u.test(char)) units += serif ? 0.58 : 0.55;
+      else if (/\p{Mc}/u.test(char)) units += serif ? 0.38 : 0.36;
+      else if (!/\p{Mark}/u.test(char)) units += char === "আ" ? (serif ? 1.36 : 1.3) : char === "ঞ" ? (serif ? 1.11 : 1.06) : serif ? 1.05 : 1;
     } else if (/\p{Mark}|[\u200c\u200d\r\n]/u.test(char)) continue;
-    else if (char === "\t") units += 2.72;
-    else if (/\s/u.test(char)) units += 0.34;
-    else if (/[MW@%&#]/u.test(char)) units += 1.02;
-    else if (/[mw]/u.test(char)) units += 0.92;
-    else if (/[A-Z]/u.test(char)) units += 0.8;
-    else if (/[il.,'!:;|]/u.test(char)) units += 0.38;
-    else if (/[a-z0-9]/u.test(char)) units += 0.68;
-    else units += 1.15;
+    else if (char === "\t") units += serif ? 2.85 : 2.72;
+    else if (/\s/u.test(char)) units += serif ? 0.36 : 0.34;
+    else if (/[MW@%&#]/u.test(char)) units += serif ? 1.08 : 1.02;
+    else if (/[mw]/u.test(char)) units += serif ? 0.97 : 0.92;
+    else if (/[A-Z]/u.test(char)) units += serif ? 0.85 : 0.8;
+    else if (/[il.,'!:;|]/u.test(char)) units += serif ? 0.42 : 0.38;
+    else if (/[a-z0-9]/u.test(char)) units += serif ? 0.73 : 0.68;
+    else units += serif ? 1.2 : 1.15;
   }
   return units * fontSize;
 }
@@ -113,19 +118,19 @@ export type EditionMeasure = (role: EditionRole, text: string, size: number) => 
  * limits always fit every edition — no renderer may crop instead. */
 const EDITION_TYPE_REGIONS: Record<CardTemplateId, Record<Exclude<EditionRole, "date">, EditionRegion>> = {
   "bookplate-v1": {
-    quote: { width: 288, height: 200, size: 36, min: 14 },
-    name: { width: 166, height: 42, size: 23, min: 9 },
-    book: { width: 288, height: 52, size: 14, min: 9 },
-    author: { width: 288, height: 40, size: 11, min: 9 },
+    quote: { width: 288, height: 200, size: 28, min: 14 },
+    name: { width: 166, height: 42, size: 20, min: 9 },
+    book: { width: 288, height: 52, size: 17, min: 9 },
+    author: { width: 288, height: 40, size: 12, min: 9 },
   },
   "poster-v1": {
-    quote: { width: 304, height: 197, size: 44, min: 14 },
-    name: { width: 164, height: 42, size: 25, min: 9 },
-    book: { width: 304, height: 52, size: 15, min: 9 },
-    author: { width: 304, height: 40, size: 11, min: 9 },
+    quote: { width: 304, height: 197, size: 34, min: 14 },
+    name: { width: 164, height: 42, size: 22, min: 9 },
+    book: { width: 304, height: 52, size: 17, min: 9 },
+    author: { width: 304, height: 40, size: 12, min: 9 },
   },
   "ticket-v1": {
-    quote: { width: 300, height: 196, size: 34, min: 14 },
+    quote: { width: 300, height: 196, size: 26, min: 14 },
     name: { width: 78, height: 54, size: 20, min: 9 },
     book: { width: 196, height: 76, size: 14, min: 8 },
     author: { width: 196, height: 52, size: 11, min: 8 },
@@ -189,10 +194,9 @@ function fitTicketCredit(measure: EditionMeasure, text: EditionText, leading: { 
  * dropping a single character. */
 export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId, measure?: EditionMeasure): EditionLayout {
   const regions = EDITION_TYPE_REGIONS[edition];
-  const m: EditionMeasure = measure ?? ((role, value, size) => {
-    void role;
-    return estimateTextWidth(value, size);
-  });
+  const m: EditionMeasure = measure ?? ((role, value, size) =>
+    // Quote and book speak the serif text voice; names and metadata stay sans.
+    estimateTextWidth(value, size, role === "quote" || role === "book" ? role : undefined));
   const quoteLeading = editionLeading(text.language, edition, "quote");
   const nameLeading = editionLeading(text.nameScript === "bengali" ? "bengali" : "latin", edition, "name");
   const bookLeading = editionLeading(text.bookScript === "bengali" ? "bengali" : "latin", edition, "metadata");
@@ -206,14 +210,16 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
     author = editionFit("author", m, text.author, regions.author, authorLeading);
   }
   let nameRegion = regions.name;
-  let quoteTop = edition === "bookplate-v1" ? 74 : edition === "poster-v1" ? 70 : 95;
+  let quoteTop = edition === "bookplate-v1" ? 82 : edition === "poster-v1" ? 78 : 95;
   let quoteInset = (EDITION_ARTWORK.width - regions.quote.width) / 2;
-  const creditHeight = 12.35 + 3 + book.height + author.height;
-  let quoteHeight = edition === "ticket-v1" ? regions.quote.height : (edition === "bookplate-v1" ? 330 : 326) - creditHeight - 6 - quoteTop;
+  const creditHeight = 14.3 + 3 + book.height + author.height;
+  let quoteHeight = edition === "ticket-v1" ? regions.quote.height : (edition === "bookplate-v1" ? 322 : 326) - creditHeight - 12 - quoteTop;
+  // Length tiers steady the visual voice; fitting is only the safety net.
+  const quoteSize = Math.min(regions.quote.size, text.quote.length > 140 ? 24 : text.quote.length > 70 ? 26 : regions.quote.size);
   let dense = false;
   let quote;
   try {
-    quote = editionFit("quote", m, text.quote, { ...regions.quote, height: quoteHeight }, quoteLeading);
+    quote = editionFit("quote", m, text.quote, { ...regions.quote, size: quoteSize, height: quoteHeight }, quoteLeading);
   } catch (error) {
     if (!(error instanceof RangeError)) throw error;
     dense = true;
@@ -244,7 +250,7 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
   const bandTop = dense && edition === "poster-v1" ? 370 : 333;
   const creditTop = edition === "ticket-v1"
     ? 333 + (117 - creditSize) / 2
-    : dense ? 307 : (edition === "bookplate-v1" ? 330 : 326) - creditSize;
+    : dense ? 307 : (edition === "bookplate-v1" ? 322 : 326) - creditSize;
   return {
     dense,
     quote, name, book, author,
@@ -288,7 +294,8 @@ function ogFit(role: EditionRole, measure: EditionMeasure, raw: string, region: 
   });
 }
 
-const ogMeasure: EditionMeasure = (_role, value, size) => estimateTextWidth(value, size);
+const ogMeasure: EditionMeasure = (role, value, size) =>
+  estimateTextWidth(value, size, role === "quote" || role === "book" ? role : undefined);
 
 /** Landscape furniture per edition: quote column, the credit stack (label
  * height, title/author zone) and the ownership block (mark furniture with
@@ -331,10 +338,22 @@ const OG_BOOK_REGIONS: Record<CardTemplateId, {
 };
 
 const OG_QUOTE_TYPE: Record<CardTemplateId, { max: number; min: number }> = {
-  "bookplate-v1": { max: 44, min: 22 },
-  "poster-v1": { max: 56, min: 24 },
-  "ticket-v1": { max: 40, min: 22 },
+  "bookplate-v1": { max: 38, min: 22 },
+  "poster-v1": { max: 46, min: 24 },
+  "ticket-v1": { max: 36, min: 22 },
 };
+
+/** Bengali tiered floor for the bookplate OG quote (22 → 20). Serif quote
+ * units are wider than the sans units this 22px floor was cut against
+ * (আ 1.36 vs 1.3), so the widest legal quote — the 220-char cap of আ — now
+ * needs an eighth 22px line in the 250px bookplate OG region
+ * (8 × 22 × 1.45 = 255.2 > 250), which refused instead of rendering the
+ * share card. fitText descends from the max size, so every quote that fits
+ * at 22px or above keeps its approved size; extending the floor to 20px —
+ * the floor of sanity for a 1200×630 preview — seats the worst case
+ * (8 × 20 × 1.45 = 232 ≤ 250) with margin for metric drift. Over-cap input
+ * still RangeErrors; nothing is ever cropped. */
+const OG_BOOKPLATE_BENGALI_MIN = 20;
 
 /** Landscape cut of each edition. Regions follow the fitted text; every
  * bilingual limit fits without truncation or script loss. */
@@ -346,7 +365,12 @@ export function layoutEditionOg(text: EditionText, edition: CardTemplateId, meas
   const nameLeading = editionLeading(text.nameScript === "bengali" ? "bengali" : "latin", edition, "name");
   const bookLeading = editionLeading(text.bookScript === "bengali" ? "bengali" : "latin", edition, "metadata");
   const authorLeading = editionLeading(text.authorScript === "bengali" ? "bengali" : "latin", edition, "metadata");
-  const quote = ogFit("quote", m, text.quote, regions.quote, quoteType.max, quoteType.min, quoteLeading);
+  // Bookplate Bengali tier (see OG_BOOKPLATE_BENGALI_MIN): the lower floor
+  // only engages below the approved 22px, so approved type is unchanged.
+  const quoteMin = edition === "bookplate-v1" && text.language === "bengali"
+    ? OG_BOOKPLATE_BENGALI_MIN
+    : quoteType.min;
+  const quote = ogFit("quote", m, text.quote, regions.quote, quoteType.max, quoteMin, quoteLeading);
   const book = ogFit("book", m, text.book,
     { ...regions.credit, y: regions.credit.y + regions.labelHeight, height: edition === "ticket-v1" ? 160 : 42 },
     edition === "ticket-v1" ? 22 : 26, 14, bookLeading);

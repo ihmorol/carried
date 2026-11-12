@@ -16,6 +16,7 @@ export function loadOgFonts(): FontData[] {
   const dir = join(process.cwd(), "public", "fonts");
   const file = (name: string) => readFileSync(join(dir, name));
   cachedFonts = [
+    ...([400, 500, 600] as const).map((weight) => ({ name: "Noto Serif Bengali", data: file(`NotoSerifBengali-${weight}.ttf`), weight, style: "normal" as const })),
     ...([400, 500, 600] as const).map((weight) => ({ name: "Manrope", data: file(`Manrope-${weight}.ttf`), weight, style: "normal" as const })),
     ...([400, 500, 600] as const).map((weight) => ({ name: "Anek Bangla", data: file(`AnekBangla-${weight}.ttf`), weight, style: "normal" as const })),
   ];

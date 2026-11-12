@@ -26,6 +26,18 @@ const anekBangla = localFont({
   preload: false,
 });
 
+// Display voice: headlines and quotes in both scripts; the interface stays sans.
+const notoSerifBengali = localFont({
+  src: [
+    { path: "../../public/fonts/NotoSerifBengali-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-600.woff2", weight: "600", style: "normal" },
+  ],
+  variable: "--font-book",
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -40,7 +52,7 @@ export const viewport: Viewport = { themeColor: "#f1f1e7" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${manrope.variable} ${anekBangla.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${manrope.variable} ${anekBangla.variable} ${notoSerifBengali.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col"><LocaleProvider>{children}</LocaleProvider></body>
     </html>
   );
