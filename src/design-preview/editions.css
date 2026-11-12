@@ -1,0 +1,552 @@
+.edition-card {
+  container-type: inline-size;
+  inline-size: 100%;
+  min-inline-size: 0;
+  aspect-ratio: 4 / 5;
+  color: var(--edition-text);
+}
+
+.edition-card *,
+.edition-card *::before,
+.edition-card *::after {
+  box-sizing: border-box;
+}
+
+.edition-artwork {
+  position: relative;
+  isolation: isolate;
+  inline-size: 100%;
+  aspect-ratio: 4 / 5;
+  font-family: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  font-size: 3.0556cqw;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.35;
+  letter-spacing: normal;
+  text-align: start;
+}
+
+.edition-card .edition-artwork :where(p, blockquote, cite) {
+  margin: 0;
+  font-style: normal;
+}
+
+.edition-artwork :lang(en) {
+  font-family: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+}
+
+.edition-artwork:lang(bn),
+.edition-artwork :lang(bn) {
+  font-family: var(--font-anek-bangla), var(--font-manrope), sans-serif;
+  letter-spacing: normal;
+}
+
+.edition-artwork ::selection {
+  color: var(--edition-bg);
+  background: var(--edition-text);
+}
+
+.edition-quote {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+  font-size: max(3.888889cqw, var(--edition-quote-size));
+  font-weight: 500;
+  line-height: var(--edition-quote-leading);
+  overflow-wrap: anywhere;
+  text-wrap: wrap;
+}
+
+.edition-quote p {
+  inline-size: 100%;
+}
+
+.edition-book-credit {
+  min-inline-size: 0;
+}
+
+.edition-card .edition-reading-label {
+  margin-block-end: 0.8333cqw;
+  font-size: 2.6389cqw;
+  line-height: 1.3;
+}
+
+.edition-book-title {
+  display: block;
+  font-size: max(2.5cqw, var(--edition-book-size));
+  font-weight: 600;
+  line-height: var(--edition-book-leading);
+  overflow-wrap: anywhere;
+}
+
+.edition-card .edition-book-author {
+  margin-block-start: 0;
+  font-size: max(2.5cqw, var(--edition-author-size));
+  line-height: var(--edition-author-leading);
+  overflow-wrap: anywhere;
+}
+
+.edition-accession {
+  font-size: 2.6389cqw;
+  font-weight: 500;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.edition-reader-label {
+  display: block;
+  font-size: 2.6389cqw;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.edition-reader-name {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0;
+  font-size: max(2.5cqw, var(--edition-name-size));
+  font-weight: 600;
+  line-height: var(--edition-name-leading);
+  overflow-wrap: anywhere;
+  line-break: var(--edition-name-break);
+}
+
+.edition-date {
+  font-size: 2.5cqw;
+  font-weight: 500;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bookplate: centered inscription, one hairline plate rule, type-only
+   ownership with a single coral signature rule. */
+.edition-bookplate {
+  background: var(--edition-bg);
+  text-align: center;
+}
+
+.edition-bookplate-frame {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke: var(--edition-text);
+  pointer-events: none;
+}
+
+.edition-frame-rule {
+  stroke-width: 0.75;
+}
+
+.edition-bookplate-heading {
+  position: absolute;
+  inset-block-start: 8.3333cqw;
+  inset-inline: 10cqw;
+}
+
+.edition-bookplate-wordmark {
+  font-size: 5.5556cqw;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.edition-card .edition-bookplate-caption {
+  margin-block-start: 0.8333cqw;
+  color: var(--edition-soft);
+  font-size: 2.7778cqw;
+  line-height: 1.4;
+}
+
+.edition-bookplate .edition-quote {
+  position: absolute;
+  inset-block-start: var(--edition-quote-top);
+  inset-inline: var(--edition-quote-inset);
+  block-size: var(--edition-quote-height);
+  justify-content: center;
+}
+
+.edition-bookplate .edition-book-credit {
+  position: absolute;
+  inset-block-end: 33.3333cqw;
+  inset-inline: 10cqw;
+}
+
+.edition-bookplate .edition-reading-label,
+.edition-bookplate .edition-book-author {
+  color: var(--edition-soft);
+}
+
+.edition-bookplate-ownership {
+  position: absolute;
+  inset-block-start: 93.8889cqw;
+  inset-inline: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.edition-bookplate-mark {
+  display: grid;
+  grid-template-rows: 3.6111cqw 11.6667cqw 0.4167cqw 3.8889cqw;
+  gap: 0.5556cqw;
+  align-content: center;
+  justify-items: center;
+  align-items: center;
+  block-size: 23.8889cqw;
+  color: var(--edition-text);
+}
+
+.edition-bookplate-mark .edition-reader-label,
+.edition-bookplate-mark .edition-date {
+  color: var(--edition-soft);
+}
+
+.edition-signature-rule {
+  inline-size: 15.5556cqw;
+  block-size: 0.4167cqw;
+  background: var(--edition-coral);
+}
+
+.edition-bookplate-accession {
+  position: absolute;
+  inset-block-end: 3.8889cqw;
+  inset-inline: 0;
+  color: var(--edition-soft);
+}
+
+/* Poster: a full-bleed ink field and a single coral printing block. */
+.edition-poster {
+  color: var(--edition-poster-text);
+  background: var(--edition-poster-bg);
+}
+
+.edition-poster-field {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 92.5cqw;
+}
+
+.edition-poster-heading {
+  position: absolute;
+  inset-block-start: 6.1111cqw;
+  inset-inline: 7.7778cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 3.3333cqw;
+}
+
+.edition-poster-wordmark {
+  font-size: 5cqw;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.edition-poster .edition-quote {
+  position: absolute;
+  inset-block-start: var(--edition-quote-top);
+  inset-inline: var(--edition-quote-inset);
+  block-size: var(--edition-quote-height);
+  font-weight: 600;
+}
+
+.edition-poster .edition-book-credit {
+  position: absolute;
+  inset-block-end: 1.9444cqw;
+  inset-inline: 7.7778cqw;
+}
+
+.edition-poster-band {
+  position: absolute;
+  inset: 92.5cqw 0 0;
+  overflow: hidden;
+  color: var(--edition-poster-bg);
+  background: var(--edition-coral);
+}
+
+/* The coral band carries the ownership as a straight credit line aligned
+   with the quote's left edge; ink-pale text keeps 4.5:1 on every coral. */
+.edition-poster-credit {
+  position: absolute;
+  inset: 92.5cqw 0 0;
+  display: grid;
+  grid-template-rows: 3.6111cqw 11.6667cqw 3.8889cqw;
+  gap: 0.5556cqw;
+  align-content: center;
+  justify-items: start;
+  align-items: center;
+  padding-inline: 7.7778cqw;
+  color: var(--edition-bg);
+  text-align: start;
+}
+
+/* Ticket: the stock itself is die-cut; its lower 26% is a contrasting stub. */
+.edition-ticket-stock {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.edition-ticket-paper {
+  fill: var(--edition-bg);
+  stroke: var(--edition-rule);
+  stroke-width: 0.8;
+}
+
+.edition-ticket-stub-stock {
+  fill: var(--edition-text);
+}
+
+.edition-ticket-perforation {
+  fill: none;
+  stroke: var(--edition-bg);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+
+.edition-ticket-edge {
+  fill: none;
+  stroke: var(--edition-rule);
+  stroke-width: 0.7;
+}
+
+.edition-ticket-body {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 92.5cqw;
+}
+
+.edition-ticket-heading {
+  position: absolute;
+  inset-block-start: 6.1111cqw;
+  inset-inline: 8.3333cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 3.3333cqw;
+  padding-block-end: 3.0556cqw;
+  border-block-end: 0.2778cqw solid var(--edition-rule);
+}
+
+.edition-ticket-wordmark {
+  font-size: 5cqw;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.edition-ticket-title {
+  position: absolute;
+  inset-block-start: 18.6111cqw;
+  inset-inline: 8.3333cqw;
+  color: var(--edition-coral);
+  font-size: 3.3333cqw;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.edition-ticket .edition-quote {
+  position: absolute;
+  inset-block-start: var(--edition-quote-top);
+  inset-inline: var(--edition-quote-inset);
+  block-size: var(--edition-quote-height);
+  font-weight: 400;
+}
+
+.edition-ticket-dateline {
+  position: absolute;
+  inset-block-end: 5.5556cqw;
+  inset-inline: 8.3333cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 3.3333cqw;
+  color: var(--edition-soft);
+}
+
+.edition-ticket-language {
+  font-size: 2.7778cqw;
+  line-height: 1.35;
+}
+
+.edition-ticket-stub {
+  position: absolute;
+  inset: 92.5cqw 0 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36.6667cqw;
+  column-gap: 6.1111cqw;
+  align-items: center;
+  padding-inline: 7.5cqw 3.3333cqw;
+  color: var(--edition-bg);
+}
+
+.edition-ticket-stub .edition-book-credit {
+  position: relative;
+}
+
+.edition-ticket-stub .edition-book-credit::after {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -3.0556cqw;
+  border-inline-end: 0.2778cqw dashed currentColor;
+  opacity: 0.4;
+  content: "";
+}
+
+.edition-ticket-cancellation {
+  --edition-stamp-rotation: -5deg;
+  position: relative;
+  display: grid;
+  grid-template-rows: 3.6111cqw 15cqw;
+  gap: 0.8333cqw;
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+  inline-size: 36.6667cqw;
+  block-size: 31.1111cqw;
+  padding-inline: 5cqw;
+  color: var(--edition-coral);
+  text-align: center;
+}
+
+.edition-cancellation-mark {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke: currentColor;
+  pointer-events: none;
+}
+
+.edition-cancellation-outer {
+  fill: var(--edition-bg);
+  stroke-width: 1.4;
+}
+
+/* Only exceptionally wide 220-character input uses tighter furniture. */
+.edition-card[data-density="dense"] .edition-quote {
+  line-break: anywhere;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate-heading {
+  inset-block-start: 6.3889cqw;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 2.2222cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate-wordmark {
+  font-size: 4.4444cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate-caption {
+  margin-block-start: 0;
+  font-size: 2.5cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate .edition-book-credit {
+  inset-block: 87.2222cqw auto;
+  inset-inline: 6.1111cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate .edition-reading-label,
+.edition-card[data-density="dense"] .edition-bookplate .edition-book-title,
+.edition-card[data-density="dense"] .edition-poster .edition-reading-label,
+.edition-card[data-density="dense"] .edition-poster .edition-book-title {
+  display: inline;
+  font-size: 2.5cqw;
+  line-break: anywhere;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate .edition-reading-label,
+.edition-card[data-density="dense"] .edition-poster .edition-reading-label {
+  margin-inline-end: 1.1111cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate-ownership {
+  inset-block-start: 104.4444cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate-mark {
+  grid-template-rows: 3.6111cqw 7.7778cqw 0.4167cqw 3.8889cqw;
+  gap: 0.2778cqw;
+  block-size: 18.8889cqw;
+}
+
+.edition-card[data-density="dense"] .edition-bookplate-accession {
+  inset-block: 24cqw auto;
+  inset-inline: auto 7.7778cqw;
+  writing-mode: vertical-rl;
+  transform: translateX(4.1667cqw);
+}
+
+.edition-card[data-density="dense"] .edition-poster-heading {
+  inset-block-start: 3.3333cqw;
+}
+
+.edition-card[data-density="dense"] .edition-poster-field {
+  block-size: 102.7778cqw;
+}
+
+.edition-card[data-density="dense"] .edition-poster-band {
+  inset-block-start: 102.7778cqw;
+}
+
+.edition-card[data-density="dense"] .edition-poster-credit {
+  inset: 102.7778cqw 0 0;
+  grid-template-rows: 3.6111cqw 7.7778cqw 3.8889cqw;
+  gap: 0.2778cqw;
+  padding-inline: 3.3333cqw;
+}
+
+.edition-card[data-density="dense"] .edition-ticket-heading {
+  inset-block-start: 3.3333cqw;
+  inset-inline: 4.4444cqw;
+  padding-block-end: 1.1111cqw;
+}
+
+.edition-card[data-density="dense"] .edition-ticket-title {
+  inset-block: auto 1.3889cqw;
+  inset-inline: 8.3333cqw;
+  font-size: 2.5cqw;
+}
+
+.edition-card[data-density="dense"] .edition-ticket-dateline {
+  inset-block-end: 4.4444cqw;
+}
+
+/* Replacing only the stamp key is the parent's explicit press-to-stamp action. */
+.edition-stamp {
+  transform: rotate(var(--edition-stamp-rotation, 0deg));
+  transform-origin: center;
+  opacity: 1;
+}
+
+.edition-stamp[data-stamped="true"] {
+  animation: edition-stamp-in 250ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes edition-stamp-in {
+  from {
+    opacity: 0.6;
+    transform: translateY(-2.2222cqw) rotate(calc(var(--edition-stamp-rotation, 0deg) - 4deg)) scale(1.07);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0.2778cqw) rotate(var(--edition-stamp-rotation, 0deg)) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--edition-stamp-rotation, 0deg)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edition-stamp[data-stamped="true"] {
+    animation: none !important;
+  }
+}

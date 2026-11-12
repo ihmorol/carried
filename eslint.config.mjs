@@ -9,9 +9,13 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    ".next-design-preview/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    ".zcode/review/**",
+    // Vendored agent skills are tooling, not application source.
+    ".agents/skills/**",
   ]),
 ]);
 

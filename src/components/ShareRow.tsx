@@ -1,122 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getBook } from "@/lib/books";
+import { useEffect, useRef, useState } from "react";
+import { bookForPayload } from "@/lib/books";
 import { accessionNo, type LinePayload } from "@/lib/line";
 import { downloadLineCard, lineCardBlob } from "@/lib/canvas";
 import { SITE_URL } from "@/lib/site";
 import { useLocale } from "./LocaleProvider";
 
-/**
- * The pass-it-on row: copy link, native share (with the rendered PNG when
- * the platform allows it), X and WhatsApp. Every share is an invitation,
- * the URL lands on this same card, whose footer asks the visitor to write theirs.
- */
 export function ShareRow({ payload, id }: { payload: LinePayload; id: string }) {
+  return <CardShare key={id} payload={payload} id={id} />;
+}
+function CardShare({ payload, id }: { payload: LinePayload; id: string }) {
   const { t } = useLocale();
-  const [url, setUrl] = useState(`${SITE_URL}/l/${id}`);
+  const [origin, setOrigin] = useState(SITE_URL);
+  const url = `${origin.replace(/\/$/, "")}/l/${id}`;
   const [copied, setCopied] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState<"save" | "share" | "copy" | null>(null);
   const [canShare, setCanShare] = useState(false);
-
-  const book = getBook(payload.b);
-  const title = book?.title ?? "a book";
-
+  const [error, setError] = useState<string | null>(null);
+  const [fallback, setFallback] = useState(false);
+  const mounted = useRef(false);
+  const working = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const title = bookForPayload(payload)?.title ?? t("share.book");
   useEffect(() => {
-    let cancelled = false;
-    Promise.resolve().then(() => {
-      if (cancelled) return;
-      setUrl(window.location.href);
-      setCanShare(!!navigator.share);
+    mounted.current = true;
+    void Promise.resolve().then(() => {
+      if (!mounted.current) return;
+      setOrigin(window.location.origin); setCanShare(typeof navigator.share === "function");
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { mounted.current = false; clearTimeout(timer.current); };
   }, []);
-
+  function begin(action: "save" | "share" | "copy") {
+    if (working.current) return false;
+    working.current = true; setBusy(action); setError(null); return true;
+  }
+  function end() { working.current = false; if (mounted.current) setBusy(null); }
   async function copy() {
+    if (!begin("copy")) return;
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* clipboard blocked, user can still select the address bar */
-    }
+      if (!mounted.current) return;
+      setCopied(true); setFallback(false);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => { if (mounted.current) setCopied(false); }, 2000);
+    } catch { if (mounted.current) { setError(t("share.copyError")); setFallback(true); } }
+    finally { end(); }
   }
-
   async function save() {
-    if (saving) return;
-    setSaving(true);
-    try {
-      await downloadLineCard(payload, id);
-    } finally {
-      setSaving(false);
-    }
+    if (!begin("save")) return;
+    try { await downloadLineCard(payload, id); }
+    catch { if (mounted.current) setError(t("share.saveError")); }
+    finally { end(); }
   }
-
   async function nativeShare() {
-    const text = `“${payload.q}”, carried out of ${title}, by ${payload.n}`;
+    if (!begin("share")) return;
+    const text = t("share.text", { q: payload.q, title, n: payload.n });
     try {
-      const blob = await lineCardBlob(payload, id);
-      const file = blob ? new File([blob], `carried-${accessionNo(id).toLowerCase()}.png`, { type: "image/png" }) : null;
-      if (file && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text, url });
-        return;
+      // Image generation is optional; a failed print still allows URL sharing.
+      let file: File | null = null;
+      try {
+        const blob = await lineCardBlob(payload, id);
+        if (blob) file = new File([blob], `carried-${accessionNo(id).toLowerCase()}.png`, { type: "image/png" });
+      } catch { /* Share readable text and the link instead. */ }
+      if (!mounted.current) return;
+      if (file && navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], text, url });
+      else await navigator.share({ title, text, url });
+    } catch (err) {
+      if (mounted.current && !(err && typeof err === "object" && "name" in err && err.name === "AbortError")) {
+        setError(t("share.shareError")); setFallback(true);
       }
-      await navigator.share({ title, text, url });
-    } catch {
-      /* user cancelled */
-    }
+    } finally { end(); }
   }
-
-  const shareText = encodeURIComponent(`“${payload.q}”, a line carried out of “${title}”`);
-
-  const btn =
-    "rounded-[3px] border px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors";
-
-  return (
+  const shareText = encodeURIComponent(t("share.text", { q: payload.q, title, n: payload.n }));
+  return <div>
     <div className="flex flex-wrap items-center gap-2.5">
-      <button
-        type="button"
-        onClick={save}
-        disabled={saving}
-        className={`${btn} border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)] hover:opacity-85 disabled:opacity-50`}
-      >
-        {saving ? t("share.saving") : t("share.save")}
-      </button>
-      <button
-        type="button"
-        onClick={copy}
-        aria-live="polite"
-        className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
-      >
-        {copied ? t("share.copied") : t("share.copy")}
-      </button>
-      {canShare && (
-        <button
-          type="button"
-          onClick={nativeShare}
-          className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
-        >
-          {t("share.share")}
-        </button>
-      )}
-      <a
-        href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(url)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
-      >
-        {t("share.x")}
-      </a>
-      <a
-        href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${btn} border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-ink)]`}
-      >
-        {t("share.wa")}
-      </a>
+      <button type="button" onClick={save} disabled={busy !== null} className="ui-button">{t(busy === "save" ? "share.saving" : "share.save")}</button>
+      <button type="button" onClick={copy} disabled={busy !== null} aria-live="polite" className="ui-button-secondary">{t(copied ? "share.copied" : "share.copy")}</button>
+      {canShare && <button type="button" onClick={nativeShare} disabled={busy !== null} className="ui-button-secondary">{t(busy === "share" ? "share.sharing" : "share.share")}</button>}
+      <a href={`https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="share-destination">{t("share.x")}</a>
+      <a href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="share-destination">{t("share.wa")}</a>
     </div>
-  );
+    {error && <p role="alert" className="mt-3 text-sm text-[var(--color-stamp)]">{error}</p>}
+    {fallback && <div className="mt-3"><label htmlFor={`copy-${id}`} className="mb-2 block text-sm">{t("share.fallback")}</label>
+      <input id={`copy-${id}`} type="text" readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="field-input" />
+    </div>}
+  </div>;
 }

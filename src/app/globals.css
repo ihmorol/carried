@@ -1,386 +1,833 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Carried: library-card palette ─────────────────────────── */
-  --color-paper: #f2ecdd;
-  --color-paper-raised: #faf6ea;
-  --color-ink: #211d17;
-  --color-ink-soft: #6d6354;
-  --color-ink-faint: #9c917f;
-  --color-rule: #d8cdb6;
-  --color-stamp: #b23c25;
-  --color-stamp-soft: #c96a55;
-  --color-night: #191612;
-  --color-night-raised: #211d17;
+  --color-paper: #f1f1e7;
+  --color-paper-raised: #fffefa;
+  --color-surface-soft: #e7e8df;
+  --color-ink: #26292f;
+  --color-ink-soft: #60646c;
+  --color-ink-faint: #6b7077;
+  --color-rule: #dbddd4;
+  --color-stamp: #bf4654;
+  --color-stamp-soft: #f5d9dd;
+  --color-accent: #e66b77;
+  --color-night: #252a34;
+  --color-night-raised: #303744;
+  --radius-panel: 14px;
+  --radius-control: 10px;
+  --space-page: clamp(20px, 3vw, 40px);
 
-  --font-serif: var(--font-fraunces), var(--font-noto-serif-bengali), "Iowan Old Style", Georgia, serif;
-  --font-mono: var(--font-plex), var(--font-noto-sans-bengali), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  --font-serif: var(--font-book), var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  --font-mono: var(--font-manrope), var(--font-anek-bangla), sans-serif;
 
-  --animate-stamp-in: stamp-in 0.55s cubic-bezier(0.19, 1.3, 0.36, 1) both;
-  --animate-rise-in: rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-marquee: marquee 80s linear infinite;
-
-  @keyframes stamp-in {
-    0% {
-      opacity: 0;
-      transform: rotate(-11deg) scale(1.7);
-    }
-    55% {
-      opacity: 1;
-      transform: rotate(-5.5deg) scale(0.96);
-    }
-    100% {
-      opacity: 1;
-      transform: rotate(-6.5deg) scale(1);
-    }
-  }
-
+  --animate-rise-in: rise-in 180ms ease-out both;
   @keyframes rise-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
+    from { opacity: 0.8; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
-html {
-  scroll-behavior: smooth;
-  /* Hidden first: Safari < 16 drops clip and needs the downgrade.
-     The 3D layers (hero pile, tilted cards) swing corners past the
-     page edge at narrow widths; without this, phones get a sideways
-     scrollbar. Vertical scrolling is untouched. */
-  overflow-x: hidden;
-  overflow-x: clip;
+html { scroll-behavior: smooth; }
+:root {
+  /* One easing and three durations carry every transition on the site. */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur: 240ms;
+  --dur-slow: 700ms;
 }
-
 body {
+  --rail-width: 76px;
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+main { min-width: 0; }
+button, a, summary { touch-action: manipulation; }
+button, summary { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+button, input, textarea, select { font: inherit; letter-spacing: normal; }
+input, textarea { caret-color: var(--color-stamp); }
+::selection { background: var(--color-stamp-soft); color: var(--color-ink); }
+:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 4px; }
+* { scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
 
-::selection {
-  background: var(--color-stamp);
-  color: var(--color-paper-raised);
-}
-
-/* Focus: visible, on-brand, never removed */
-:focus-visible {
-  outline: 2px solid var(--color-stamp);
-  outline-offset: 3px;
-  border-radius: 1px;
-}
-
-/* Paper grain: a fixed overlay, always on top, never interactive */
-.grain {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Catalog-card double rule border */
-.card-rule {
-  border: 1px solid var(--color-rule);
-  box-shadow:
-    inset 0 0 0 4px var(--color-paper-raised),
-    inset 0 0 0 5px color-mix(in srgb, var(--color-rule) 70%, transparent);
-}
-
-/* Stamp ink texture: tiny irregular opacity so it reads as rubber-stamp ink */
-.stamp-ink {
-  color: var(--color-stamp);
-  border-color: color-mix(in srgb, var(--color-stamp) 82%, transparent);
-  text-shadow: 0 0 1px color-mix(in srgb, var(--color-stamp) 40%, transparent);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='3.4' intercept='-0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='3.4' intercept='-0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-  -webkit-mask-size: 120px;
-  mask-size: 120px;
-}
-
-.marquee-mask {
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 6%,
-    black 94%,
-    transparent
-  );
-}
-
-.marquee-track:hover,
-.marquee-track:focus-within {
-  animation-play-state: paused;
-}
-
-/* Underline links the ledger way */
-.link-ledger {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  text-decoration-color: color-mix(in srgb, var(--color-ink) 35%, transparent);
-  transition: text-decoration-color 150ms ease;
-}
-.link-ledger:hover {
-  text-decoration-color: var(--color-stamp);
-}
-
-/* Drop cap for book-page prose, a little print, a little church */
-.drop-cap::first-letter {
+.page-title, .display-xl {
   font-family: var(--font-serif);
+  font-size: clamp(34px, 4.2vw, 54px);
   font-weight: 600;
-  font-size: 3.1em;
-  line-height: 0.82;
-  float: left;
-  padding-right: 0.09em;
-  padding-top: 0.06em;
-  color: var(--color-stamp);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
-
-/* Ink band, the dark rhythm sections */
-.band-ink {
-  background: var(--color-night);
-  color: var(--color-paper);
+.section-title, .display-lg {
+  font-family: var(--font-serif);
+  font-size: clamp(24px, 2.4vw, 31px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  /* Reader-added titles may be one unbroken string; keep headings inside the page. */
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
-.band-ink .soft {
-  color: #a2977f;
+:lang(bn) .page-title, :lang(bn) .section-title,
+:lang(bn) .display-xl, :lang(bn) .display-lg {
+  line-height: 1.4;
+  letter-spacing: normal;
 }
-.band-ink ::selection {
+.display-italic { font-style: normal; }
+.muted { color: var(--color-ink-soft); }
+.page-content {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding: 28px var(--space-page) 48px;
+}
+.panel { border-radius: var(--radius-panel); background: var(--color-paper-raised); border: 1px solid var(--color-rule); padding: 24px; }
+.ui-button, .ui-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-decoration: none;
+  transition: background-color var(--dur) var(--ease-out-soft), border-color var(--dur) var(--ease-out-soft), color var(--dur) var(--ease-out-soft), transform var(--dur-fast) var(--ease-out-soft);
+}
+.ui-button:hover svg, .ui-button-secondary:hover svg { transform: translateX(2px); }
+.ui-button svg, .ui-button-secondary svg { transition: transform var(--dur) var(--ease-out-soft); }
+.ui-button { background: var(--color-ink); color: var(--color-paper-raised); }
+.ui-button-secondary { border-color: var(--color-rule); background: transparent; color: var(--color-ink); }
+.ui-button:hover { background: var(--color-night-raised); }
+.ui-button-secondary:hover { background: var(--color-surface-soft); }
+.ui-button:active, .ui-button-secondary:active { transform: translateY(1px); }
+.ui-button:disabled, .ui-button-secondary:disabled { opacity: 0.55; }
+.share-destination { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px; font-size: 13px; color: var(--color-ink-soft); text-decoration: underline; text-underline-offset: 4px; }
+.share-destination:hover { color: var(--color-ink); }
+.field-input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
   background: var(--color-paper-raised);
   color: var(--color-ink);
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 1.5;
 }
+.field-input::placeholder { color: var(--color-ink-faint); opacity: 1; }
+.link-ledger { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.btn-press { transition: transform 160ms ease; }
+.btn-press:active { transform: translateY(1px); }
 
-/* Buttons: a small physical press */
-.btn-press {
-  transition:
-    opacity 150ms ease,
-    transform 150ms ease;
+.book-tile { display: flex; flex-direction: column; min-width: 0; }
+.book-tile-art {
+  display: flex;
+  justify-content: center;
+  align-items: end;
+  min-height: 180px;
+  padding: 12px 8px 16px;
+  border-radius: 10px;
+  background: transparent;
 }
-.btn-press:hover {
-  transform: translateY(-1px);
-}
-.btn-press:active {
-  transform: translateY(1px);
-}
-
-/* ── Physical depth: the desk layer ────────────────────────────── */
-
-/* Pointer tilt, set from TiltCard: short transition while tracking,
-   long ease on release. The card inside is never restyled. The
-   transition promotes the layer while it runs, so no will-change. */
-.tilt {
-  transition: transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-style: preserve-3d;
-}
-
-/* A card handed over on its own, outside a tossed group */
-.lift {
-  transition: translate 200ms ease;
-}
-@media (hover: hover) and (pointer: fine) {
-  .lift:hover {
-    translate: 0 -4px;
-  }
-}
-.lift:focus-within {
-  translate: 0 -4px;
-}
-
-/* Cards tossed on the desk: a small deterministic lean via the rotate
-   property, straightened when a reader reaches for one. The wrapper
-   owns the whole hover response; the card inside keeps still. */
-.toss {
-  rotate: var(--tilt, 0deg);
-  transition:
-    rotate 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    translate 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.toss .lift {
-  translate: none;
-  transition: none;
-}
-@media (hover: hover) and (pointer: fine) {
-  .toss:hover {
-    rotate: 0deg;
-    translate: 0 -4px;
-  }
-}
-.toss:focus-within {
-  rotate: 0deg;
-  translate: 0 -4px;
-}
-
-/* Hero stage: one perspective, three depths. Parallax reads --mx/--my
-   (unitless, -1..1) set from HeroStage; layers move by depth. */
-.hero-stage {
-  position: relative;
-  perspective: 1400px;
-}
-.hero-ghost {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--color-rule);
-  border-radius: 4px;
-  background: var(--color-paper-raised);
-}
-.hero-ghost-a {
-  transform:
-    translate3d(calc(var(--mx, 0) * -14px - 12px), calc(var(--my, 0) * -10px + 10px), -72px)
-    rotate(-5.5deg);
-}
-.hero-ghost-b {
-  transform:
-    translate3d(calc(var(--mx, 0) * 11px + 10px), calc(var(--my, 0) * 8px - 6px), -42px)
-    rotate(4.5deg);
-  opacity: 0.75;
-}
-.hero-front {
-  position: relative;
-  transform:
-    translate3d(calc(var(--mx, 0) * 18px), calc(var(--my, 0) * 13px), 46px)
-    rotate(1.2deg)
-    rotateY(calc(var(--mx, 0) * 2.5deg))
-    rotateX(calc(var(--my, 0) * -2deg));
-}
-
-/* Small screens: the pile tightens up so the corners stay inside the
-   page gutter instead of swinging off-screen. */
-@media (max-width: 640px) {
-  .hero-ghost-a {
-    transform:
-      translate3d(calc(var(--mx, 0) * -8px - 6px), calc(var(--my, 0) * -6px + 6px), -60px)
-      rotate(-4deg);
-  }
-  .hero-ghost-b {
-    transform:
-      translate3d(calc(var(--mx, 0) * 6px + 5px), calc(var(--my, 0) * 5px - 4px), -36px)
-      rotate(3.5deg);
-  }
-  .hero-front {
-    transform:
-      translate3d(calc(var(--mx, 0) * 10px), calc(var(--my, 0) * 8px), 34px)
-      rotate(1.2deg);
-  }
-}
-
-/* The background ghosts drift slowly so the pile feels set down, not
-   drawn. Fine pointers only: touch hardware skips the loop entirely,
-   and prefers-reduced-motion still kills it below. The card being
-   read never bounces on its own. */
-@media (hover: hover) and (pointer: fine) {
-  .hero-ghost-a {
-    animation: bob 12s ease-in-out -4s infinite;
-  }
-  .hero-ghost-b {
-    animation: bob 10s ease-in-out -1.5s infinite;
-  }
-  @keyframes bob {
-    0%,
-    100% {
-      translate: 0 0;
-    }
-    50% {
-      translate: 0 -5px;
-    }
-  }
-}
-
-/* Crop marks, the print-shop frame. The stage pseudos sit inside the
-   parallax hit zone, so they opt out of pointer events and the zone
-   stays exactly the stage box. */
-.hero-marks {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.hero-marks::before,
-.hero-marks::after,
-.hero-stage::before,
-.hero-stage::after {
-  content: "";
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  pointer-events: none;
-}
-.hero-stage::before {
-  top: -19px;
-  left: -19px;
-  border-top: 1.5px solid var(--color-ink-faint);
-  border-left: 1.5px solid var(--color-ink-faint);
-}
-.hero-stage::after {
-  bottom: -19px;
-  right: -19px;
-  border-bottom: 1.5px solid var(--color-ink-faint);
-  border-right: 1.5px solid var(--color-ink-faint);
-}
-.hero-marks::before {
-  top: -19px;
-  right: -19px;
-  border-top: 1.5px solid var(--color-ink-faint);
-  border-right: 1.5px solid var(--color-ink-faint);
-}
-.hero-marks::after {
-  bottom: -19px;
-  left: -19px;
-  border-bottom: 1.5px solid var(--color-ink-faint);
-  border-left: 1.5px solid var(--color-ink-faint);
-}
-
-/* Spines stand on the shelf seen slightly off square; a few lean.
-   --ry/--lean come from the book. Hover pulls the book off the shelf,
-   behind a fine-pointer gate so taps don't leave it yanked forward. */
+.book-tile-title { display: block; font-size: 15px; font-weight: 500; line-height: 1.4; margin-top: 10px; }
+.book-tile-author { display: block; font-size: 12px; line-height: 1.45; margin-top: 4px; color: var(--color-ink-soft); }
 .spine-3d {
-  --spine-pull:
-    perspective(900px) rotateY(-2deg) rotate(0deg) translate3d(0, -7px, 22px);
-  --spine-pull-shadow:
-    inset 0 -6px 0 rgba(0, 0, 0, 0.18),
-    0 18px 30px -12px rgba(28, 22, 12, 0.38);
-  transform: perspective(900px) rotateY(var(--ry, -13deg)) rotate(var(--lean, 0deg));
+  transform: perspective(900px) rotateY(-6deg);
   transform-origin: 50% 88%;
-  transition:
-    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 300ms ease;
+  transition: transform var(--dur) var(--ease-out-soft);
 }
 @media (hover: hover) and (pointer: fine) {
-  .spine-hover:hover .spine-3d {
-    transform: var(--spine-pull);
-    box-shadow: var(--spine-pull-shadow);
-  }
+  .spine-hover:hover .spine-3d, .book-tile:hover .spine-3d { transform: translateY(-4px); }
 }
-.spine-hover:focus-visible .spine-3d {
-  transform: var(--spine-pull);
-  box-shadow: var(--spine-pull-shadow);
+
+.reading-section { margin-top: 36px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.section-heading > a { font-size: 14px; display: inline-flex; min-height: 44px; align-items: center; gap: 8px; }
+.book-introduction { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 24px; padding-block: 24px 32px; }
+.book-introduction .page-title { font-size: clamp(30px, 3.4vw, 42px); }
+.book-tags { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--color-ink-soft); margin-bottom: 12px; }
+.book-tags span { padding: 4px 10px; border-radius: 999px; background: var(--color-surface-soft); }
+.breadcrumbs { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--color-ink-soft); }
+.writing-section { scroll-margin-top: 88px; border-top: 1px solid var(--color-rule); padding-top: 28px; }
+.writing-section > p { margin-top: 10px; color: var(--color-ink-soft); max-width: 65ch; }
+.book-links-section { margin-top: 28px; max-width: 640px; }
+.book-margin { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--color-rule); scroll-margin-top: 88px; }
+.card-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; align-items: center; }
+.card-workspace > * { min-width: 0; }
+.card-workspace-art { width: 100%; max-width: 400px; min-width: 0; margin-inline: auto; }
+.card-workspace-copy h1 { margin-bottom: 16px; }
+.card-workspace-copy > p { color: var(--color-ink-soft); font-size: 16px; max-width: 42ch; }
+.card-workspace-copy > div { margin-top: 20px; }
+.card-loop { margin-top: 36px; border-top: 1px solid var(--color-rule); padding-top: 28px; }
+.card-loop p { margin: 10px 0 20px; max-width: 55ch; color: var(--color-ink-soft); overflow-wrap: anywhere; }
+.skeleton { background: var(--color-surface-soft); border-radius: 10px; min-height: 24px; }
+
+@media (min-width: 640px) {
+  .book-introduction { grid-template-columns: 136px minmax(0, 1fr); gap: 32px; }
+}
+@media (min-width: 1024px) {
+  body { padding-inline-start: var(--rail-width); }
+  .card-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-block: 24px; }
+}
+.edition-transcript { border-top: 1px solid var(--color-rule); margin-top: 8px; color: var(--color-ink-soft); font-size: 13px; }
+.edition-transcript summary { display: list-item; min-height: 44px; padding-block: 12px; cursor: pointer; }
+.edition-transcript summary:hover { color: var(--color-ink); }
+.edition-transcript blockquote { color: var(--color-ink); font-size: 16px; line-height: 1.6; margin-block: 8px 16px; overflow-wrap: anywhere; }
+.edition-transcript p { font-size: 14px; line-height: 1.6; margin-block: 12px; overflow-wrap: anywhere; }
+.edition-transcript cite { color: var(--color-ink); font-style: normal; }
+
+.composer-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.composer-form { min-width: 0; container-type: inline-size; }
+.composer-proof { min-width: 0; scroll-margin-top: 28px; }
+.composer-proof:focus { outline: none; }
+.composer-proof:focus-visible { outline: 2px solid var(--color-stamp); outline-offset: 8px; }
+.composer-proof > h3 { font-weight: 500; }
+.composer-submit { min-width: 0; }
+.composer-submit > p { max-width: 52ch; }
+.composer-proof-fallback { border: 1px solid var(--color-rule); border-radius: var(--radius-control); padding: 20px; background: var(--color-paper-raised); }
+.local-save-notice { border: 1px solid var(--color-rule); }
+.local-save-notice[data-save-status="unavailable"] { border-color: var(--color-stamp); background: var(--color-paper-raised); }
+.edition-picker { margin-top: 24px; min-width: 0; }
+.edition-picker-options { display: grid; gap: 8px; margin-top: 12px; }
+.edition-picker-option { position: relative; display: grid; grid-template-columns: 16px 40px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 4px; min-height: 72px; border-bottom: 1px solid var(--color-rule); cursor: pointer; transition: background-color var(--dur) var(--ease-out-soft); }
+.edition-picker-option:hover { background: var(--color-surface-soft); }
+.edition-picker-option[data-selected="true"] { background: var(--color-paper-raised); }
+.edition-picker-option[data-selected="true"] .edition-picker-name { color: var(--color-stamp); }
+.edition-picker-option:has(:focus-visible) { outline: 2px solid var(--color-stamp); outline-offset: 3px; }
+.edition-picker-radio { width: 16px; height: 16px; accent-color: var(--color-stamp); }
+.edition-picker-thumbnail { display: block; width: 40px; pointer-events: none; user-select: none; }
+.edition-picker-copy { display: grid; gap: 4px; }
+.edition-picker-name { font-size: 14px; font-weight: 600; }
+.edition-picker-description { font-size: 12px; line-height: 1.5; color: var(--color-ink-soft); }
+.edition-picker:disabled .edition-picker-option { cursor: not-allowed; opacity: 0.65; }
+
+@container (min-width: 460px) {
+  .edition-picker-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .edition-picker-option { grid-template-columns: 16px minmax(0, 1fr); gap: 10px; align-content: start; }
+  .edition-picker-thumbnail { width: 68px; grid-column: 1 / -1; grid-row: 2; justify-self: center; }
+  .edition-picker-copy { display: contents; }
+  .edition-picker-name { grid-column: 2; grid-row: 1; }
+  .edition-picker-description { grid-column: 1 / -1; grid-row: 3; }
+}
+
+@media (min-width: 1024px) {
+  .composer-workspace { grid-template-columns: minmax(0, 1fr) minmax(300px, 400px); grid-template-areas: "form proof" "submit proof"; column-gap: clamp(32px, 5vw, 72px); row-gap: 20px; }
+  .composer-form { grid-area: form; }
+  .composer-proof { grid-area: proof; position: sticky; top: 32px; }
+  .composer-submit { grid-area: submit; }
+  .composer-proof-link { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  *,
-  *::before,
-  *::after {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Collectible card editions. Ported from the approved design board    */
+/* (src/design-preview/editions.css). The painted 4:5 artwork is       */
+/* scoped to .edition-artwork; the vote/actions row lives outside it   */
+/* in page tokens. Type sizes arrive as --edition-* custom properties  */
+/* computed per line in print space (360 × 450) by text-layout.ts.     */
+/* ------------------------------------------------------------------ */
+
+.edition-artwork {
+  position: relative;
+  isolation: isolate;
+  inline-size: 100%;
+  aspect-ratio: 4 / 5;
+  font-family: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  font-size: 3.0556cqw;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.35;
+  letter-spacing: normal;
+  text-align: start;
+  color: var(--edition-text);
+}
+
+.edition-artwork :where(p, blockquote, cite) {
+  margin: 0;
+  font-style: normal;
+}
+
+.edition-artwork :lang(en) {
+  font-family: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+}
+
+.edition-artwork:lang(bn),
+.edition-artwork :lang(bn) {
+  font-family: var(--font-anek-bangla), var(--font-manrope), sans-serif;
+  letter-spacing: normal;
+}
+
+.edition-artwork ::selection {
+  color: var(--edition-bg);
+  background: var(--edition-text);
+}
+
+/* The literary voice: quote, book title and wordmark carry the display serif;
+   labels, reader name, author and metadata stay in the interface sans. These
+   elements carry their own lang attributes, so the (0,2,0) serif rule below is
+   restated AFTER the .edition-artwork :lang(en|bn) sans overrides and wins the
+   source-order tie — regardless of how deeply the text nests in the artwork. */
+:is(.edition-quote, .edition-book-title, .edition-bookplate-wordmark, .edition-poster-wordmark, .edition-ticket-wordmark),
+.edition-artwork :is(.edition-quote, .edition-book-title, .edition-bookplate-wordmark, .edition-poster-wordmark, .edition-ticket-wordmark) {
+  font-family: var(--font-serif);
+}
+
+.edition-artwork :is(.edition-quote, .edition-book-title) :is(p, .edition-lines, .edition-line) {
+  font-family: inherit;
+}
+
+.edition-quote {
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+  font-size: max(3.888889cqw, var(--edition-quote-size));
+  font-weight: 500;
+  line-height: var(--edition-quote-leading);
+  overflow-wrap: anywhere;
+  text-wrap: wrap;
+}
+
+.edition-quote p {
+  inline-size: 100%;
+}
+
+.edition-lines { display: block; }
+.edition-line { display: block; white-space: pre; }
+
+.edition-book-credit {
+  min-inline-size: 0;
+}
+
+.edition-artwork .edition-reading-label {
+  margin-block-end: var(--edition-credit-gap);
+  height: var(--edition-label-height);
+  font-size: var(--edition-metadata-size);
+  line-height: 1.3;
+}
+
+.edition-book-title {
+  display: block;
+  font-size: var(--edition-book-size);
+  font-weight: 600;
+  line-height: var(--edition-book-leading);
+  overflow-wrap: anywhere;
+}
+
+.edition-artwork .edition-book-author {
+  margin-block-start: 0;
+  font-size: var(--edition-author-size);
+  line-height: var(--edition-author-leading);
+  overflow-wrap: anywhere;
+}
+
+.edition-accession {
+  font-size: 2.6389cqw;
+  font-weight: 500;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.edition-reader-label {
+  display: block;
+  font-size: 3.055556cqw;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.edition-reader-name {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 0;
+  font-size: var(--edition-name-size);
+  font-weight: 600;
+  line-height: var(--edition-name-leading);
+  overflow-wrap: anywhere;
+  line-break: var(--edition-name-break);
+}
+
+.edition-date {
+  font-size: 2.777778cqw;
+  font-weight: 500;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bookplate: centered inscription, stepped printer's frame, oval ownership. */
+.edition-bookplate {
+  background: var(--edition-bg);
+  text-align: center;
+}
+
+.edition-bookplate-frame {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke: var(--edition-text);
+  pointer-events: none;
+}
+
+.edition-frame-rule {
+  stroke-width: 0.75;
+}
+
+.edition-bookplate-heading {
+  position: absolute;
+  inset-block-start: 8.3333cqw;
+  inset-inline: 10cqw;
+}
+
+.edition-bookplate-wordmark {
+  font-size: 4.444444cqw;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.edition-artwork .edition-bookplate-caption {
+  margin-block-start: 0.8333cqw;
+  color: var(--edition-soft);
+  font-size: 2.7778cqw;
+  line-height: 1.4;
+}
+
+.edition-bookplate .edition-quote {
+  position: absolute;
+  inset-block-start: var(--edition-quote-top);
+  inset-inline: var(--edition-quote-inset);
+  block-size: var(--edition-quote-height);
+  justify-content: center;
+}
+
+.edition-bookplate .edition-book-credit,
+.edition-poster .edition-book-credit {
+  position: absolute;
+  inset-block: var(--edition-credit-top) auto;
+  inset-inline: var(--edition-credit-inset);
+}
+
+.edition-bookplate .edition-reading-label,
+.edition-bookplate .edition-book-author {
+  color: var(--edition-soft);
+}
+
+.edition-bookplate-ownership {
+  position: absolute;
+  inset-block-start: var(--edition-ownership-top);
+  inset-inline: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* The ownership mark is typography, not a box: label, name, one coral
+   signature rule, then the date. The accent appears exactly once. */
+.edition-bookplate-mark {
+  inline-size: 46.111111cqw;
+  display: grid;
+  grid-template-rows: 3.972222cqw var(--edition-name-row) 0.416667cqw 3.888889cqw;
+  gap: var(--edition-ownership-gap);
+  align-content: center;
+  justify-items: center;
+  align-items: center;
+  block-size: var(--edition-ownership-height);
+  color: var(--edition-text);
+}
+
+.edition-bookplate-mark .edition-reader-label,
+.edition-bookplate-mark .edition-date {
+  color: var(--edition-soft);
+}
+
+.edition-signature-rule {
+  inline-size: 15.5556cqw;
+  block-size: 0.4167cqw;
+  background: var(--edition-coral);
+}
+
+.edition-bookplate-accession {
+  position: absolute;
+  inset-block-end: 3.8889cqw;
+  inset-inline: 0;
+  color: var(--edition-soft);
+}
+
+/* Poster: a full-bleed ink field and a single coral printing block. */
+.edition-poster {
+  color: var(--edition-poster-text);
+  background: var(--edition-poster-bg);
+}
+
+.edition-poster-field {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 92.5cqw;
+}
+
+.edition-poster-heading {
+  position: absolute;
+  inset-block-start: 6.1111cqw;
+  inset-inline: 7.7778cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 3.3333cqw;
+}
+
+.edition-poster-wordmark {
+  font-size: 5cqw;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.edition-poster .edition-quote {
+  position: absolute;
+  inset-block-start: var(--edition-quote-top);
+  inset-inline: var(--edition-quote-inset);
+  block-size: var(--edition-quote-height);
+  font-weight: 600;
+}
+
+.edition-poster .edition-book-credit {
+  inset-block: var(--edition-credit-top) auto;
+  inset-inline: var(--edition-credit-inset);
+}
+
+.edition-poster-band {
+  position: absolute;
+  inset: var(--edition-band-top) 0 0;
+  overflow: hidden;
+  color: var(--edition-poster-bg);
+  background: var(--edition-coral);
+}
+
+/* The coral band carries the ownership as a straight credit line, aligned
+   with the quote's left edge. Ink-pale text keeps 4.5:1 on every coral. */
+.edition-poster-credit {
+  position: absolute;
+  inset: var(--edition-band-top) 0 0;
+  display: grid;
+  grid-template-rows: 3.972222cqw var(--edition-name-row) 3.888889cqw;
+  gap: var(--edition-ownership-gap);
+  align-content: center;
+  justify-items: start;
+  align-items: center;
+  padding-inline: 7.7778cqw;
+  color: var(--edition-bg);
+  text-align: start;
+}
+
+/* Ticket: the stock itself is die-cut; its lower 26% is a contrasting stub. */
+.edition-ticket-stock {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.edition-ticket-paper {
+  fill: var(--edition-bg);
+  stroke: var(--edition-rule);
+  stroke-width: 0.8;
+}
+
+.edition-ticket-stub-stock {
+  fill: var(--edition-text);
+}
+
+.edition-ticket-perforation {
+  fill: none;
+  stroke: var(--edition-bg);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+
+.edition-ticket-edge {
+  fill: none;
+  stroke: var(--edition-rule);
+  stroke-width: 0.7;
+}
+
+.edition-ticket-body {
+  position: absolute;
+  inset: 0 0 auto;
+  block-size: 92.5cqw;
+}
+
+.edition-ticket-heading {
+  position: absolute;
+  inset-block-start: 6.1111cqw;
+  inset-inline: 8.3333cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 3.3333cqw;
+  padding-block-end: 3.0556cqw;
+  border-block-end: 0.2778cqw solid var(--edition-rule);
+}
+
+.edition-ticket-wordmark {
+  font-size: 5cqw;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.edition-ticket-title {
+  position: absolute;
+  inset-block-start: 18.6111cqw;
+  inset-inline: 8.3333cqw;
+  color: var(--edition-coral);
+  font-size: 3.3333cqw;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.edition-ticket .edition-quote {
+  position: absolute;
+  inset-block-start: var(--edition-quote-top);
+  inset-inline: var(--edition-quote-inset);
+  block-size: var(--edition-quote-height);
+  font-weight: 400;
+}
+
+.edition-ticket-dateline {
+  position: absolute;
+  inset-block-end: 5.5556cqw;
+  inset-inline: 8.3333cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 3.3333cqw;
+  color: var(--edition-soft);
+}
+
+.edition-ticket-language {
+  font-size: 2.7778cqw;
+  line-height: 1.35;
+}
+
+.edition-ticket-stub {
+  position: absolute;
+  inset: 92.5cqw 0 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30cqw;
+  column-gap: 5.555556cqw;
+  align-items: center;
+  padding-inline: 7.5cqw 2.5cqw;
+  color: var(--edition-bg);
+}
+
+.edition-ticket-stub .edition-book-credit {
+  position: relative;
+}
+
+.edition-ticket-stub .edition-book-credit::after {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -2.2222cqw;
+  border-inline-end: 0.2778cqw dashed currentColor;
+  opacity: 0.4;
+  content: "";
+}
+
+.edition-ticket-cancellation {
+  --edition-stamp-rotation: -5deg;
+  position: relative;
+  display: grid;
+  grid-template-rows: 3.430556cqw var(--edition-ticket-name-row);
+  gap: 0.555556cqw;
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+  inline-size: 30cqw;
+  block-size: 28cqw;
+  padding-inline: 3.5cqw;
+  color: var(--edition-coral);
+  text-align: center;
+}
+
+.edition-ticket-cancellation .edition-reader-label { font-size: 2.638889cqw; }
+
+.edition-cancellation-mark {
+  overflow: visible;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke: currentColor;
+  pointer-events: none;
+}
+
+.edition-cancellation-outer {
+  fill: var(--edition-bg);
+  stroke-width: 1.4;
+}
+
+/* Dense compositions share their credit and seal bounds with the export. */
+.edition-artwork[data-density="dense"] .edition-bookplate-heading {
+  inset-block-start: 6.388889cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2.222222cqw;
+}
+
+.edition-artwork[data-density="dense"] .edition-bookplate-wordmark { font-size: 4.444444cqw; }
+.edition-artwork[data-density="dense"] .edition-bookplate-caption { margin-block-start: 0; font-size: 2.5cqw; }
+
+.edition-artwork[data-density="dense"].edition-bookplate .edition-book-credit,
+.edition-artwork[data-density="dense"].edition-poster .edition-book-credit {
+  inset-block: var(--edition-credit-top) auto;
+  inset-inline: var(--edition-credit-inset);
+}
+
+.edition-artwork[data-density="dense"] .edition-bookplate-accession {
+  inset-block: 24.444444cqw auto;
+  inset-inline: auto 6.111111cqw;
+  writing-mode: vertical-rl;
+  font-size: 2.5cqw;
+}
+
+.edition-artwork[data-density="dense"] .edition-poster-heading { inset-block-start: 3.333333cqw; }
+.edition-artwork[data-density="dense"] .edition-poster-field { block-size: var(--edition-band-top); }
+.edition-artwork[data-density="dense"] .edition-poster-credit { padding-inline: 3.3333cqw; }
+
+.edition-artwork[data-density="dense"] .edition-ticket-heading {
+  inset-block-start: 3.3333cqw;
+  inset-inline: 4.4444cqw;
+  padding-block-end: 1.1111cqw;
+}
+
+.edition-artwork[data-density="dense"] .edition-ticket-title {
+  inset-block: 87.5cqw auto;
+  inset-inline: 8.3333cqw auto;
+  font-size: 2.5cqw;
+}
+
+.edition-artwork[data-density="dense"] .edition-ticket-dateline {
+  inset-block: 87.5cqw auto;
+  inset-inline: 38.888889cqw 8.3333cqw;
+  justify-content: flex-end;
+}
+.edition-artwork[data-density="dense"] .edition-ticket-language { display: none; }
+
+/* Vote/actions row: page furniture, never ink colors. */
+.edition-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-rule);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-ink-soft);
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion. One easing, three durations, one authored moment: the      */
+/* ownership mark pressing into the card. Tilt and reveals sit on     */
+/* wrappers, never on the painted artwork itself.                     */
+/* ------------------------------------------------------------------ */
+
+.tilt { transform-style: preserve-3d; }
+
+/* A light physical shadow under the held card, deepening as it leans. */
+.tilt .edition-artwork {
+  box-shadow: 0 1px 2px rgb(38 41 47 / 0.05), 0 10px 28px rgb(38 41 47 / 0.09);
+  transition: box-shadow 550ms var(--ease-out-soft);
+}
+
+.tilt:hover .edition-artwork,
+.tilt:focus-within .edition-artwork {
+  box-shadow: 0 2px 4px rgb(38 41 47 / 0.07), 0 18px 44px rgb(38 41 47 / 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt .edition-artwork { box-shadow: none; }
+}
+
+/* Scroll reveals: progressive enhancement over an already-visible default.
+   Browsers without scroll timelines simply show the lists. */
+@keyframes reveal-up {
+  from { opacity: 0.001; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-list > li,
+    .shelf-book-grid > li,
+    .shop-product-grid > .shop-product-tile {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-timing-function: var(--ease-out-soft);
+      animation-range: entry 0% entry 72%;
+    }
+    /* A quiet left-to-right wave across grid rows, capped at three steps. */
+    .reveal-list > li:nth-child(3n + 2),
+    .shelf-book-grid > li:nth-child(3n + 2),
+    .shop-product-grid > .shop-product-tile:nth-child(3n + 2) { animation-range: entry 8% entry 80%; }
+    .reveal-list > li:nth-child(3n),
+    .shelf-book-grid > li:nth-child(3n),
+    .shop-product-grid > .shop-product-tile:nth-child(3n) { animation-range: entry 16% entry 88%; }
+  }
+  /* Print and high-contrast modes get the plain page, never a half-revealed one. */
+  @media print {
+    .reveal-list > li,
+    .shelf-book-grid > li,
+    .shop-product-grid > .shop-product-tile { animation: none; }
+  }
+}
+
+/* Re-pressing the mark replays the press: drop, settle, rest. */
+.edition-stamp {
+  transform: rotate(var(--edition-stamp-rotation, 0deg));
+  transform-origin: center;
+  opacity: 1;
+}
+
+.edition-stamp[data-stamped="true"] {
+  animation: edition-stamp-in 420ms var(--ease-out-soft) both;
+}
+
+@keyframes edition-stamp-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2.5cqw) rotate(calc(var(--edition-stamp-rotation, 0deg) - 3deg)) scale(1.1);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(0.2778cqw) rotate(var(--edition-stamp-rotation, 0deg)) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--edition-stamp-rotation, 0deg)) scale(1);
   }
 }

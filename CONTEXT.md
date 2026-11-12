@@ -1,30 +1,41 @@
 # Context
 
-Carried is a no-account, no-backend quote-card site. This is the domain model.
+Carried is a no-account quote-card site with optional public sharing storage and a device-local merchandise concept cart. This is the domain model.
 
 ## Entities
 
 **Book** (`lib/books.ts`), static, curated: `slug, title, author, year, tags, spine`.
-110 entries, prerendered at build (`/b/[slug]`). Books are *drawn* as spines
-(`BookSpine` + `SPINE_COLORS`), and book pages layer real cover scans on top
-(`lib/bookmeta.ts`: Open Library search → Internet Archive item → drawn spine
-fallback; plus free archive links, Open Library work page, Internet Archive,
+143 entries, including 33 Bengali books, prerendered at build (`/b/[slug]`). Books are *drawn* as spines
+(`BookSpine` + `SPINE_COLORS`). Book-access links resolve asynchronously
+(`lib/bookmeta.ts`: Open Library search → Internet Archive item; plus free archive links, Open Library work page, Internet Archive,
 Bookshop, WorldCat, no API keys). Readers can add books (see Store); those
 live in Redis, resolve at request time via `findBook`, and carry the
 `reader-added` tag.
 
 **Line** (`lib/line.ts`), the core entity. A reader's takeaway: `b` (book slug),
-`q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1).
-The codec (`encodeLine` / `decodeLine` / `encodePayload`) validates **structure only**,
-whether the book exists is decided by `findBook` against the current shelf, so
-the shelf can grow without invalidating old links. Consequences:
+`q` (≤220 chars), `n` (≤24 chars), `s` (ink), `d` (ISO date), `v` (schema version, 1),
+plus optional `bt/ba/by` (book title/author/year) carried **only** for reader-added
+books, and optional `ct` (card edition: `bookplate-v1 | poster-v1 | ticket-v1`,
+validated against `lib/card-templates.ts`). Absent `ct` means the line predates
+editions: its serialization and identity never change, and renderers present the
+house edition as a display-only mapping without writing it back. Editions are
+independent of ink; store dedupe and cart identity treat different editions as
+distinct cards (see `docs/adr/0002-free-digital-local-merchandise.md` and the
+payload ADR). The codec
+(`encodeLine` / `decodeLine` / `encodePayload`) validates **structure only**,
+whether the book exists is decided by the caller: the curated shelf via
+`getBook`, then the payload's own meta via `bookForPayload`, then the live
+shelf via `findBook`, so the shelf can grow without invalidating old links.
+Consequences:
 
 - `decodeLine` is the door to `/l/[id]`; structural failure → 404. The page then
-  checks `findBook(payload.b)` for existence.
+  resolves the book (live shelf → payload meta) and 404s only when neither knows it.
 - `lineSlugId` mints short, meaningful ids, first significant words of the
   line + a 5-char payload hash (`sheep-follow-chooses-k3f2`). Deterministic:
   identical payloads always share one URL; `resolveLine` resolves legacy
-  base64 ids, store-stored slug ids, then seed slugs.
+  base64 ids, store-stored slug ids, then seed slugs. When the store isn't
+  live (`live: false` in the POST response), the composer skips store ids
+  and carries the whole payload in the URL instead.
 
 **Store** (`lib/store.ts`), the live, shared shelf behind `lib/Store`:
 
@@ -53,9 +64,10 @@ The single source of truth for the DOM card (`LineCard`), the canvas export
 changing all three surfaces + `isInkId`.
 
 **Seed lines** (`lib/seeds/`), editorial corpus: **ten original reader-voice
-lines per book** (~1,100 total, across canon/modern/more/ideas data files),
-written in-house. They are reactions to books, **not excerpts from them**,
-no scraped or quoted user content, so they're safe to ship. Fixed fields keep
+lines per book** (1,430 total, across English and Bengali data files),
+written in-house as reflections. The corpus is not commercial merchandise clearance;
+quotation-like passages, translations, and art need rights review before printing for sale.
+Fixed fields keep
 ids stable; a coverage test (`npm test`) enforces 10 per book. They populate
 book pages, the home ticker (capped rotation), and the daily front-page pick.
 
@@ -64,11 +76,13 @@ book pages, the home ticker (capped rotation), and the daily front-page pick.
 
 ## Rendering surfaces of a Line (must stay visually identical)
 
-1. `LineCard` (DOM), page display, marquee, grids
+1. `LineCard` (DOM), page display and grids
 2. `lib/canvas.ts` (1080×1350 PNG), "Save the card"
 3. `l/[id]/opengraph-image.tsx` (satori, 1200×630), link previews
 
-All read fonts from `public/fonts/*.ttf`; those files are kept in the deploy
+All render the payload's edition (`ct`, defaulting to the house Bookplate for
+display) from one shared geometry in `lib/text-layout.ts`. Web text uses local
+WOFF2 fonts; matching static TTFs supply canvas/OG and are kept in the deploy
 bundle via `outputFileTracingIncludes` in `next.config.ts`.
 
 ## The viral loop
@@ -79,7 +93,9 @@ wall, no interstitial).
 
 ## Invariants
 
-- No accounts, no server-side user data. A line's identity is its payload + a name; the device remembers the name, nothing more.
+- No accounts or private server-side customer data. The optional public shelf stores submitted lines/names and anonymous votes; the personal shelf, language choice, and merchandise selections stay device-local. No orders, addresses, payments, or tracking are added.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
-- Fraunces + IBM Plex Mono only; stamp red is the only accent.
+- Noto Serif Bengali is the display/quote face across both scripts; Manrope and Anek Bangla remain the interface pair. All three are locally hosted at 400/500/600 with normal prose and Bengali letter spacing. The current user-approved palette uses neutral/near-white surfaces and one coral accent family; the former letterpress fonts and wide tracking are superseded.
+- Encoded line IDs are bounded at 4096 characters to accommodate maximum valid UTF-8 content. New offline public lines use payload IDs; seed and existing short IDs remain valid.
+- Merchandise concepts: `/shop`, `/shop/[slug]`, `/shop/cart`; validated `carried.cart.v1` selections only, no checkout. All digital styles/downloads/sharing remain free. See `docs/adr/0002-free-digital-local-merchandise.md`.
 - ADRs for significant decisions live in `docs/adr/`.

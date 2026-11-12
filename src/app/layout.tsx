@@ -1,47 +1,41 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import "./workspace.css";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { LocaleProvider } from "@/components/LocaleProvider";
 
-const fraunces = localFont({
+const manrope = localFont({
   src: [
-    { path: "../../public/fonts/Fraunces-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/Fraunces-600.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/Fraunces-Italic-500.ttf", weight: "500", style: "italic" },
+    { path: "../../public/fonts/Manrope-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/Manrope-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/Manrope-600.woff2", weight: "600", style: "normal" },
   ],
-  variable: "--font-fraunces",
+  variable: "--font-manrope",
   display: "swap",
 });
 
-const plex = localFont({
+const anekBangla = localFont({
   src: [
-    { path: "../../public/fonts/IBMPlexMono-400.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/IBMPlexMono-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/IBMPlexMono-600.ttf", weight: "600", style: "normal" },
+    { path: "../../public/fonts/AnekBangla-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/AnekBangla-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/AnekBangla-600.woff2", weight: "600", style: "normal" },
   ],
-  variable: "--font-plex",
+  variable: "--font-anek-bangla",
   display: "swap",
+  preload: false,
 });
 
+// Display voice: headlines and quotes in both scripts; the interface stays sans.
 const notoSerifBengali = localFont({
   src: [
-    { path: "../../public/fonts/NotoSerifBengali-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/NotoSerifBengali-600.ttf", weight: "600", style: "normal" },
-    { path: "../../public/fonts/NotoSerifBengali-700.ttf", weight: "700", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/NotoSerifBengali-600.woff2", weight: "600", style: "normal" },
   ],
-  variable: "--font-noto-serif-bengali",
+  variable: "--font-book",
   display: "swap",
-});
-
-const notoSansBengali = localFont({
-  src: [
-    { path: "../../public/fonts/NotoSansBengali-400.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/NotoSansBengali-500.ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/NotoSansBengali-600.ttf", weight: "600", style: "normal" },
-  ],
-  variable: "--font-noto-sans-bengali",
-  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -50,28 +44,16 @@ export const metadata: Metadata = {
     default: `${SITE_NAME}, the line a book left in you`,
     template: `%s, ${SITE_NAME}`,
   },
-  description:
-    "Pick a book. Write the one line it left in you. Stamp it with your name and pass it on. No account needed.",
-  openGraph: {
-    siteName: SITE_NAME,
-    type: "website",
-  },
+  description: "Pick a book. Write the one line it left in you. Stamp it with your name and pass it on. No account needed.",
+  openGraph: { siteName: SITE_NAME, type: "website" },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#f2ecdd",
-};
+export const viewport: Viewport = { themeColor: "#f1f1e7" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${plex.variable} ${notoSerifBengali.variable} ${notoSansBengali.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <LocaleProvider>{children}</LocaleProvider>
-        <div className="grain" aria-hidden="true" />
-      </body>
+    <html lang="en" data-scroll-behavior="smooth" className={`${manrope.variable} ${anekBangla.variable} ${notoSerifBengali.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col"><LocaleProvider>{children}</LocaleProvider></body>
     </html>
   );
 }
