@@ -23,6 +23,13 @@ colors:
   library: "#d0dcaf"
   library-deep: "#aeba8c"
   shadow: "#122c29"
+motion:
+  ease-out-soft: "cubic-bezier(0.16, 1, 0.3, 1)"
+  ease-settle: "cubic-bezier(0.22, 1.2, 0.36, 1)"
+  dur-land: "620ms"
+depth:
+  shadow-card-rest: "0 1px 2px shadow 10%, 0 14px 34px shadow 16%"
+  shadow-card-lift: "0 2px 4px shadow 12%, 0 24px 48px shadow 22%"
 typography:
   display:
     fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, sans-serif"
@@ -117,6 +124,8 @@ The frontmatter retains the approved page tokens from `globals.css`: butter pape
 **Artifact boundary.** All values in `src/lib/inks.ts` remain unchanged for `paper`, `midnight`, and `moss`, including text, rules, and coral ownership marks. Their backgrounds remain `#fffefa`, `#252a34`, and `#e7eee6`; Moss stays pale sage. Page Paper/Petrol never replace card Paper/Midnight, and there is no fourth ink.
 
 Depth comes from separate front-cover, back, spine, and page-block planes with contact shadows, not flat cutout scenery. Preserve the featured volume's `preserve-3d` tree; slide transforms belong to its outer wrapper. Real 2:3 covers use the bounded identity-checked cover resolver and labeled typographic cloth fallbacks. Covers are display-only, never merchandise assets. No gradients, glass, grain, fake reflections, or invented library inventory.
+
+The card stage (`stage.css`) adds the landing/flat tokens above: `--ease-settle` is for landings only, `--dur-land` times the one-time viewport entrance, and `--shadow-card-rest`/`--shadow-card-lift` are the flat grid contact shadows — all `color-mix`es of `--color-shadow`, never black. Featured cards get the full stage (stack sheets, one blurred contact shadow, fine-pointer lean); reader-line grids get the flat shadow and 3px lift.
 
 ## Typography and licensing
 

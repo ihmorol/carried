@@ -64,7 +64,7 @@ export function RecentFeed({ seeds, variant = "cards" }: RecentFeedProps) {
           <ArrowRight size={16} weight="regular" aria-hidden="true" />
         </Link>
       </li>
-    </ul> : <ul className="recent-lines-grid grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    </ul> : <ul className="recent-lines-grid line-card-grid grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {lines.map((line) => <li key={line.id}><LineCard payload={line.payload} id={line.id} votes={line.votes} asLink onChange={onVote} className="h-full" /></li>)}
     </ul> : <p className="panel p-6 text-sm">{t("feed.empty.title")}</p>}
   </div>;

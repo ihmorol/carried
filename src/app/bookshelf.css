@@ -146,13 +146,13 @@
   padding: 14px 5px;
   border-radius: 3px 2px 2px 3px;
   /* Deepen the cloth so rows read rich, not pastel. */
-  background: color-mix(in srgb, var(--spine-cloth) 82%, #140f08);
+  background: color-mix(in srgb, var(--spine-cloth) 82%, var(--color-shadow));
   color: var(--spine-ink);
   box-shadow:
     inset 5px 0 8px color-mix(in srgb, var(--spine-deep) 80%, transparent),
     inset -5px 0 8px color-mix(in srgb, var(--spine-deep) 68%, transparent),
-    inset 0 14px 18px color-mix(in srgb, #140f08 26%, transparent),
-    inset 0 -14px 18px color-mix(in srgb, #140f08 26%, transparent),
+    inset 0 14px 18px color-mix(in srgb, var(--color-shadow) 26%, transparent),
+    inset 0 -14px 18px color-mix(in srgb, var(--color-shadow) 26%, transparent),
     1px 3px 5px color-mix(in srgb, var(--color-shadow) 18%, transparent),
     6px 10px 14px color-mix(in srgb, var(--color-shadow) 18%, transparent);
 }

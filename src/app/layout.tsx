@@ -4,6 +4,7 @@ import "./globals.css";
 import "./workspace.css";
 import "./reading-room.css";
 import "./bookshelf.css";
+import "./stage.css";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { LocaleProvider } from "@/components/LocaleProvider";
 

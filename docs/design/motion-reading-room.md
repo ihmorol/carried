@@ -13,6 +13,8 @@ One pair is the unit of animation and URL identity. A 9-second idle rotation sto
 
 Bookplate becomes a modern open left-aligned print composition. Publication year is measured in shared credit text and dense clearances are verified across DOM/PNG/OG. Keep full text, original identity and the same ink/edition IDs. The previous direction below is retained only as rejected design history, not current authority.
 
+Featured cards now sit on a **stage** (`TiltCard` + `stage.css`): a perspective wrapper leans the object toward a fine pointer (max 6°, rAF-batched into three CSS variables), a two-sheet raised-paper stack backs it, and one blurred `--color-shadow` ellipse is the contact shadow. When a stage first enters the viewport it lands once — a 16px lift settling over the new `--ease-settle` (620ms, landings only) with the shadow blooming in the final third; the SSR/no-JS default is the landed card, and reduced motion or a paused/reduced room keeps it at rest. Reader-line grids get the flat treatment instead: `--shadow-card-rest` at rest, a 3px lift with `--shadow-card-lift` on hover/focus, no 3D and no blur. The four new tokens (`--ease-settle`, `--dur-land`, `--shadow-card-rest`, `--shadow-card-lift`) are recorded in `DESIGN.md`.
+
 ## Previous direction contract (superseded)
 
 **THESIS:** A book becomes a personal keepsake. The real cover and actual reader card lead; no generic marketing hero, feature tiles, statistics, decorative labels, or fake social proof.

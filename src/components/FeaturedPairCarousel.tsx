@@ -12,6 +12,7 @@ import type { FeaturedPair } from "@/lib/featured-pair";
 import { FrontCover } from "./FrontCover";
 import { LineCard } from "./LineCard";
 import { RoomMotionControl, useRoomMotion } from "./ReadingRoom";
+import { TiltCard } from "./TiltCard";
 import { useLocale } from "./LocaleProvider";
 
 const LineDrawer = dynamic(() => import("./LineDrawer"));
@@ -123,7 +124,11 @@ export function FeaturedPairCarousel({ pairs }: { pairs: FeaturedPair[] }) {
             <div className="featured-line-column">
               <Link href={`/l/${pair.line.id}`} className="featured-line-trigger" onClick={(event) => inspect(event, pair)} aria-label={t("hero.inspectLine", { name: pair.line.n })}>
                 <div className="featured-line-mat">
-                  <div className="featured-line-artwork"><LineCard payload={pair.line} id={pair.line.id} book={pair.book} actions={false} /></div>
+                  <div className="featured-line-artwork">
+                    <TiltCard land>
+                      <LineCard payload={pair.line} id={pair.line.id} book={pair.book} actions={false} />
+                    </TiltCard>
+                  </div>
                   <div className="featured-mobile-quote">
                     <blockquote lang={isBengali(pair.line.q) ? "bn" : "en"}>{pair.line.q}</blockquote>
                     <p>{pair.line.n}<ArrowUpRight size={18} aria-hidden="true" /></p>

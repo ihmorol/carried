@@ -45,8 +45,14 @@ html { scroll-behavior: smooth; }
   --dur: 240ms;
   --dur-slow: 700ms;
   --ease-ambient: cubic-bezier(0.37, 0, 0.63, 1);
+  --ease-settle: cubic-bezier(0.22, 1.2, 0.36, 1); /* landings only */
+  --dur-land: 620ms;
   --shadow-object: 0 4px 8px color-mix(in srgb, var(--color-shadow) 12%, transparent), 10px 22px 30px color-mix(in srgb, var(--color-shadow) 18%, transparent);
   --shadow-floating: 0 8px 30px color-mix(in srgb, var(--color-shadow) 14%, transparent);
+  --shadow-card-rest: 0 1px 2px color-mix(in srgb, var(--color-shadow) 10%, transparent),
+                      0 14px 34px color-mix(in srgb, var(--color-shadow) 16%, transparent);
+  --shadow-card-lift: 0 2px 4px color-mix(in srgb, var(--color-shadow) 12%, transparent),
+                      0 24px 48px color-mix(in srgb, var(--color-shadow) 22%, transparent);
 }
 body {
   --rail-width: 96px;
@@ -157,7 +163,7 @@ input, textarea { caret-color: var(--color-stamp); }
   align-items: end;
   min-height: 180px;
   padding: 12px 8px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   background: transparent;
 }
 .book-tile-title { display: block; font-size: 15px; font-weight: 500; line-height: 1.4; margin-top: 10px; }
@@ -191,7 +197,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .card-workspace-copy > div { margin-top: 20px; }
 .card-loop { margin-top: 36px; border-top: 1px solid var(--color-rule); padding-top: 28px; }
 .card-loop p { margin: 10px 0 20px; max-width: 55ch; color: var(--color-ink-soft); overflow-wrap: anywhere; }
-.skeleton { background: var(--color-surface-soft); border-radius: 10px; min-height: 24px; }
+.skeleton { background: var(--color-surface-soft); border-radius: var(--radius-control); min-height: 24px; }
 
 @media (min-width: 640px) {
   .book-introduction { grid-template-columns: 136px minmax(0, 1fr); gap: 32px; }
@@ -667,26 +673,10 @@ input, textarea { caret-color: var(--color-stamp); }
 
 /* ------------------------------------------------------------------ */
 /* Motion. One easing, three durations, one authored moment: the      */
-/* ownership mark pressing into the card. Tilt and reveals sit on     */
-/* wrappers, never on the painted artwork itself.                     */
+/* ownership mark pressing into the card. Tilt, landings, contact     */
+/* shadows and the flat grid treatment live on wrappers in stage.css; */
+/* the painted artwork itself never carries a box-shadow.             */
 /* ------------------------------------------------------------------ */
-
-.tilt { transform-style: preserve-3d; }
-
-/* A light physical shadow under the held card, deepening as it leans. */
-.tilt .edition-artwork {
-  box-shadow: 0 1px 2px rgb(38 41 47 / 0.05), 0 10px 28px rgb(38 41 47 / 0.09);
-  transition: box-shadow 550ms var(--ease-out-soft);
-}
-
-.tilt:hover .edition-artwork,
-.tilt:focus-within .edition-artwork {
-  box-shadow: 0 2px 4px rgb(38 41 47 / 0.07), 0 18px 44px rgb(38 41 47 / 0.14);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tilt .edition-artwork { box-shadow: none; }
-}
 
 /* Scroll reveals: progressive enhancement over an already-visible default.
    Browsers without scroll timelines simply show the lists. */

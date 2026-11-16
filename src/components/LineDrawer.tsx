@@ -8,6 +8,7 @@ import type { FeaturedPair } from "@/lib/featured-pair";
 import { originalName } from "@/lib/books";
 import { LineCard } from "./LineCard";
 import { ShareRow } from "./ShareRow";
+import { TiltCard } from "./TiltCard";
 import { useLocale } from "./LocaleProvider";
 
 export default function LineDrawer({ pair, open, onOpenChange, returnFocus }: {
@@ -33,7 +34,11 @@ export default function LineDrawer({ pair, open, onOpenChange, returnFocus }: {
               </Dialog.Close>
             </header>
             <div className="line-drawer-body">
-              <LineCard payload={pair.line} id={pair.line.id} book={pair.book} actions={false} />
+              {/* The pane keeps ≥300px of card width, so the full stage fits
+                  without clipping; the mat-less drawer body shows the stack. */}
+              <TiltCard land className="line-drawer-stage">
+                <LineCard payload={pair.line} id={pair.line.id} book={pair.book} actions={false} />
+              </TiltCard>
               <ShareRow payload={pair.line} id={pair.line.id} />
               <div className="line-drawer-links">
                 <Link href={`/l/${pair.line.id}`}>{t("hero.openLine")}<ArrowUpRight size={18} aria-hidden="true" /></Link>
