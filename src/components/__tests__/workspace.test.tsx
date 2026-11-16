@@ -282,24 +282,27 @@ describe("composer proof recovery", () => {
 });
 
 describe("home workspace", () => {
-  it("exposes sibling shelf and reader-line sectors, one search, and the daily write action", async () => {
-    wrap(await resolveServerChildren(Home())); await flush();
+  it("puts paired discovery before a full-width shelf with one header search", async () => {
+    wrap(await resolveServerChildren(await Home())); await flush();
     const main = screen.getByRole("main");
     const shelf = within(main).getByRole("region", { name: "The shelf" });
-    const lines = within(main).getByRole("region", { name: "Lines" });
+    const hero = within(main).getByRole("region", { name: "Books and the lines they leave" });
     expect(main.id).toBe("main-content");
     expect(shelf.id).toBe("shelf");
-    expect(lines.id).toBe("reader-lines");
-    expect(shelf.parentElement).toBe(lines.parentElement);
-    expect(within(main).getAllByRole("searchbox")).toHaveLength(1);
-    expect(within(main).queryByRole("combobox")).toBeNull();
-    expect(within(shelf).getAllByRole("listitem")).toHaveLength(8);
+    expect(hero.compareDocumentPosition(shelf) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const searches = screen.getAllByRole("searchbox");
+    expect(searches).toHaveLength(1);
+    expect(searches[0].closest("header.site-header")).toBeTruthy();
+    expect(within(shelf).getAllByRole("listitem")).toHaveLength(20);
     const jumps = within(main).getByRole("navigation", { name: "Jump to a section" });
     expect(within(jumps).getByRole("link", { name: "Shelf" }).getAttribute("href")).toBe("#shelf");
     expect(within(jumps).getByRole("link", { name: "Lines" }).getAttribute("href")).toBe("#reader-lines");
-    expect(within(jumps).getByRole("link", { name: "Write your line" }).getAttribute("href")).toMatch(/^\/b\/[^/]+#write$/);
-    expect(within(lines).getByRole("link", { name: "Write your line" }).getAttribute("href")).toMatch(/^\/b\/[^/]+#write$/);
-    expect(within(lines).queryByRole("button", { name: /Underline/ })).toBeNull();
-    expect(within(lines).getAllByRole("listitem")).toHaveLength(4); // three lines plus the all-lines link row
+    const write = within(hero).getByRole("link", { name: "Write your line" });
+    expect(write.getAttribute("href")).toMatch(/^\/b\/[^/]+#write$/);
+    expect(within(hero).getByRole("button", { name: "Next book" })).toBeTruthy();
+    expect(within(hero).queryByRole("button", { name: /Underline/ })).toBeNull();
+    expect(main.querySelectorAll(".featured-pair")).toHaveLength(1);
+    expect(main.querySelector(".book-scene-setting")).toBeNull();
+    expect(document.getElementById("reader-lines")?.querySelectorAll(".recent-lines-grid > li")).toHaveLength(3);
   });
 });

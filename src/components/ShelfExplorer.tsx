@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { BOOKS, getBook, originalName, searchBooks, type Book } from "@/lib/books";
-import { FrontCover } from "./FrontCover";
+import { BOOKS, originalName, searchBooks, type Book } from "@/lib/books";
+import { isBengali } from "@/lib/line";
+import { BookSpine } from "./BookSpine";
 import { usePoll } from "@/lib/use-poll";
 import { useLocale } from "./LocaleProvider";
 import { numFor } from "@/lib/i18n";
@@ -16,48 +17,57 @@ const DEFAULT_PAGE_SIZE = 24;
 type ShelfExplorerProps = {
   variant?: "default" | "workspace";
   pageSize?: number;
+  searchPlacement?: "inline" | "header";
   children?: React.ReactNode;
 };
 
-export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZE, children }: ShelfExplorerProps = {}) {
+export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZE, searchPlacement = "inline", children }: ShelfExplorerProps = {}) {
   const batchSize = Number.isFinite(pageSize) ? Math.max(1, Math.floor(pageSize)) : DEFAULT_PAGE_SIZE;
   const router = useRouter();
   const { t, locale } = useLocale();
   const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [live, setLive] = useState<boolean | null>(null);
   const [connectionError, setConnectionError] = useState(false);
-  const [query, setQuery] = useState("");
-  const [tag, setTag] = useState<Tag>("all");
-  const [shown, setShown] = useState(batchSize);
+  const [{ query, tag, shown }, setView] = useState({ query: "", tag: "all" as Tag, shown: batchSize, batch: batchSize });
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [year, setYear] = useState("");
   const [bookError, setBookError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [covers, setCovers] = useState<Record<string, string | null>>({});
+  // Keep filter changes and pagination in one update. Repeated notifications
+  // (including our own carried:search event) must not collapse a longer shelf.
+  const restoreFilters = useCallback((query: string, tag: Tag) => {
+    setView((current) => current.query === query && current.tag === tag && current.batch === batchSize
+      ? current
+      : { query, tag, shown: batchSize, batch: batchSize });
+  }, [batchSize]);
 
   useEffect(() => {
     let mounted = true;
     function restore() {
       const params = new URL(window.location.href).searchParams;
-      setQuery(params.get("q") ?? "");
       const genre = params.get("genre");
-      setTag(TAGS.includes(genre as Tag) ? genre as Tag : "all");
-      setShown(batchSize);
+      restoreFilters(params.get("q") ?? "", TAGS.includes(genre as Tag) ? genre as Tag : "all");
     }
     void Promise.resolve().then(() => { if (mounted) restore(); });
     window.addEventListener("popstate", restore);
-    return () => { mounted = false; window.removeEventListener("popstate", restore); };
-  }, [batchSize]);
+    window.addEventListener("carried:search", restore);
+    return () => {
+      mounted = false;
+      window.removeEventListener("popstate", restore);
+      window.removeEventListener("carried:search", restore);
+    };
+  }, [restoreFilters]);
 
   function filter(q: string, genre: Tag) {
-    setQuery(q); setTag(genre); setShown(batchSize);
+    restoreFilters(q, genre);
     const url = new URL(window.location.href);
     if (q) url.searchParams.set("q", q); else url.searchParams.delete("q");
     if (genre !== "all") url.searchParams.set("genre", genre); else url.searchParams.delete("genre");
-    // Retain Next's history state and the current anchor.
+    // Retain Next's history state and the current anchor; notify the shared header.
     window.history.replaceState(window.history.state, "", url);
+    window.dispatchEvent(new Event("carried:search"));
   }
 
   const refresh = useCallback(async (signal: AbortSignal) => {
@@ -78,27 +88,6 @@ export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZ
     return tag === "all" ? matches : matches.filter((book) => book.tags.includes(tag));
   }, [all, query, tag]);
 
-  // Cover-led tiles: resolve covers for the books currently on display.
-  // Only curated slugs are askable (reader-added books keep authored covers);
-  // later pages merge in, stale responses are ignored and aborted.
-  const displayedSlugs = results.slice(0, shown).map((book) => book.slug);
-  const coverKey = displayedSlugs.filter((slug) => getBook(slug) !== undefined && covers[slug] === undefined).join(",");
-  useEffect(() => {
-    if (!coverKey) return;
-    const controller = new AbortController();
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/covers?slugs=${encodeURIComponent(coverKey)}`, { cache: "no-store", signal: controller.signal });
-        if (!res.ok) return;
-        const data = await res.json() as { covers?: Record<string, string | null> };
-        if (cancelled || !data.covers || typeof data.covers !== "object") return;
-        setCovers((prev) => ({ ...prev, ...data.covers }));
-      } catch { /* aborted or offline: tiles keep their authored covers */ }
-    })();
-    return () => { cancelled = true; controller.abort(); };
-  }, [coverKey]);
-
   async function addBook(e: React.FormEvent) {
     e.preventDefault();
     if (saving || live !== true) return;
@@ -117,13 +106,13 @@ export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZ
     finally { setSaving(false); }
   }
 
-  return <div className={`shelf-explorer shelf-explorer--${variant}`}>
+  return <div className={`shelf-explorer shelf-explorer--${variant}`} data-search-placement={searchPlacement}>
     <div className="shelf-search-row">
-      <div className="shelf-search-field">
+      {searchPlacement === "inline" && <div className="shelf-search-field">
         <label htmlFor="shelf-search" className="sr-only">{t("shelf.searchLabel")}</label>
         <MagnifyingGlass size={20} weight="regular" aria-hidden="true" />
         <input id="shelf-search" type="search" value={query} onChange={(e) => filter(e.target.value, tag)} placeholder={t("shelf.placeholder")} autoComplete="off" className="field-input" />
-      </div>
+      </div>}
       <button type="button" onClick={() => setAdding((v) => !v)} aria-expanded={adding} aria-controls="shelf-add-book" className="ui-button-secondary">{adding ? t("shelf.close") : t("shelf.add")}</button>
     </div>
     <div id="shelf-add-book" hidden={!adding}>
@@ -155,24 +144,25 @@ export function ShelfExplorer({ variant = "default", pageSize = DEFAULT_PAGE_SIZ
       <button type="button" onClick={() => filter("", "all")} className="ui-button-secondary mt-4">{t("shelf.clear")}</button>
       {query.trim() && <button type="button" onClick={() => { setTitle(query.trim()); setAdding(true); }} className="ui-button-secondary mt-4 ml-2">{t("shelf.empty.cta", { q: query.trim() })}</button>}
     </div> : <>
-      <ul className="shelf-book-grid">
-        {results.slice(0, shown).map((book) => <li key={book.slug}>
-          <a href={`/b/${book.slug}`} className="book-tile">
-            <span className="book-tile-art">
-              <FrontCover
-                slug={book.slug}
-                title={originalName(book)}
-                author={book.authorBn ?? book.author}
-                spine={book.spine}
-                src={covers[book.slug] ?? undefined}
-              />
-            </span>
-            <span className="book-tile-title">{originalName(book)}</span>
-            <span className="book-tile-author">{book.authorBn ?? book.author}</span>
-          </a>
-        </li>)}
+      <ul className="shelf-book-grid shelf-spine-grid">
+        {results.slice(0, shown).map((book) => {
+          const name = originalName(book);
+          const author = book.authorBn ?? book.author;
+          const year = book.year < 0 ? `${Math.abs(book.year)} BC` : String(book.year);
+          return <li key={book.slug}>
+            <a href={`/b/${book.slug}`} className="shelf-spine-link" aria-label={`${name} — ${author}, ${year}`}>
+              <span className="shelf-spine-art">
+                <BookSpine book={book} variant="shelf" />
+              </span>
+              <span className="shelf-spine-meta">
+                <span className="shelf-spine-author" lang={isBengali(author) ? "bn" : "en"}>{author}</span>
+                <span className="shelf-spine-year">{year}</span>
+              </span>
+            </a>
+          </li>;
+        })}
       </ul>
-      {shown < results.length && <div className="shelf-more"><button type="button" onClick={() => setShown((n) => n + batchSize)} className="ui-button-secondary">{t("shelf.more", { n: numFor(Math.min(batchSize, results.length - shown), locale) })}</button></div>}
+      {shown < results.length && <div className="shelf-more"><button type="button" onClick={() => setView((current) => ({ ...current, shown: current.shown + batchSize }))} className="ui-button-secondary">{t("shelf.more", { n: numFor(Math.min(batchSize, results.length - shown), locale) })}</button></div>}
     </>}
   </div>;
 }

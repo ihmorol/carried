@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { SPINE_COLORS, type SpineColor } from "@/lib/books";
 
 /**
@@ -28,13 +28,24 @@ export function FrontCover({
   className?: string;
 }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  // A cover must never show as a blank plate: the authored cover stands in
+  // until the resolved image actually decodes, then crossfades over it.
+  useEffect(() => {
+    const image = imgRef.current;
+    if (image?.complete && image.naturalWidth > 0) setLoadedFor(src ?? null);
+  }, [src]);
   const showImage = Boolean(src && failedSrc !== src);
+  const imageReady = Boolean(src) && loadedFor === src;
   const cloth = SPINE_COLORS[spine] ?? SPINE_COLORS.charcoal;
   // Long titles step down so the fallback stays fully readable in the box.
   const titleSize = title.length > 26 ? "clamp(11px, 10cqi, 18px)" : title.length > 11 ? "clamp(11px, 11cqi, 19px)" : "clamp(14px, 16cqi, 28px)";
 
   return (
-    <span className={`front-cover @container relative inline-block w-full align-bottom ${className}`} data-slug={slug}>
+    <span className={`front-cover @container relative inline-block w-full align-bottom ${className}`}
+      data-slug={slug} data-featured={featured || undefined}
+      style={{ "--cover-cloth": cloth.bg, "--cover-deep": cloth.deep } as CSSProperties}>
       <span
         className="front-cover-book relative isolate block aspect-2/3 w-full rounded-[1px_3px_3px_1px]"
         style={{
@@ -51,11 +62,31 @@ export function FrontCover({
             boxShadow: "2px 0 0 color-mix(in srgb, var(--color-paper-raised) 70%, var(--color-rule))",
           }}
         />
+        {/* The feature adds a real spine plane without changing its cover plate. */}
+        {featured && <span className="front-cover-spine" aria-hidden="true" />}
         <span className="front-cover-face absolute inset-0 block overflow-hidden rounded-[inherit] bg-[var(--color-paper-raised)]">
-          {showImage ? (
+          <span
+            className="front-cover-fallback absolute inset-0 flex flex-col overflow-hidden text-center"
+            role="img"
+            aria-hidden={showImage && imageReady ? true : undefined}
+            aria-label={`${title} by ${author}, Carried cover`}
+            style={{ backgroundColor: cloth.bg, color: cloth.text, padding: "13% 12% 11%" }}
+          >
+            <span aria-hidden="true" className="front-cover-fallback-frame" />
+            <span className="font-medium" style={{ fontSize: "clamp(9px, 7cqi, 14px)", lineHeight: 1.5 }}>{author}</span>
+            <span
+              className="mx-auto block max-w-full font-semibold"
+              style={{ fontSize: titleSize, lineHeight: 1.3, marginTop: "10%", textWrap: "balance", overflowWrap: "anywhere" }}
+            >
+              {title}
+            </span>
+            <span aria-hidden="true" className="mx-auto mt-auto block" style={{ width: "38%", height: "max(3px, 4cqi)", backgroundColor: cloth.deep }} />
+          </span>
+          {showImage && (
             // Native <img> on purpose: free archive scans, plain 2:3 plate.
             // eslint-disable-next-line @next/next/no-img-element
             <img
+              ref={imgRef}
               className="front-cover-image block h-full w-full object-contain"
               src={src}
               alt={`${title} by ${author}, front cover`}
@@ -64,32 +95,18 @@ export function FrontCover({
               loading={featured ? "eager" : "lazy"}
               fetchPriority={featured ? "auto" : "low"}
               decoding="async"
+              data-loaded={imageReady ? "true" : undefined}
+              onLoad={() => setLoadedFor(src ?? null)}
               onError={() => setFailedSrc(src ?? null)}
             />
-          ) : (
-            <span
-              className="front-cover-fallback absolute inset-0 flex flex-col overflow-hidden text-start"
-              role="img"
-              aria-label={`${title} by ${author}, Carried cover`}
-              style={{ backgroundColor: cloth.bg, color: cloth.text, padding: "12% 11% 10% 13%" }}
-            >
-              <span className="font-medium" style={{ fontSize: "clamp(9px, 7cqi, 14px)", lineHeight: 1.5 }}>{author}</span>
-              <span
-                className="font-semibold"
-                style={{ fontSize: titleSize, lineHeight: 1.3, marginTop: "9%", textWrap: "balance", overflowWrap: "anywhere" }}
-              >
-                {title}
-              </span>
-              <span aria-hidden="true" className="mt-auto block" style={{ width: "38%", height: "max(3px, 4cqi)", backgroundColor: cloth.deep }} />
-            </span>
           )}
           {/* spine hinge + printed edge, shared by image and authored covers */}
           <span
             aria-hidden="true"
             className="front-cover-inset pointer-events-none absolute inset-0 z-10 rounded-[inherit]"
             style={{
-              border: "1px solid rgb(24 26 31 / 12%)",
-              boxShadow: "inset 3px 0 0 rgb(24 26 31 / 12%), inset 5px 0 1px rgb(255 254 250 / 9%)",
+              border: "1px solid color-mix(in srgb, var(--color-shadow) 12%, transparent)",
+              boxShadow: "inset 3px 0 0 color-mix(in srgb, var(--color-shadow) 12%, transparent), inset 5px 0 1px color-mix(in srgb, var(--color-paper-raised) 9%, transparent)",
             }}
           />
         </span>

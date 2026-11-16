@@ -73,12 +73,12 @@ describe("interaction regressions", () => {
     expect(screen.getByTestId("card").textContent).toContain("Reader Book");
     expect(screen.getAllByRole("radio").every((el) => el.tagName === "INPUT")).toBe(true);
   });
-  it("limits the initial shelf to 24 books and combines query with tags", async () => {
+  it("limits the initial shelf to 32 books and combines query with tags", async () => {
     wrap(<ShelfExplorer />); await flush();
-    expect(screen.getAllByTestId("cover")).toHaveLength(24);
+    expect(screen.getAllByTestId("spine")).toHaveLength(32);
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Orwell" } });
     fireEvent.click(screen.getByRole("button", { name: "poetry" }));
-    expect(screen.queryAllByTestId("cover")).toHaveLength(0);
+    expect(screen.queryAllByTestId("spine")).toHaveLength(0);
     expect((screen.getByRole("searchbox") as HTMLInputElement).value).toBe("Orwell");
   });
   it("does not expose add-book fields before live connection is confirmed", async () => {
@@ -187,9 +187,9 @@ describe("interaction regressions", () => {
   it("pages all shelf results and resets pagination with filters", async () => {
     wrap(<ShelfExplorer />); await flush();
     fireEvent.click(screen.getByRole("button", { name: "Show 24 more books" }));
-    expect(screen.getAllByTestId("cover")).toHaveLength(48);
+    expect(screen.getAllByTestId("spine")).toHaveLength(48);
     fireEvent.click(screen.getByRole("button", { name: "fiction" }));
-    expect(screen.getAllByTestId("cover")).toHaveLength(24);
+    expect(screen.getAllByTestId("spine")).toHaveLength(32);
     expect(new URL(window.location.href).searchParams.get("genre")).toBe("fiction");
   });
   it("aborts and ignores a previous slug's late feed response", async () => {

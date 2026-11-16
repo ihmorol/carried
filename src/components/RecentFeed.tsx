@@ -43,7 +43,7 @@ export function RecentFeed({ seeds, variant = "cards" }: RecentFeedProps) {
       <h2>{t(variant === "list" ? "feed.readerLines" : "feed.fresh")}</h2>
       <p role="status">{t(status === "live" ? "feed.live" : status === "loading" ? "feed.editorialLoading" : status === "error" ? "feed.editorialError" : "feed.editorial")}</p>
     </div>
-    {lines.length ? variant === "list" ? <ul className="recent-lines-list">
+    {lines.length ? variant === "list" ? <ul className="recent-lines-list reveal-list">
       {lines.map((line) => {
         const book = bookForPayload(line.payload);
         const date = new Date(`${line.payload.d}T00:00:00Z`);

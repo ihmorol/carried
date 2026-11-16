@@ -1,23 +1,52 @@
 ---
 name: Carried
-description: A modern bilingual workspace for books and the lines they leave
+description: An energetic nostalgic bilingual reading room for books and the lines they leave
 colors:
-  paper: "#f1f1e7"
-  paper-raised: "#fffefa"
-  surface-soft: "#e7e8df"
-  ink: "#26292f"
-  ink-soft: "#60646c"
-  ink-faint: "#6b7077"
-  rule: "#dbddd4"
-  stamp: "#bf4654"
-  stamp-soft: "#f5d9dd"
-  accent: "#e66b77"
+  paper: "#f5edda"
+  paper-raised: "#fff9ee"
+  surface-soft: "#e8dfc9"
+  ink: "#173f3c"
+  ink-soft: "#4e6259"
+  ink-faint: "#58645a"
+  rule: "#d8cdb5"
+  stamp: "#b44125"
+  stamp-soft: "#f9dfc9"
+  accent: "#ff8755"
+  accent-hover: "#ff9a70"
+  night: "#173f3c"
+  night-raised: "#24504a"
+  room: "#173f3c"
+  room-raised: "#214b45"
+  room-text: "#fff1d2"
+  room-muted: "#ccdbc8"
+  room-rule: "#527166"
+  library: "#d0dcaf"
+  library-deep: "#aeba8c"
+  shadow: "#122c29"
 typography:
   display:
-    fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, serif"
-    fontSize: "clamp(30px, 3.2vw, 42px)"
+    fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, sans-serif"
+    fontSize: "clamp(34px, 4.2vw, 54px)"
+    fontWeight: 600
+    lineHeight: 1.12
+    letterSpacing: "-0.01em"
+  welcome:
+    fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, sans-serif"
+    fontSize: "clamp(20px, 1.8vw, 28px)"
     fontWeight: 500
-    lineHeight: 1.2
+    lineHeight: 1.4
+    letterSpacing: "normal"
+  featured-book:
+    fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, sans-serif"
+    fontSize: "clamp(22px, 2vw, 30px)"
+    fontWeight: 600
+    lineHeight: 1.35
+    letterSpacing: "normal"
+  section:
+    fontFamily: "Noto Serif Bengali, Manrope, Anek Bangla, sans-serif"
+    fontSize: "clamp(24px, 2.4vw, 31px)"
+    fontWeight: 600
+    lineHeight: 1.25
     letterSpacing: "-0.01em"
   body:
     fontFamily: "Manrope, Anek Bangla, sans-serif"
@@ -30,9 +59,11 @@ typography:
     lineHeight: 1.4
     letterSpacing: "normal"
 rounded:
-  card: "12px"
   control: "10px"
   panel: "14px"
+  rail: "22px"
+  circle: "50%"
+  pill: "999px"
 spacing:
   small: "8px"
   group: "16px"
@@ -45,74 +76,93 @@ components:
     rounded: "{rounded.control}"
     padding: "11px 20px"
     height: "44px"
+  button-primary-hover:
+    backgroundColor: "{colors.night-raised}"
+  button-room:
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "11px 20px"
+    height: "44px"
+  button-room-hover:
+    backgroundColor: "{colors.accent-hover}"
+  navigation-rail:
+    backgroundColor: "{colors.room}"
+    textColor: "{colors.room-muted}"
+    rounded: "{rounded.rail}"
+    padding: "16px 14px"
+    width: "72px"
+  navigation-rail-expanded:
+    width: "208px"
+  motion-control:
+    backgroundColor: "{colors.paper-raised}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.circle}"
+    height: "44px"
+    width: "44px"
 ---
 
 # Carried design system
 
-## Overview
+## Direction
 
-Carried is a modern bilingual reading workspace. Its two sectors put the shelf on the left and the daily line plus reader reflections on the right. The product remains a place to author and share a line, not a reading tracker, social profile, or payment application.
+**A book becomes a personal keepsake.** The approved home is a compact header, one paired book-and-line carousel, a dense full-width spine shelf, then reader lines. The sparse eight-cover shelf, giant welcome, cutout bookcase, and whole-page 56/44 split are rejected history, not layout requirements. The floating rail, page palette, bilingual type, and free creation/sharing remain.
 
-This revision explicitly replaces the former letterpress type, sepia palette, wide tracking, and oversized card gaps. Do not restore those rules from historical documents. The November 2026 refinement adds Noto Serif Bengali as the display voice; it does not restore any letterpress rule.
+The current revision is recorded in [Motion reading room](docs/design/motion-reading-room.md). Its earlier direction is historical. Source authority is `src/app/reading-room.css`, `src/app/bookshelf.css`, `src/app/page.tsx`, `FeaturedPairCarousel`, `HeaderSearch`, and `ShelfExplorer`; retained legacy scene styles do not define the active home.
 
-## Colors
+## Palette and depth
 
-The shelf uses pale neutral `paper`; the line sector is near-white `paper-raised`. Dark charcoal supports readable content. Coral is one accent family: `accent` for the active navigation circle, `stamp` for readable focus/ownership text, and `stamp-soft` for subtle selection fills. Do not give every category a new interface color.
+The frontmatter retains the approved page tokens from `globals.css`: butter paper and warm raised paper; petrol text, rail, and the featured line field; persimmon actions; pistachio stage and shelf edges. `stamp` is the readable accent on light paper, while `accent` supplies dark-surface focus. `night` is a page-only petrol alias. The featured atmosphere mixes the selected book's cloth with these page surfaces, so its field changes with the pair. Cloth is content, not another interface palette.
 
-Artifact styles remain `paper`, `midnight`, and `moss`; exact colors come only from `src/lib/inks.ts`. Moss is now a pale sage card, not a dark green slab. Book-cloth colors are content, not additional interface accents. All small text must pass 4.5:1, including text drawn into books.
+**Artifact boundary.** All values in `src/lib/inks.ts` remain unchanged for `paper`, `midnight`, and `moss`, including text, rules, and coral ownership marks. Their backgrounds remain `#fffefa`, `#252a34`, and `#e7eee6`; Moss stays pale sage. Page Paper/Petrol never replace card Paper/Midnight, and there is no fourth ink.
 
-## Card editions
+Depth comes from separate front-cover, back, spine, and page-block planes with contact shadows, not flat cutout scenery. Preserve the featured volume's `preserve-3d` tree; slide transforms belong to its outer wrapper. Real 2:3 covers use the bounded identity-checked cover resolver and labeled typographic cloth fallbacks. Covers are display-only, never merchandise assets. No gradients, glass, grain, fake reflections, or invented library inventory.
 
-Three immutable editions change composition and ownership treatment while ink stays a separate choice: **Bookplate** (centered inscription, one hairline plate rule, type-only ownership with a coral signature rule), **Poster** (reversed-ink full-bleed quote, coral band carrying a straight credit line), and **Reader's ticket** (die-cut stock, perforation, book stub, single-ring circular cancellation mark). Editions live in `src/lib/card-templates.ts` (`bookplate-v1`, `poster-v1`, `ticket-v1`) and ride in the line payload as `ct`.
+## Typography and licensing
 
-Payloads without `ct` predate editions: their serialization and identity never change, and renderers present them with the house edition (Bookplate) as a display-only mapping. New cards always write an explicit id after the book metadata. One shared geometry in `text-layout.ts` (`layoutEditionArtwork` 360×450 print space, `layoutEditionOg` 1200×630) feeds DOM, canvas PNG, and OG; per-edition dense layouts preserve every character at readable floors instead of shrinking. Vote and utility actions render outside the painted artwork in page tokens.
+Noto Serif Bengali is the bilingual display face for headings, card quotes, book titles, and wordmarks. Manrope/Anek Bangla remain the Latin/Bengali interface pair for body text, labels, reader names, authors, and dates. All three are locally hosted OFL faces at 400/500/600. Body and ordinary fields use 16px; header search uses 15px on desktop and 16px on mobile. The home welcome is only 20–28px at weight 500; the larger global heading role is not the home hero. Shelf headings use 28px; reader-feed headings remain 24px.
 
-## Typography
+Keep normal prose, metadata, and Bengali tracking; serif display tracking is at most -0.01em. Bengali needs script-safe leading, not forced italics, all-caps ledger labels, tiny monospace prose, or clipped glyphs. Card leading and fitting come from `text-layout.ts`, not page heading presets.
 
-**Noto Serif Bengali** is the display voice: headlines, section titles, and the card quote, book title, and wordmark. It covers Bengali and Latin glyphs, so quote and book title keep one face across scripts. The interface voice remains locally hosted **Manrope** for Latin and **Anek Bangla** for Bengali, weights 400/500/600, for UI, body, labels, metadata, and reader names. All three faces are locally hosted static instances under the OFL, weights 400/500/600 only. See [research and licenses](docs/design/modern-bangla-typography.md). Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
+The former Fraunces/Plex letterpress system, sepia treatment, and wide tracking remain superseded. November 2026's Noto Serif Bengali revision superseded the earlier keep-only-the-pair display rule, not the interface pair. [Typography research and licenses](docs/design/modern-bangla-typography.md) retain that history: Anek Bangla was observed on 10 Minute School; Shikho's Baloo Da 2 was compared but not selected.
 
-Body and fields are 16px, UI/metadata 12–14px, card quotes 20–24px, and headings approximately 30–42px — the home welcome headline scales up to ~48px in the serif display voice. Bengali tracking is always normal; card labels and signatures also use normal tracking. Serif display tracking is at most -0.01em, and Bengali display tracking stays normal. No forced all-caps labels, monospace prose, ornamental italics, or oversized quote marks. Bengali card leading is 1.5 and Latin card leading is 1.4. On the card, quote, book title, and wordmark are serif; labels, reader name, author, date, and accession stay sans for legibility at 8–12px, and card geometry, weights (400–600), inks, and editions are unchanged. Author, reader name, and metadata remain script-specific between Manrope and Anek Bangla.
+`--font-book` in `layout.tsx` supplies `--font-serif`. Web text uses WOFF2; matching static TTFs serve canvas/OG and stay in the deployment bundle through `outputFileTracingIncludes`. Canvas registers “Noto Serif Bengali Export”; satori uses “Noto Serif Bengali”. `public/fonts` includes the fontTools-instantiated Noto Serif Bengali 400 at wght 400 / wdth 100, active pre-existing 500/600 instances, and `NotoSerifBengali-OFL.txt`. Weight 700 and former font files remain historical assets, not active faces.
 
-`--font-book` is registered in `src/app/layout.tsx` and exposed as the `--font-serif` theme token in `globals.css`. WOFF2 files serve web text; matching static TTFs serve canvas/OG. For canvas PNG export the serif is registered as "Noto Serif Bengali Export" from the same TTFs; satori OG uses "Noto Serif Bengali". `public/fonts` ships `NotoSerifBengali-400.woff2/.ttf` (newly instantiated at wght 400 / wdth 100 with fontTools) alongside the pre-existing 500/600 static instances now in active use (700 stays historical) and `NotoSerifBengali-OFL.txt`. Weights load as needed. Old font files remain historical assets, not the active type system.
+## Page sequence and discovery
 
-## Layout
+- **Navigation and search.** At 1024px and above, the rail remains 72px inside a 96px gutter, or 208px inside 232px when expanded. It floats 12px from the left and 16px from top/bottom, with outline icons, a persimmon active circle, collapsed hover/focus labels, and bottom expansion. Keep one document scroll and an accessible mobile menu. Header search sits beside the brand, wrapping to its own row below 768px. On `/` and `/books`, it shares URL `q`/`genre` state with the shelf through `carried:search` and `popstate`; preserve history state and anchors. Elsewhere, submission opens `/books?q=…#shelf`. Do not duplicate the catalogue search below the hero.
+- **Featured pair.** One active slide owns its book, cover, line, reader name, and destinations together; the daily pick leads the editorial selection. Async `Home` resolves covers before rendering `ReadingRoom` and the carousel, avoiding a streamed replacement beneath an already hydrated motion context. A real closed 3D book faces its corresponding card, with a changing cloth-color field. Book metadata uses petrol ink against the actual cloth/paper mix. Keep title, author/year, writing access, previous/next, and book selectors useful and short. The page is not split into permanent shelf/line sectors.
+- **Dense shelf.** Home starts with 20 books and `/books` with 24, followed by show-more; `/books` has no carousel. Both use full-width cloth-spine grids: 148px minimum tracks, 16px column gaps, 20px row gaps, and 260–316px volumes on a 324px art stage. Vertical titles use length-aware 14/16/18px type and wrap rather than truncate. Author and year stay horizontal below: 13px author (14px Bengali), 12px year. Real result counts, genre filters, reader-added books, and live/offline status remain.
+- **Reader lines.** A full-width card feed follows the shelf; it is not the old three-reflection sidebar. Preserve truthful editorial/live provenance, real links, and early writing access. Existing routes and `#shelf`, `#reader-lines`, `#main-content`, and book-page `#write` destinations remain usable.
 
-The desktop navigation rail is 76px, or 200px when expanded with the bottom hamburger. The rest of the homepage splits 56% shelf and 44% lines with aligned header/body/footer backgrounds. Use a single normal document scroll. Below 1024px, stack sections and provide Shelf/Lines jump links; do not hide either behind fake tabs.
+Below 640px, the hero shows the **full quote and reader name** against a solid petrol right-hand field, not an unreadably tiny full card. This discovery view is not a new card edition. An ordinary book/line click opens a lazy right-side detail drawer containing canonical `LineCard`, `ShareRow`, a real `/l/[id]` link, and the book's writing link. The triggering anchors retain their real route for modified clicks and no-JavaScript navigation. The Base UI modal provides titled/described dialog semantics, close/Escape, focus containment, and return focus; its width is at most 520px and fills narrow screens.
 
-The shelf is cover-led: front-facing 2:3 covers on a shared ledge with title/author captions, a featured book, unboxed, with its real cover at a larger size, and resolved-cover artwork only for displayed books. Cover lookups go through `/api/covers` (bounded, identity-checked, cached) with labeled authored typographic fallbacks in the book's cloth color; unresolved books never fall back to spines or random art. Cover images are display-only and never merchandise assets.
+## Motion and interaction
 
-The left sector has one search, compact welcome and book spotlight, genre filters, eight initial books and show-more; the search and genre filter chips are soft-filled and borderless. The right has the actual daily line in a card widened to ~440px, book/writing action, and three linked reader reflections. No duplicate marketing bands, calendars, reading-progress bars, invented profiles, or avatar rows.
+Motion **14.12.0** (`motion/react`) supplies paired enter/exit; Base UI **1.9.0** (`@base-ui/react/dialog`) supplies the drawer. Both resolved dependencies are MIT-licensed in `package-lock.json`. These UI dependencies do not add accounts, analytics, or storage.
 
-General page gutters use 20–40px, groups 16–24px, and sections 28–36px. Component grids respond to sector width, not only viewport width. Original URLs, `#shelf`, `#write`, `#lines`, and `#main-content` remain; home adds `#reader-lines`.
+Idle rotation waits **9 seconds**. Hover, focus, manual selection, explicit pause, an open drawer, a hidden tab, an offscreen hero, or reduced motion stop rotation. Focus/manual inspection keeps motion paused until resumed; manual previous/next and selectors remain usable. Automatic position updates are quiet, while manual position changes may announce politely. The single visible motion control shares in-memory state and is disabled with a localized reduced-motion label.
 
-## Elevation & Depth
+`AnimatePresence` uses one keyed pair with `mode="wait"` and `initial={false}`. Slides use a 320ms soft-out transition with bounded travel; the current reduced-motion variant removes travel and uses a 100ms fade. Only the closed volume (9s) and decorative color field (18s) loop, gated by the carousel's rotating state. Readable text does not drift, the dense shelf does not continuously animate, and content never waits for an entrance animation. Drawer transitions and decorative CSS loops stop under reduced motion; touch does not depend on hover. No parallax or scroll hijacking.
 
-Light shadows belong to physical book/card artwork only. Remove grain, ornamental drift, glass, and gradients. The interface relies on clear surface separation, not piles of raised boxes. Motion is limited to short press feedback; reduced motion disables it.
+Controls remain at least 44px; header search is 48px high. Generic control/panel/rail radii remain 10/14/22px; the featured stage has its own 20px radius. Physical book corners are separate from interface tokens. Preserve visible focus, readable contrast, forced-colors fallbacks, and motion-free print output.
 
-## Shapes
+## Card editions and full-content fitting
 
-Controls are 10px and panels 14px. The active rail icon is a 44px circle. Card artwork follows its immutable edition: the Bookplate's hairline plate rule/signature ownership, Poster's coral band credit line, and Ticket's die-cut stock/single-ring cancellation. Do not apply the interface's generic panel radius or signature shape to those painted surfaces.
+Edition IDs remain **`bookplate-v1`**, **`poster-v1`**, and **`ticket-v1`**; approved composition changes are shared across DOM, PNG, and OG, not new payload versions.
 
-## Components
+- **Bookplate:** an open left-aligned header, quote, book credit, and ownership footer with one coral signature rule. No outer certificate frame or ornamental caption.
+- **Poster:** a full-bleed ink field with simpler heading/credit furniture and a measured coral ownership band.
+- **Reader's ticket:** die-cut stock, perforation, book stub, and one circular cancellation; retain its identity without piling on labels or rules. Dense caption/date furniture stays out of the quote.
 
-- Navigation: consistent outline icons with accessible names, hover/focus labels when collapsed, active state, bottom expand/collapse button, and mobile Escape/focus dismissal.
-- Cards: fixed 4:5 collectible artwork with fitted text and edition-specific furniture; utility actions and readable companion provenance sit outside it. Do not stretch artwork or spread internal sections with `flex-1`.
-- Exports: shared print-space geometry and canonical portrait line breaks place complete text and ownership marks consistently in DOM/PNG. OG uses the same content and visual identity in an explicit landscape adaptation. Test actual raster output, font shaping, units, and alignment, not only file dimensions.
-- Shop previews: actual card artwork fits within the product print area with a ResizeObserver; do not stretch it to fill a fixed-height mockup.
-- Forms and feeds: retain native radios, serial visible-tab polling, local-storage validation/fallback, useful empty/error states, and truthful offline/editorial status.
+`card-presentation.ts` constructs the complete `author · publication year` byline (including BC years); `editionText` passes it to every renderer for measurement. Do not append the year after fitting or confuse it with the reader's stamp date. Full quote, title, byline, reader name/date, and accession remain intact.
 
-## Card refinement, November 2026
+`layoutEditionArtwork` shares 360×450 print-space geometry between the 4:5 DOM card and 1080×1350 PNG; `layoutEditionOg` provides the explicit 1200×630 landscape adaptation. Credit and ownership are measured before allocating quote space. Ordinary Bookplate/Poster quote-to-credit clearance is 16 print pixels, dense clearance at least 12, with an explicit full-content fallback rather than cropping. Short quotes start at 28/34/26 print pixels by edition; fitting retains 14px quote, 9px name, and 8px metadata floors. Maximum-content fitting must account for combined text heights, not independently overlapping regions.
 
-Keep the reading-room structure and all three edition identities. The card should feel like a literary keepsake, not an administrative certificate. Quote hierarchy is controlled: short Bookplate/Poster/Ticket quotes start at 28/34/26 print pixels; longer inputs step down through length tiers before fitting. Full valid content and the 14px quote floor remain. Ordinary Bookplate and Poster credits use a stronger book title, 12px author, and a real 12px clearance after the quote region. Extreme input still has an explicit dense layout, not cropping.
+A missing `ct` still maps to the house Bookplate for display only: never rewrite legacy payloads, IDs, or hashes. Keep artwork fixed in proportion, not stretched to fill a panel. Utilities, votes, readable transcripts, and companion provenance live outside it; Save remains primary and external share destinations quiet. Shop mockups use actual canonical artwork within their print area.
 
-Bookplate ownership has a bounded name width. Ticket's single-ring claim reserves the actual name corners, not just a rectangular fit; dense caption/date share a separated horizontal row below the quote. DOM and PNG carry these decisions together. OG keeps the same calmer hierarchy in landscape.
+## Product boundaries
 
-The featured book and composer are unboxed. Align groups with their own content edges; preserve field borders and visible selection/focus. Mobile jump links include writing before the catalogue. Save is primary, while individual external share destinations are quiet links. Do not turn these refinements into a replacement landing page.
+Keep digital creation, every ink/edition, downloads, and sharing free. No accounts, tracking, locale cookies, private server-side customer data, or new storage. The optional public shelf publishes submitted lines/names and anonymous votes; personal shelves, language, and concept-cart selections stay device-local. Preserve codec/store validation, old links, dedupe rules, and cart identity.
 
-Bangladesh-first channel research and its limitations are recorded in [the audience note](docs/design/bangladesh-first-refinement.md). No reader research has established a national visual preference; bilingual, mobile-safe cards are a design hypothesis supported by the product, not a demographic claim.
-
-## Do's and Don'ts
-
-Do keep digital cards, all styles, downloads, and sharing free. Do preserve original line identity, book provenance, signatures, local shelves, and cart contents. Do use bilingual readable text and 44px controls.
-
-Do not add prices, checkout, orders, or delivery promises to the concept shop. Do not reproduce book covers or reader submissions as merchandise without commercial clearance. Do not mistake passing code tests for visual acceptance.
+The shop remains concept-only: no invented prices, checkout, orders, delivery promises, or commercial rights. Public covers, quotation-like passages, translations, art, and reader submissions need appropriate clearance before merchandise use. [Bangladesh-first research](docs/design/bangladesh-first-refinement.md) records channel evidence and its limits; bilingual mobile-safe design is not proof of a national visual preference. Source alignment and passing code checks are not visual acceptance.

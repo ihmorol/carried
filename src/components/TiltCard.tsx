@@ -53,7 +53,7 @@ export function TiltCard({
   const onMove = useCallback(
     (e: React.PointerEvent) => {
       const el = ref.current;
-      if (!enabled.current || !el) return;
+      if (!enabled.current || !el || el.closest('[data-motion="paused"], [data-motion="reduced"]')) return;
       const r = el.getBoundingClientRect();
       const px = (e.clientX - r.left) / r.width - 0.5;
       const py = (e.clientY - r.top) / r.height - 0.5;

@@ -40,6 +40,7 @@ function editionText(payload: LinePayload, id: string, book: Book): EditionText 
     name: content.name,
     book: content.title,
     author: content.author,
+    byline: content.byline,
     date: content.date,
     accession: accessionNo(id),
     language: content.quoteScript,
@@ -170,6 +171,14 @@ describe("three edition DOM compositions", () => {
       expect(JSON.stringify(payload)).toBe(JSON.stringify({ ...base, ct: edition, b: nativeBook.slug }));
     }
   });
+  it("includes publication year in the visible fitted credit of every edition and ink", async () => {
+    for (const ct of CARD_TEMPLATES) for (const s of Object.keys(INKS) as LinePayload["s"][]) {
+      const html = await renderLineCard({ ...base, ct, s });
+      const credit = html.match(/<p class="edition-book-author"[^>]*>([\s\S]*?)<\/p>/)?.[1] ?? "";
+      const visible = credit.replace(/<span class="sr-only">[\s\S]*?<\/span>/g, "").replace(/<[^>]*>/g, "");
+      expect(visible, `${ct}/${s}`).toContain("2024");
+    }
+  });
   it("keeps fitted quote and book spans in the display voice despite inherited language selectors", async () => {
     const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
     // JSDOM does not resolve this language/inheritance cascade like Chromium.
@@ -187,13 +196,13 @@ describe("three edition DOM compositions", () => {
       }
     }
   });
-  it("ports the bookplate's hairline plate rule and signature ownership", async () => {
+  it("uses an open, left-aligned Bookplate with a compact accession header", async () => {
     const html = await renderLineCard({ ...base, ct: "bookplate-v1", b: nativeBook.slug });
-    expect(html).toContain("edition-bookplate-frame");
-    expect(html).toContain("edition-frame-rule");
+    expect(html).not.toContain("edition-bookplate-frame");
+    expect(html).not.toContain("edition-frame-rule");
     expect(html).toContain("edition-bookplate-mark");
     expect(html).toContain("edition-signature-rule");
-    expect(html).toContain("edition-bookplate-accession");
+    expect(html).toMatch(/<header class="edition-bookplate-heading">[\s\S]*edition-bookplate-accession[\s\S]*<\/header>/);
     expect(html).toContain("Carried");
   });
   it("ports the poster's reversed field and coral band credit line", async () => {
@@ -214,7 +223,7 @@ describe("three edition DOM compositions", () => {
   it("keeps legacy payloads on the bookplate without adding ct to the payload", async () => {
     const payload: LinePayload = { ...base, b: nativeBook.slug };
     const html = await renderLineCard(payload);
-    expect(html).toContain("edition-bookplate-frame");
+    expect(html).not.toContain("edition-bookplate-frame");
     expect(html).toContain("edition-bookplate-mark");
     expect(html).toContain('data-edition="bookplate"');
     expect(html).not.toContain('data-edition="poster"');
@@ -318,16 +327,40 @@ describe("per-edition artwork fitting", () => {
       const normalized = (value: string) => value.replace(/\u2060/gu, " ").replace(/\s+/gu, " ");
       for (const role of ["quote", "name", "book", "author"] as const) {
         const fit = layout[role];
-        expect(fit.lines.join("").replace(/\u2060/gu, " ")).toBe(normalized(text[role]));
+        expect(fit.lines.join("").replace(/\u2060/gu, " ")).toBe(normalized(role === "author" ? text.byline : text[role]));
         expect(fit.height).toBeGreaterThan(0);
         expect(fit.lines.every((line) => estimateTextWidth(line, fit.fontSize) > 0)).toBe(true);
       }
       // Floors survive every density; the quote block stays on the artwork.
       expect(layout.quote.fontSize).toBeGreaterThanOrEqual(14);
       expect(layout.name.fontSize).toBeGreaterThanOrEqual(9);
-      expect(layout.quoteTop).toBeGreaterThanOrEqual(40);
+      expect(layout.quoteTop).toBeGreaterThanOrEqual(36);
       expect(layout.quoteTop + layout.quoteHeight).toBeLessThanOrEqual(EDITION_ARTWORK.height);
       expect(layout.quoteInset).toBeGreaterThan(0);
+    }
+  });
+  it("measures full wide Bengali credit and year without quote or ownership collisions in all nine combinations", () => {
+    const payload = { ...base, q: "আ".repeat(220), n: "আ".repeat(24) };
+    for (const ct of CARD_TEMPLATES) for (const s of Object.keys(INKS) as LinePayload["s"][]) for (const year of [2026, -3000]) {
+      const book = { ...limitBook(false), authorBn: "আ".repeat(60), year };
+      const text = editionText({ ...payload, ct, s }, "wide-year", book);
+      const portrait = layoutEditionArtwork(text, ct);
+      const landscape = layoutEditionOg(text, ct);
+      for (const layout of [portrait, landscape]) {
+        expect(layout.author.lines.join("").replace(/\u2060/gu, " ")).toBe(text.byline);
+        expect(layout.quote.lines.join("").replace(/\u2060/gu, " ")).toBe(text.quote);
+      }
+      const creditBottom = portrait.credit.top + portrait.credit.height;
+      expect(portrait.credit.top - portrait.quoteY - portrait.quote.height).toBeGreaterThanOrEqual(12 - 1e-6);
+      if (ct === "ticket-v1") expect(creditBottom).toBeLessThanOrEqual(448.5);
+      else {
+        expect((ct === "poster-v1" ? portrait.bandTop : portrait.ownership.top) - creditBottom).toBeGreaterThanOrEqual(12 - 1e-6);
+        expect(portrait.ownership.top + portrait.ownership.height).toBeLessThanOrEqual(450);
+      }
+      const r = landscape.regions;
+      expect(r.author.y + landscape.author.height).toBeLessThanOrEqual(ct === "ticket-v1" ? 306 : ct === "poster-v1" ? 500 : 498);
+      if (ct !== "ticket-v1") expect(r.creditLabel.y - r.quote.y - landscape.quote.height).toBeGreaterThanOrEqual(18 - 1e-6);
+      expect(r.name.y + landscape.name.height).toBeLessThanOrEqual(ct === "ticket-v1" ? 560 : ct === "poster-v1" ? r.date.y - 6 : r.signature.y - 5);
     }
   });
   it("switches to the dense emergency layout for extreme quotes while keeping full text and floors", () => {
@@ -348,8 +381,11 @@ describe("per-edition artwork fitting", () => {
     const text = editionText(base, "test-id", nativeBook);
     const layout = layoutEditionArtwork(text, "bookplate-v1");
     expect(layout.quote.fontSize).toBe(28);
-    expect(layout.quoteTop).toBe(82);
-    expect(layout.quoteInset).toBe(36);
+    expect(layout.quoteTop).toBe(96);
+    expect(layout.quoteInset).toBe(32);
+    expect(layout.quoteY).toBe(layout.quoteTop);
+    expect(layout.credit.inset).toBe(layout.quoteInset);
+    expect(layout.credit.top - (layout.quoteY + layout.quote.height)).toBeCloseTo(16);
     const poster = layoutEditionArtwork(text, "poster-v1");
     expect(poster.quote.fontSize).toBe(34);
     expect(editionLeading(text.language, "poster-v1", "quote")).toBe(1.12);
@@ -359,6 +395,16 @@ describe("per-edition artwork fitting", () => {
       const text = editionText({ ...base, q: "A longer reflection. ".repeat(10) }, "credit-gap", nativeBook);
       const layout = layoutEditionArtwork(text, edition);
       expect(layout.credit.top - (layout.quoteTop + layout.quoteHeight)).toBeGreaterThanOrEqual(12);
+    }
+  });
+  it("reserves actual quote-to-credit clearance in all nine dense artwork combinations", () => {
+    for (const edition of CARD_TEMPLATES) for (const ink of Object.keys(INKS) as LinePayload["s"][]) {
+      const payload = { ...atLimit(edition), s: ink };
+      const text = editionText(payload, "dense-clearance", limitBook(false));
+      const layout = layoutEditionArtwork(text, edition);
+      const quoteBottom = layout.quoteY + layout.quote.height;
+      expect(layout.credit.top - quoteBottom, `${edition}/${ink}: painted quote versus credit`).toBeGreaterThanOrEqual(12);
+      expect(layout.credit.top - (layout.quoteTop + layout.quoteHeight), `${edition}/${ink}: reserved quote versus credit`).toBeGreaterThanOrEqual(12);
     }
   });
   it("keeps a maximum Bengali name inside the Ticket's circular claim", () => {
@@ -405,12 +451,10 @@ describe("per-edition OG images", () => {
       const layout = layoutEditionOg(text, edition);
       const normalized = (value: string) => value.replace(/\s+/gu, " ");
       for (const role of ["quote", "name", "book", "author", "date"] as const) {
-        expect(layout[role].lines.join("")).toBe(normalized(text[role]));
+        expect(layout[role].lines.join("")).toBe(normalized(role === "author" ? text.byline : text[role]));
       }
-      // Serif Bengali units seat the widest legal quote (220 × আ) on the
-      // bookplate's 20px tiered floor (8 × 20 × 1.45 = 232 ≤ 250); everything
-      // that fits at 22px or above keeps its approved size.
-      const ogFloor = edition === "bookplate-v1" && !latin ? 20 : 22;
+      // The established landscape floors survive the larger, open composition.
+      const ogFloor = edition === "bookplate-v1" && !latin ? 20 : edition === "poster-v1" ? 24 : 22;
       expect(layout.quote.fontSize).toBeGreaterThanOrEqual(ogFloor);
       expect(layout.quote.height).toBeLessThanOrEqual(layout.regions.quote.height);
       expect(layout.name.fontSize).toBeGreaterThanOrEqual(14);
@@ -422,12 +466,10 @@ describe("per-edition OG images", () => {
       }
     }
   });
-  it("still refuses over-cap quotes rather than cropping on the landscape cut", () => {
-    // The store caps quotes at 220 chars, so a 280-char Bengali line can only
-    // reach layoutEditionOg through misuse. Even the 20px tiered floor cannot
-    // seat it on the bookplate (9 × 20 × 1.45 = 261 > 250): the OG cut fails
-    // loudly instead of cropping.
-    const text = editionText({ ...atLimit("bookplate-v1"), q: "আ".repeat(280) }, "og-refusal", limitBook(false));
+  it("refuses text outside the landscape region rather than cropping", () => {
+    // Boundary validation owns the 220-character cap. A layout refuses when
+    // its available area is exhausted, not merely because a input is over-cap.
+    const text = editionText({ ...atLimit("bookplate-v1"), q: "আ".repeat(600) }, "og-refusal", limitBook(false));
     expect(() => layoutEditionOg(text, "bookplate-v1")).toThrow(RangeError);
   });
   it("renders each edition's landscape identity with the full bilingual text", async () => {
@@ -441,9 +483,10 @@ describe("per-edition OG images", () => {
       expect(image.options.height).toBe(630);
       const html = renderToStaticMarkup(image.element);
       const content = cardPresentation(payload, nativeBook)!;
+      const squeezed = (value: string) => value.replace(/\s+/gu, "");
       const text = html.replace(/<[^>]*>/g, "");
-      for (const value of [content.quote, content.name, content.title, content.author, content.date, accessionNo("edition-id")]) {
-        expect(text).toContain(value);
+      for (const value of [content.quote, content.name, content.title, content.author, content.year, content.date, accessionNo("edition-id")]) {
+        expect(squeezed(text)).toContain(squeezed(value));
       }
       expect(text).toContain(EDITION_SHARED_COPY.carriedBy[content.quoteScript]);
       expect(html).toContain('"Manrope", "Anek Bangla"'.replace(/"/g, "&quot;"));
@@ -452,8 +495,10 @@ describe("per-edition OG images", () => {
       expect(html).toContain('"Noto Serif Bengali"'.replace(/"/g, "&quot;"));
       expect(html).toContain('"Anek Bangla", "Manrope"'.replace(/"/g, "&quot;"));
       if (edition === "bookplate-v1") {
-        // One hairline plate rule; the coral signature rule is the only mark.
+        // An open field: the coral signature rule is the only mark.
         expect(html).toContain("border-top:3px solid");
+        expect(html).not.toContain("<rect");
+        expect(html).not.toContain("text-align:center");
         expect(html).not.toContain("border-radius:50%");
       }
       if (edition === "poster-v1") {
@@ -501,12 +546,12 @@ describe("per-edition OG images", () => {
   it("encodes short and long bilingual cards of every edition with actual local OG font bytes", async () => {
     const { default: OgImage } = await import("@/app/l/[id]/opengraph-image");
     const { ImageResponse } = await vi.importActual<typeof import("next/og")>("next/og");
-    // The serif estimator seats seven 22px Bengali lines on the bookplate's
-    // landscape quote region (210 chars); poster and ticket keep the full 220.
-    const bengaliMax = (edition: CardTemplateId) => edition === "bookplate-v1" ? "আ".repeat(210) : "আ".repeat(220);
-    for (const edition of CARD_TEMPLATES) for (const quote of ["I remember.", "মনে থাকে।", "M".repeat(220), bengaliMax(edition)]) {
-      const payload = { ...base, ct: edition, b: "native-test", q: quote, n: "M".repeat(24), s: "moss" as const };
-      const book = { ...nativeBook, titleBn: "ব".repeat(90), authorBn: "ব".repeat(60) };
+    // Every edition/ink combination renders the complete 220-character
+    // Bengali boundary, never a shortened surrogate for the difficult case.
+    for (const edition of CARD_TEMPLATES) for (const s of Object.keys(INKS) as LinePayload["s"][]) for (const quote of ["I remember.", "মনে থাকে।", "M".repeat(220), "আ".repeat(220)]) {
+      const bengali = quote.includes("আ");
+      const payload = { ...base, ct: edition, b: "native-test", q: quote, n: (bengali ? "আ" : "M").repeat(24), s };
+      const book = { ...limitBook(!bengali), year: -3000 };
       ogStore.resolveLine.mockResolvedValue(payload);
       ogStore.resolveBookForLine.mockResolvedValue(book);
       const image = await OgImage({ params: Promise.resolve({ id: "render-test" }) }) as unknown as { element: ReactElement; options: ConstructorParameters<typeof ImageResponse>[1] };
@@ -534,12 +579,12 @@ describe("per-edition OG images", () => {
 
 function mockCanvas() {
   const drawn: string[] = [];
-  const textCalls: { value: string; x: number; y: number; font: string; spacing: string }[] = [];
+  const textCalls: { value: string; x: number; y: number; font: string; spacing: string; align: string; color: string }[] = [];
   const ctx = {
     font: "", letterSpacing: "0px", fillStyle: "", strokeStyle: "", lineWidth: 0,
     textAlign: "left", textBaseline: "top", globalAlpha: 1,
-    fillText: vi.fn(function (this: { font: string; letterSpacing: string }, value: string, x: number, y: number) {
-      drawn.push(value); textCalls.push({ value, x, y, font: this.font, spacing: this.letterSpacing });
+    fillText: vi.fn(function (this: { font: string; letterSpacing: string; textAlign: string; fillStyle: string }, value: string, x: number, y: number) {
+      drawn.push(value); textCalls.push({ value, x, y, font: this.font, spacing: this.letterSpacing, align: this.textAlign, color: this.fillStyle });
     }),
     measureText: vi.fn(function (this: { font: string }, value: string) {
       const size = Number(/([\d.]+)px/.exec(this.font)?.[1] ?? 20);
@@ -589,9 +634,9 @@ describe("explicit canvas font registration and per-edition export", () => {
     const { exportLineCard } = await import("@/lib/canvas");
     const cases: [CardTemplateId, (mock: ReturnType<typeof mockCanvas>) => void][] = [
       ["bookplate-v1", (mock) => {
-        // One hairline plate rule plus the coral signature rule.
-        expect(mock.ctx.strokeRect).toHaveBeenCalled();
-        expect(mock.ctx.fillRect.mock.calls.length).toBeGreaterThanOrEqual(2);
+        // The open Bookplate retains only its left-anchored signature rule.
+        expect(mock.ctx.strokeRect).not.toHaveBeenCalled();
+        expect(mock.ctx.fillRect.mock.calls.length).toBe(2);
       }],
       ["poster-v1", (mock) => {
         // Straight band credit: no rotated box, no decorative quotation mark.
@@ -611,16 +656,21 @@ describe("explicit canvas font registration and per-edition export", () => {
       assert(mock);
     }
   });
-  it("keeps centered Bookplate text inside the card and shares its vertical alignment", async () => {
+  it("aligns Bookplate brand, quote, measured credit and ownership to one left edge", async () => {
     vi.resetModules();
     const { exportLineCard } = await import("@/lib/canvas");
     const mock = mockCanvas();
     const payload: LinePayload = { ...base, ct: "bookplate-v1", q: "I remember." };
-    await exportLineCard(payload, "centered", getBook(base.b));
+    await exportLineCard(payload, "left-aligned", getBook(base.b));
     const quote = mock.textCalls.find((call) => call.value === payload.q)!;
-    expect(quote.x).toBe(540);
-    expect(quote.y).toBeGreaterThan(300);
     const label = mock.textCalls.find((call) => call.value === "After reading")!;
+    const brand = mock.textCalls.find((call) => call.value === "Carried")!;
+    const name = mock.textCalls.find((call) => call.value === payload.n)!;
+    for (const call of [quote, label, brand, name]) {
+      expect(call.x).toBe(32 * 3);
+      expect(call.align).toBe("left");
+    }
+    expect(quote.y).toBeGreaterThan(300);
     expect(Number(/([\d.]+)px/.exec(label.font)![1])).toBeGreaterThanOrEqual(28.5);
   });
   it("uses a full-size Ticket cancellation mark rather than a CSS percentage as pixels", async () => {
@@ -635,9 +685,12 @@ describe("explicit canvas font registration and per-edition export", () => {
     vi.resetModules();
     const { exportLineCard } = await import("@/lib/canvas");
     const mock = mockCanvas();
-    await exportLineCard(atLimit("poster-v1"), "dense", limitBook(false));
-    expect(mock.ctx.fillRect).toHaveBeenCalledWith(0, 1110, 1080, 240);
-    expect(mock.ctx.fillRect).not.toHaveBeenCalledWith(0, 999, 1080, 351);
+    const payload = atLimit("poster-v1");
+    const book = limitBook(false);
+    const layout = layoutEditionArtwork(editionText(payload, "dense", book), "poster-v1");
+    await exportLineCard(payload, "dense", book);
+    expect(mock.ctx.fillRect).toHaveBeenCalledWith(0, layout.bandTop * 3, 1080, (450 - layout.bandTop) * 3);
+    expect(layout.bandTop - (layout.credit.top + layout.credit.height)).toBeGreaterThanOrEqual(12);
   });
   it("uses canonical portrait line breaks even when browser measurements differ", async () => {
     vi.resetModules();
@@ -686,6 +739,41 @@ describe("explicit canvas font registration and per-edition export", () => {
       const spoken = squeezed(mock.drawn.join(" "));
       for (const text of [content.quote, content.title, content.author, content.name, content.date]) expect(spoken).toContain(squeezed(text));
       for (const call of mock.ctx.fillText.mock.calls) expect(call[0]).not.toContain("…");
+    }
+  });
+  it("draws canonical DOM line breaks and actual quote/credit clearance in all nine exports", async () => {
+    vi.resetModules();
+    const { exportLineCard } = await import("@/lib/canvas");
+    const { LineCard } = await import("@/components/LineCard");
+    const normalized = (value: string) => value.replace(/[\r\n\u2060]/gu, " ").trim();
+    for (const ct of CARD_TEMPLATES) for (const s of Object.keys(INKS) as LinePayload["s"][]) for (const latin of [true, false]) {
+      const payload = { ...atLimit(ct, latin), s };
+      const book = { ...limitBook(latin), authorBn: (latin ? "W" : "আ").repeat(60), year: -3000 };
+      const text = editionText(payload, "painted-clearance", book);
+      const layout = layoutEditionArtwork(text, ct);
+      const mock = mockCanvas();
+      await exportLineCard(payload, "painted-clearance", book);
+      const labelIndex = mock.textCalls.findIndex((call) => call.value === EDITION_SHARED_COPY.afterReading[text.language]);
+      const quoteEnd = labelIndex - (ct === "ticket-v1" ? 1 : 0); // Ticket dates sit between quote and stub.
+      const quoteCalls = mock.textCalls.slice(quoteEnd - layout.quote.lines.length, quoteEnd);
+      expect(quoteCalls.map((call) => call.value)).toEqual(layout.quote.lines.map(normalized));
+      const html = renderToStaticMarkup(createElement(LineCard, { payload, book, id: "painted-clearance", actions: false }));
+      const quoteHtml = html.match(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/)![1];
+      const domLines = Array.from(quoteHtml.matchAll(/class="edition-line"[^>]*>([^<]*)<\/span>/g), (match) => match[1]);
+      expect(domLines).toEqual(quoteCalls.map((call) => call.value));
+      const authorCalls = mock.textCalls.slice(labelIndex + 1 + layout.book.lines.length, labelIndex + 1 + layout.book.lines.length + layout.author.lines.length);
+      expect(authorCalls.map((call) => call.value)).toEqual(layout.author.lines.map(normalized));
+      expect(authorCalls.map((call) => call.value).join("")).toContain("3000 BC");
+      // Undo the mock face baseline to compare the actual adapter's final quote
+      // line box, not just independent layout-region declarations.
+      const last = quoteCalls.at(-1)!;
+      const lastTop = last.y / 3 - layout.quote.lineHeight / 2 - layout.quote.fontSize * 0.3;
+      const labelCall = mock.textCalls[labelIndex];
+      const creditTop = labelCall.y / 3 - layout.credit.labelHeight / 2 - layout.credit.labelSize * 0.3;
+      expect(creditTop - (lastTop + layout.quote.lineHeight)).toBeGreaterThanOrEqual(12 - 1e-6);
+      expect(quoteCalls.every((call) => call.align === "left")).toBe(true);
+      const foreground = ct === "poster-v1" && s !== "midnight" ? INKS[s].bg : INKS[s].text;
+      expect(quoteCalls.every((call) => call.color === foreground)).toBe(true);
     }
   });
   it("waits for actual loads before measuring or drawing", async () => {

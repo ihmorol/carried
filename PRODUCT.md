@@ -26,7 +26,11 @@ A launch-ready merchandise concept storefront lets readers personalize physical 
 
 ## Brand Commitments
 
-Preserve Carried's name, understated literary voice, authored-card content, accession number, reader ownership, and three style identifiers. The user's typography correction supersedes the former serif/monospace, sepia, and heavily tracked letterpress treatment. Use clean proportional Manrope/Anek Bangla, pale-neutral and near-white sectors, restrained coral accents, and a narrow outline-icon sidebar with bottom expansion. The homepage follows the reference's whole-page shelf/lines split. The shop retains its concept-only commerce boundary.
+Preserve Carried's name, warm direct literary voice, authored-card content, accession number, reader ownership, and stable ink/edition identifiers. The approved home is compact header search beside the brand, a small headline, one paired book-and-line carousel, then a dense full-width cloth-spine shelf and reader lines. Home starts with 20 books; `/books` starts with 24 and has no carousel. The former sparse covers, giant headline, cutout bookcase, and whole-page 56/44 split are rejected history. Retain the floating outline-icon rail and its 72/208px widths inside 96/232px gutters.
+
+A real closed 3D book uses resolved cover planes and a changing cloth-color field. On compact mobile screens the paired line shows the full quote and reader name, not a tiny full card. A lazy right-side modal opens the canonical card and Save/share controls while retaining real line and writing routes. Header and catalogue search share URL state; no accounts or extra persistence are needed.
+
+Keep the same butter-paper, petrol, persimmon, and pistachio page tokens. Noto Serif Bengali remains the bilingual display face, with Manrope/Anek Bangla for the interface; all three are locally hosted at 400/500/600 under the OFL. The former Fraunces/Plex letterpress fonts, sepia treatment, and wide tracking stay superseded. Page colors must not recolor Paper/Midnight/Moss artwork. Bookplate now uses an open left-aligned composition without an outer certificate frame; Poster/Ticket simplify their furniture. All renderers share the measured author/publication-year byline, full-content clearance, and unchanged payload/ink/edition IDs. No gradients or glass. The shop retains its concept-only commerce boundary.
 
 ## Evidence on Hand
 
@@ -34,4 +38,4 @@ Existing curated books and editorial reflection corpus in src/lib/books.ts and s
 
 ## Accessibility & Inclusion
 
-Preserve English and Bangla support, keyboard navigation, reduced motion, readable contrast, and device-local fallback when browser storage is unavailable.
+Preserve English and Bangla support, keyboard navigation, reduced motion, readable contrast, and device-local fallback when browser storage is unavailable. The paired carousel rotates only after 9 idle seconds; pause it for hover, focus/manual interaction, an open drawer, hidden/offscreen state, or reduced motion. Provide a visible pause/resume control, stable reading text, and manual navigation without automatic motion. Keep the mobile quote complete and the drawer focus-managed. Motion 14.12.0 and Base UI 1.9.0 are MIT-licensed UI dependencies, not new services. See `docs/design/motion-reading-room.md` for the approved revision and `DESIGN.md` for implementation details.

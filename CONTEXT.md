@@ -5,8 +5,7 @@ Carried is a no-account quote-card site with optional public sharing storage and
 ## Entities
 
 **Book** (`lib/books.ts`), static, curated: `slug, title, author, year, tags, spine`.
-143 entries, including 33 Bengali books, prerendered at build (`/b/[slug]`). Books are *drawn* as spines
-(`BookSpine` + `SPINE_COLORS`). Book-access links resolve asynchronously
+143 entries, including 33 Bengali books, prerendered at build (`/b/[slug]`). Home and catalogue discovery use dense authored cloth spines (`BookSpine`); compact search and book-detail variants retain their own dimensions. The home carousel pairs a line with a closed 3D volume whose front is a resolved 2:3 cover (`FrontCover`), with labeled authored fallbacks in `SPINE_COLORS`. Cover planes and changing cloth-color fields are presentation, not new Book data. Book-access links resolve asynchronously
 (`lib/bookmeta.ts`: Open Library search → Internet Archive item; plus free archive links, Open Library work page, Internet Archive,
 Bookshop, WorldCat, no API keys). Readers can add books (see Store); those
 live in Redis, resolve at request time via `findBook`, and carry the
@@ -58,18 +57,19 @@ toggles; `getVoteCounts` batch-reads. Book-page margins sort by count desc,
 newest-first on ties. Trade-off accepted: a determined user can rotate device
 ids, the IP rate limit (240/h) is the second layer, not a hard guarantee.
 
-**Ink** (`lib/inks.ts`), one of three card color schemes: `paper | midnight | moss`.
+**Ink** (`lib/inks.ts`), one of three immutable card color schemes: `paper | midnight | moss`.
 The single source of truth for the DOM card (`LineCard`), the canvas export
-(`lib/canvas.ts`) and the satori OG renderers. Add a fourth nowhere without
-changing all three surfaces + `isInkId`.
+(`lib/canvas.ts`) and the satori OG renderers. The reading-room theme changes
+page tokens only; all original ink values stay intact. No fourth ink is part
+of this redesign.
 
 **Seed lines** (`lib/seeds/`), editorial corpus: **ten original reader-voice
 lines per book** (1,430 total, across English and Bengali data files),
 written in-house as reflections. The corpus is not commercial merchandise clearance;
 quotation-like passages, translations, and art need rights review before printing for sale.
-Fixed fields keep
-ids stable; a coverage test (`npm test`) enforces 10 per book. They populate
-book pages, the home ticker (capped rotation), and the daily front-page pick.
+Fixed fields keep ids stable; a coverage test (`npm test`) enforces 10 per book.
+They populate book pages, the home reader-line feed, and the paired carousel
+whose first selection is the daily front-page pick.
 
 **Shelf** (`lib/shelf.ts`), the visitor's own lines, localStorage only
 (`carried.shelf.v1`, name in `carried.name.v1`). No server ever sees it.
@@ -80,10 +80,31 @@ book pages, the home ticker (capped rotation), and the daily front-page pick.
 2. `lib/canvas.ts` (1080×1350 PNG), "Save the card"
 3. `l/[id]/opengraph-image.tsx` (satori, 1200×630), link previews
 
-All render the payload's edition (`ct`, defaulting to the house Bookplate for
-display) from one shared geometry in `lib/text-layout.ts`. Web text uses local
-WOFF2 fonts; matching static TTFs supply canvas/OG and are kept in the deploy
-bundle via `outputFileTracingIncludes` in `next.config.ts`.
+All surfaces use `card-presentation.ts` for shared content, including the measured
+`author · publication year` byline. The payload's `ct` selects the edition;
+missing `ct` still maps to Bookplate for display only. Bookplate is now an open
+left-aligned header/quote/credit/footer without a certificate frame; Poster and
+Ticket retain their identities with simpler furniture. `lib/text-layout.ts`
+measures credit and ownership before allocating quote space, with explicit
+maximum-content/dense clearances. DOM and PNG share portrait geometry; OG is
+an explicit landscape adaptation. None of this changes inks, edition IDs,
+payload serialization, or line identity.
+
+Web text uses local WOFF2 fonts; matching static TTFs supply canvas/OG and are
+kept in the deploy bundle via `outputFileTracingIncludes` in `next.config.ts`.
+
+## Discovery presentation
+
+The home pairs a book and its line in one active carousel, led by the daily
+pick, then shows a full-width spine shelf (20 books initially) and reader lines.
+`/books` uses the same shelf at 24 books initially, without a carousel. Header
+search shares URL `q`/`genre` state with the shelf via `carried:search` and
+`popstate`; it introduces no storage. Cloth planes and cover art are display-only.
+
+Compact mobile discovery shows the full quote/name instead of miniature artwork.
+A lazy Base UI modal drawer contains canonical card/share controls and real
+`/l/[id]` and book-writing links; it is not a new Line entity or route identity.
+Motion 14.12.0 and Base UI 1.9.0 are MIT-licensed UI dependencies.
 
 ## The viral loop
 
@@ -95,7 +116,8 @@ wall, no interstitial).
 
 - No accounts or private server-side customer data. The optional public shelf stores submitted lines/names and anonymous votes; the personal shelf, language choice, and merchandise selections stay device-local. No orders, addresses, payments, or tracking are added.
 - All user text rendered through React/satori (auto-escaped); lengths capped server-side too (`validateLineInput`, `validateBookInput`).
-- Noto Serif Bengali is the display/quote face across both scripts; Manrope and Anek Bangla remain the interface pair. All three are locally hosted at 400/500/600 with normal prose and Bengali letter spacing. The current user-approved palette uses neutral/near-white surfaces and one coral accent family; the former letterpress fonts and wide tracking are superseded.
+- Noto Serif Bengali is the display/quote face across both scripts; Manrope and Anek Bangla remain the interface pair. All three are locally hosted at 400/500/600 with normal prose and Bengali letter spacing. The approved energetic nostalgic page theme uses butter-paper (`#f5edda`), raised paper (`#fff9ee`), petrol (`#173f3c`), persimmon (`#ff8755`), and pistachio (`#d0dcaf`). These page tokens never replace the original `INKS`; the former letterpress fonts and wide tracking remain superseded.
+- The reading room retains one document scroll and a floating 72px rail inside a reserved 96px gutter (208px inside 232px when expanded), but replaces the whole-page split with paired discovery above a dense shelf. Keep mobile writing access before the catalogue. Carousel rotation waits 9 idle seconds and stops for hover, focus/manual selection, pause, reduced motion, an open drawer, or hidden/offscreen state. Manual navigation remains available; motion state is in memory only. Physical book planes are presentation, never catalogue or reader data, and content never waits on animation.
 - Encoded line IDs are bounded at 4096 characters to accommodate maximum valid UTF-8 content. New offline public lines use payload IDs; seed and existing short IDs remain valid.
 - Merchandise concepts: `/shop`, `/shop/[slug]`, `/shop/cart`; validated `carried.cart.v1` selections only, no checkout. All digital styles/downloads/sharing remain free. See `docs/adr/0002-free-digital-local-merchandise.md`.
 - ADRs for significant decisions live in `docs/adr/`.

@@ -7,19 +7,29 @@ afterEach(cleanup);
 
 const book = { slug: "the-metamorphosis", title: "The Metamorphosis", author: "Franz Kafka", spine: "charcoal" as const };
 
+const RESOLVED_NAME = "The Metamorphosis by Franz Kafka, front cover";
+const AUTHORED_NAME = "The Metamorphosis by Franz Kafka, Carried cover";
+
 describe("front cover tile", () => {
   it("renders a resolved cover image, eager when featured", () => {
     render(<FrontCover {...book} src="/covers/the-metamorphosis.jpg" featured />);
-    const img = screen.getByRole("img") as HTMLImageElement;
+    const img = screen.getByRole("img", { name: RESOLVED_NAME }) as HTMLImageElement;
     expect(img.getAttribute("src")).toBe("/covers/the-metamorphosis.jpg");
-    expect(img.getAttribute("alt")).toBe("The Metamorphosis by Franz Kafka, front cover");
+    expect(img.getAttribute("alt")).toBe(RESOLVED_NAME);
     expect(img.getAttribute("loading")).toBe("eager");
     expect(document.querySelector(".front-cover-caption")?.textContent).toBe(""); // caption line stays reserved
+    expect(document.querySelector(".front-cover-spine")?.getAttribute("aria-hidden")).toBe("true");
+    expect(document.querySelector(".front-cover")?.getAttribute("data-featured")).toBe("true");
+    // The authored cover stands in until the image actually decodes.
+    expect(screen.getByRole("img", { name: AUTHORED_NAME }).getAttribute("aria-hidden")).toBeNull();
+    fireEvent.load(img);
+    expect(img.getAttribute("data-loaded")).toBe("true");
+    expect(document.querySelector(".front-cover-fallback")?.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("loads non-featured covers lazily", () => {
     render(<FrontCover {...book} src="/covers/the-metamorphosis.jpg" />);
-    expect((screen.getByRole("img") as HTMLImageElement).getAttribute("loading")).toBe("lazy");
+    expect((screen.getByRole("img", { name: RESOLVED_NAME }) as HTMLImageElement).getAttribute("loading")).toBe("lazy");
   });
 
   it("falls back to the authored Carried cover when no image resolves", () => {
@@ -40,9 +50,13 @@ describe("front cover tile", () => {
 
   it("swaps to the authored cover when the image fails, and retries with a new source", () => {
     const view = render(<FrontCover {...book} src="/broken.jpg" />);
-    fireEvent.error(screen.getByRole("img"));
-    expect(screen.getByRole("img", { name: /Carried cover/ })).toBeTruthy();
+    fireEvent.error(screen.getByRole("img", { name: RESOLVED_NAME }));
+    expect(screen.queryByRole("img", { name: RESOLVED_NAME })).toBeNull();
+    expect(screen.getByRole("img", { name: AUTHORED_NAME })).toBeTruthy();
     view.rerender(<FrontCover {...book} src="/fixed.jpg" />);
-    expect((screen.getByRole("img") as HTMLImageElement).getAttribute("src")).toBe("/fixed.jpg");
+    const retry = screen.getByRole("img", { name: RESOLVED_NAME }) as HTMLImageElement;
+    expect(retry.getAttribute("src")).toBe("/fixed.jpg");
+    fireEvent.load(retry);
+    expect(retry.getAttribute("data-loaded")).toBe("true");
   });
 });

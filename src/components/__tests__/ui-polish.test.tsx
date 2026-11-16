@@ -53,18 +53,18 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("polished writing and selection entry points", () => {
-  it("puts the featured book's primary write action before the eight-book catalogue", async () => {
-    wrap(<Home />); await flush();
+  it("puts the paired hero's write action before the twenty-book catalogue", async () => {
+    wrap(await Home()); await flush();
     const shelf = screen.getByRole("region", { name: "The shelf" });
-    const write = within(shelf).getByRole("link", { name: "Write your line" });
-    const openBook = within(shelf).getByRole("link", { name: "Open the book" });
+    const hero = screen.getByRole("region", { name: "Books and the lines they leave" });
+    const write = within(hero).getByRole("link", { name: "Write your line" });
+    const openBook = within(hero).getByRole("link", { name: "Open the book" });
     const catalogue = within(shelf).getByRole("list");
     expect(write.classList.contains("ui-button")).toBe(true);
     expect(write.getAttribute("href")).toBe(`${openBook.getAttribute("href")}#write`);
     expect(write.compareDocumentPosition(catalogue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(within(catalogue).getAllByRole("listitem")).toHaveLength(8);
-    const lines = screen.getByRole("region", { name: "Lines" });
-    expect(within(lines).getByRole("link", { name: "Write your line" }).getAttribute("href")).toBe(write.getAttribute("href"));
+    expect(within(catalogue).getAllByRole("listitem")).toHaveLength(20);
+    expect(within(hero).getByRole("button", { name: "Next book" })).toBeTruthy();
   });
 
   it("renders one native selector before the artwork and catalogue without changing source identity", async () => {

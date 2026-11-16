@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, BookOpen, Books, BookmarkSimple, House, List, Quotes, Tote, X } from "@phosphor-icons/react";
 import { useLocale } from "./LocaleProvider";
 import { SITE_NAME } from "@/lib/site";
+import { HeaderSearch } from "./HeaderSearch";
 
 export function Header() {
   const pathname = usePathname();
@@ -63,7 +64,7 @@ function Navigation({ pathname }: { pathname: string }) {
   return (
     <>
       <a className="skip-link" href="#main-content">{t("nav.skip")}</a>
-      <aside className="navigation-rail" data-expanded={expanded}>
+      <aside className="navigation-rail" data-expanded={expanded} aria-label={t("shell.name")}>
         <Link href="/" className="rail-brand" aria-label={`${SITE_NAME} · ${t("nav.home")}`} title={SITE_NAME} onNavigate={closeMobileMenu}>
           <span className="rail-icon"><BookOpen size={26} weight="regular" aria-hidden="true" /></span>
           <span className="rail-label">{SITE_NAME}</span>
@@ -91,6 +92,7 @@ function Navigation({ pathname }: { pathname: string }) {
             <Link href="/" className="header-wordmark" aria-label={`${SITE_NAME} · ${t("nav.home")}`} onNavigate={closeMobileMenu}>{SITE_NAME}</Link>
             <span className="header-room">{t("shell.name")}</span>
           </div>
+          <HeaderSearch catalog={pathname === "/" || pathname === "/books"} />
           <div className="header-actions">
             <span className="header-free">{t("shell.free")}</span>
             <div className="header-language" role="group" aria-label="Language / ভাষা">

@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./workspace.css";
+import "./reading-room.css";
+import "./bookshelf.css";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { LocaleProvider } from "@/components/LocaleProvider";
 
@@ -48,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: { siteName: SITE_NAME, type: "website" },
 };
 
-export const viewport: Viewport = { themeColor: "#f1f1e7" };
+export const viewport: Viewport = { themeColor: "#f5edda" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

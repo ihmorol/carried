@@ -17,8 +17,8 @@ export default function LinesPage() {
   return (
     <>
       <Header />
-      <main id="main-content" className="page-shell mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:py-14">
-        <header className="max-w-2xl">
+      <main id="main-content" className="collection-page" tabIndex={-1}>
+        <header className="collection-heading">
           <h1 className="page-title"><T k="lines.title" /></h1>
           <p className="mt-4 text-sm leading-relaxed text-[var(--color-ink-soft)] sm:text-base"><T k="lines.sub" /></p>
         </header>

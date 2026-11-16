@@ -11,9 +11,9 @@ describe("isolated design comparison", () => {
   it.each(["bookplate", "poster", "ticket"] as const)("keeps all supplied English and Bangla content in %s", (edition) => {
     const content = SAMPLES.bn.long;
     const { container } = render(<EditionCard edition={edition} content={content} ink="paper" />);
-    expect(screen.getByText(content.quote)).toBeTruthy();
-    expect(screen.getByText(content.name)).toBeTruthy();
-    expect(screen.getByText(content.book)).toBeTruthy();
+    expect(container.querySelector(".edition-quote .sr-only")?.textContent).toBe(content.quote);
+    expect(container.querySelector(".edition-reader-name .sr-only")?.textContent).toBe(content.name);
+    expect(container.querySelector(".edition-book-title .sr-only")?.textContent).toBe(content.book);
     expect(container.querySelector(`[data-edition="${edition}"]`)).toBeTruthy();
     expect(container.querySelectorAll("button,a,input")).toHaveLength(0);
   });

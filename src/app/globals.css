@@ -1,18 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #f1f1e7;
-  --color-paper-raised: #fffefa;
-  --color-surface-soft: #e7e8df;
-  --color-ink: #26292f;
-  --color-ink-soft: #60646c;
-  --color-ink-faint: #6b7077;
-  --color-rule: #dbddd4;
-  --color-stamp: #bf4654;
-  --color-stamp-soft: #f5d9dd;
-  --color-accent: #e66b77;
-  --color-night: #252a34;
-  --color-night-raised: #303744;
+  --color-paper: #f5edda;
+  --color-paper-raised: #fff9ee;
+  --color-surface-soft: #e8dfc9;
+  --color-ink: #173f3c;
+  --color-ink-soft: #4e6259;
+  --color-ink-faint: #58645a;
+  --color-rule: #d8cdb5;
+  --color-stamp: #b44125;
+  --color-stamp-soft: #f9dfc9;
+  --color-accent: #ff8755;
+  --color-accent-hover: #ff9a70;
+  --color-night: #173f3c;
+  --color-night-raised: #24504a;
+  --color-room: #173f3c;
+  --color-room-raised: #214b45;
+  --color-room-text: #fff1d2;
+  --color-room-muted: #ccdbc8;
+  --color-room-rule: #527166;
+  --color-library: #d0dcaf;
+  --color-library-deep: #aeba8c;
+  --color-shadow: #122c29;
   --radius-panel: 14px;
   --radius-control: 10px;
   --space-page: clamp(20px, 3vw, 40px);
@@ -35,9 +44,12 @@ html { scroll-behavior: smooth; }
   --dur-fast: 150ms;
   --dur: 240ms;
   --dur-slow: 700ms;
+  --ease-ambient: cubic-bezier(0.37, 0, 0.63, 1);
+  --shadow-object: 0 4px 8px color-mix(in srgb, var(--color-shadow) 12%, transparent), 10px 22px 30px color-mix(in srgb, var(--color-shadow) 18%, transparent);
+  --shadow-floating: 0 8px 30px color-mix(in srgb, var(--color-shadow) 14%, transparent);
 }
 body {
-  --rail-width: 76px;
+  --rail-width: 96px;
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
@@ -133,6 +145,12 @@ input, textarea { caret-color: var(--color-stamp); }
 .btn-press:active { transform: translateY(1px); }
 
 .book-tile { display: flex; flex-direction: column; min-width: 0; }
+/* The authored cover stands in until a resolved image decodes, then the
+   image crossfades over it — a cover never renders as a blank plate. */
+.front-cover-image { opacity: 0; transition: opacity var(--dur) var(--ease-out-soft); }
+.front-cover-image[data-loaded="true"] { opacity: 1; }
+/* The authored cover reads as a designed cloth plate: a fine inner frame. */
+.front-cover-fallback-frame { position: absolute; inset: 6.5% 7.5%; border: 1px solid color-mix(in srgb, currentColor 34%, transparent); pointer-events: none; }
 .book-tile-art {
   display: flex;
   justify-content: center;
@@ -183,7 +201,10 @@ input, textarea { caret-color: var(--color-stamp); }
   .card-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-block: 24px; }
 }
 .edition-transcript { border-top: 1px solid var(--color-rule); margin-top: 8px; color: var(--color-ink-soft); font-size: 13px; }
-.edition-transcript summary { display: list-item; min-height: 44px; padding-block: 12px; cursor: pointer; }
+.edition-transcript summary { display: flex; align-items: center; gap: 10px; min-height: 44px; padding-block: 12px; cursor: pointer; list-style: none; }
+.edition-transcript summary::-webkit-details-marker { display: none; }
+.edition-transcript summary::before { content: ""; flex: 0 0 9px; width: 9px; height: 9px; margin-block: -2px; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(-45deg); transition: transform var(--dur-fast) var(--ease-out-soft); }
+.edition-transcript[open] > summary::before { transform: rotate(45deg); }
 .edition-transcript summary:hover { color: var(--color-ink); }
 .edition-transcript blockquote { color: var(--color-ink); font-size: 16px; line-height: 1.6; margin-block: 8px 16px; overflow-wrap: anywhere; }
 .edition-transcript p { font-size: 14px; line-height: 1.6; margin-block: 12px; overflow-wrap: anywhere; }
@@ -373,58 +394,54 @@ input, textarea { caret-color: var(--color-stamp); }
   font-variant-numeric: tabular-nums;
 }
 
-/* Bookplate: centered inscription, stepped printer's frame, oval ownership. */
+/* Bookplate: open inscription. Brand, quote, provenance and signature share
+   one left edge; the original certificate frame and caption are gone. */
 .edition-bookplate {
   background: var(--edition-bg);
-  text-align: center;
+  text-align: start;
 }
 
-.edition-bookplate-frame {
+.edition-bookplate-heading,
+.edition-poster-heading,
+.edition-ticket-heading {
   position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  fill: none;
-  stroke: var(--edition-text);
-  pointer-events: none;
+  inset-block-start: var(--edition-header-top);
+  inset-inline: var(--edition-header-inset);
+  block-size: calc(var(--edition-wordmark-size) * var(--edition-wordmark-leading));
 }
 
-.edition-frame-rule {
-  stroke-width: 0.75;
-}
-
-.edition-bookplate-heading {
-  position: absolute;
-  inset-block-start: 8.3333cqw;
-  inset-inline: 10cqw;
-}
-
-.edition-bookplate-wordmark {
-  font-size: 4.444444cqw;
+.edition-bookplate-wordmark,
+.edition-poster-wordmark,
+.edition-ticket-wordmark {
+  font-size: var(--edition-wordmark-size);
   font-weight: 600;
-  line-height: 1.1;
+  line-height: var(--edition-wordmark-leading);
 }
 
-.edition-artwork .edition-bookplate-caption {
-  margin-block-start: 0.8333cqw;
-  color: var(--edition-soft);
-  font-size: 2.7778cqw;
-  line-height: 1.4;
+.edition-artwork :is(.edition-bookplate-heading, .edition-poster-heading, .edition-ticket-heading) .edition-accession {
+  position: absolute;
+  inset-block-start: var(--edition-accession-top);
+  inset-inline-end: 0;
+  font-size: var(--edition-accession-size);
+  line-height: 1.3;
+  text-align: end;
 }
 
-.edition-bookplate .edition-quote {
+.edition-bookplate-accession { color: var(--edition-soft); }
+
+.edition-artwork .edition-quote {
   position: absolute;
   inset-block-start: var(--edition-quote-top);
   inset-inline: var(--edition-quote-inset);
   block-size: var(--edition-quote-height);
-  justify-content: center;
 }
 
 .edition-bookplate .edition-book-credit,
 .edition-poster .edition-book-credit {
   position: absolute;
-  inset-block: var(--edition-credit-top) auto;
-  inset-inline: var(--edition-credit-inset);
+  inset-block-start: var(--edition-credit-top);
+  inset-inline-start: var(--edition-credit-inset);
+  inline-size: var(--edition-credit-width);
 }
 
 .edition-bookplate .edition-reading-label,
@@ -435,44 +452,35 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-bookplate-ownership {
   position: absolute;
   inset-block-start: var(--edition-ownership-top);
-  inset-inline: 0;
-  display: flex;
-  justify-content: center;
+  inset-inline: var(--edition-quote-inset);
 }
 
-/* The ownership mark is typography, not a box: label, name, one coral
-   signature rule, then the date. The accent appears exactly once. */
-.edition-bookplate-mark {
-  inline-size: 46.111111cqw;
+/* A clean ownership footer: full name, one left-anchored signature rule,
+   then date. The measured rows are shared with the PNG adapter. */
+.edition-bookplate-mark,
+.edition-poster-credit {
   display: grid;
   grid-template-rows: 3.972222cqw var(--edition-name-row) 0.416667cqw 3.888889cqw;
   gap: var(--edition-ownership-gap);
-  align-content: center;
-  justify-items: center;
+  align-content: start;
+  justify-items: start;
   align-items: center;
   block-size: var(--edition-ownership-height);
-  color: var(--edition-text);
+  text-align: start;
 }
 
+.edition-bookplate-mark { color: var(--edition-text); }
+.edition-artwork :is(.edition-bookplate-mark, .edition-poster-credit) .edition-reader-name { inline-size: var(--edition-name-width); }
 .edition-bookplate-mark .edition-reader-label,
-.edition-bookplate-mark .edition-date {
-  color: var(--edition-soft);
-}
+.edition-bookplate-mark .edition-date { color: var(--edition-soft); }
 
 .edition-signature-rule {
-  inline-size: 15.5556cqw;
-  block-size: 0.4167cqw;
+  inline-size: 23.333333cqw;
+  block-size: 0.416667cqw;
   background: var(--edition-coral);
 }
 
-.edition-bookplate-accession {
-  position: absolute;
-  inset-block-end: 3.8889cqw;
-  inset-inline: 0;
-  color: var(--edition-soft);
-}
-
-/* Poster: a full-bleed ink field and a single coral printing block. */
+/* Poster: a full-bleed ink field and a measured coral ownership band. */
 .edition-poster {
   color: var(--edition-poster-text);
   background: var(--edition-poster-bg);
@@ -481,60 +489,23 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-poster-field {
   position: absolute;
   inset: 0 0 auto;
-  block-size: 92.5cqw;
+  block-size: var(--edition-band-top);
 }
 
-.edition-poster-heading {
-  position: absolute;
-  inset-block-start: 6.1111cqw;
-  inset-inline: 7.7778cqw;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 3.3333cqw;
-}
-
-.edition-poster-wordmark {
-  font-size: 5cqw;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.edition-poster .edition-quote {
-  position: absolute;
-  inset-block-start: var(--edition-quote-top);
-  inset-inline: var(--edition-quote-inset);
-  block-size: var(--edition-quote-height);
-  font-weight: 600;
-}
-
-.edition-poster .edition-book-credit {
-  inset-block: var(--edition-credit-top) auto;
-  inset-inline: var(--edition-credit-inset);
-}
+.edition-poster .edition-quote { font-weight: 600; }
 
 .edition-poster-band {
   position: absolute;
   inset: var(--edition-band-top) 0 0;
-  overflow: hidden;
-  color: var(--edition-poster-bg);
   background: var(--edition-coral);
 }
 
-/* The coral band carries the ownership as a straight credit line, aligned
-   with the quote's left edge. Ink-pale text keeps 4.5:1 on every coral. */
 .edition-poster-credit {
   position: absolute;
-  inset: var(--edition-band-top) 0 0;
-  display: grid;
+  inset-block-start: var(--edition-ownership-top);
+  inset-inline: var(--edition-quote-inset);
   grid-template-rows: 3.972222cqw var(--edition-name-row) 3.888889cqw;
-  gap: var(--edition-ownership-gap);
-  align-content: center;
-  justify-items: start;
-  align-items: center;
-  padding-inline: 7.7778cqw;
   color: var(--edition-bg);
-  text-align: start;
 }
 
 /* Ticket: the stock itself is die-cut; its lower 26% is a contrasting stub. */
@@ -575,71 +546,44 @@ input, textarea { caret-color: var(--color-stamp); }
   block-size: 92.5cqw;
 }
 
-.edition-ticket-heading {
+.edition-ticket-heading::after {
   position: absolute;
-  inset-block-start: 6.1111cqw;
-  inset-inline: 8.3333cqw;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 3.3333cqw;
-  padding-block-end: 3.0556cqw;
-  border-block-end: 0.2778cqw solid var(--edition-rule);
-}
-
-.edition-ticket-wordmark {
-  font-size: 5cqw;
-  font-weight: 600;
-  line-height: 1.2;
+  inset-block-start: 7.333333cqw;
+  inset-inline: 0;
+  border-block-start: 0.277778cqw solid var(--edition-rule);
+  content: "";
 }
 
 .edition-ticket-title {
   position: absolute;
-  inset-block-start: 18.6111cqw;
-  inset-inline: 8.3333cqw;
+  inset-block-start: var(--edition-ticket-caption-top);
+  inset-inline-start: 8.333333cqw;
   color: var(--edition-coral);
-  font-size: 3.3333cqw;
+  font-size: 3.333333cqw;
   font-weight: 600;
   line-height: 1.4;
 }
 
-.edition-ticket .edition-quote {
-  position: absolute;
-  inset-block-start: var(--edition-quote-top);
-  inset-inline: var(--edition-quote-inset);
-  block-size: var(--edition-quote-height);
-  font-weight: 400;
-}
+.edition-ticket .edition-quote { font-weight: 400; }
 
 .edition-ticket-dateline {
   position: absolute;
-  inset-block-end: 5.5556cqw;
-  inset-inline: 8.3333cqw;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 3.3333cqw;
+  inset-block-start: var(--edition-ticket-dateline-top);
+  inset-inline: 8.333333cqw;
   color: var(--edition-soft);
-}
-
-.edition-ticket-language {
-  font-size: 2.7778cqw;
-  line-height: 1.35;
 }
 
 .edition-ticket-stub {
   position: absolute;
   inset: 92.5cqw 0 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 30cqw;
-  column-gap: 5.555556cqw;
-  align-items: center;
-  padding-inline: 7.5cqw 2.5cqw;
   color: var(--edition-bg);
 }
 
 .edition-ticket-stub .edition-book-credit {
-  position: relative;
+  position: absolute;
+  inset-block-start: var(--edition-credit-relative-top);
+  inset-inline-start: var(--edition-credit-inset);
+  inline-size: var(--edition-credit-width);
 }
 
 .edition-ticket-stub .edition-book-credit::after {
@@ -653,7 +597,9 @@ input, textarea { caret-color: var(--color-stamp); }
 
 .edition-ticket-cancellation {
   --edition-stamp-rotation: -5deg;
-  position: relative;
+  position: absolute;
+  inset-inline-start: 67.5cqw;
+  inset-block-start: 2.25cqw;
   display: grid;
   grid-template-rows: 3.430556cqw var(--edition-ticket-name-row);
   gap: 0.555556cqw;
@@ -686,53 +632,12 @@ input, textarea { caret-color: var(--color-stamp); }
   stroke-width: 1.4;
 }
 
-/* Dense compositions share their credit and seal bounds with the export. */
-.edition-artwork[data-density="dense"] .edition-bookplate-heading {
-  inset-block-start: 6.388889cqw;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 2.222222cqw;
-}
-
-.edition-artwork[data-density="dense"] .edition-bookplate-wordmark { font-size: 4.444444cqw; }
-.edition-artwork[data-density="dense"] .edition-bookplate-caption { margin-block-start: 0; font-size: 2.5cqw; }
-
-.edition-artwork[data-density="dense"].edition-bookplate .edition-book-credit,
-.edition-artwork[data-density="dense"].edition-poster .edition-book-credit {
-  inset-block: var(--edition-credit-top) auto;
-  inset-inline: var(--edition-credit-inset);
-}
-
-.edition-artwork[data-density="dense"] .edition-bookplate-accession {
-  inset-block: 24.444444cqw auto;
-  inset-inline: auto 6.111111cqw;
-  writing-mode: vertical-rl;
-  font-size: 2.5cqw;
-}
-
-.edition-artwork[data-density="dense"] .edition-poster-heading { inset-block-start: 3.333333cqw; }
-.edition-artwork[data-density="dense"] .edition-poster-field { block-size: var(--edition-band-top); }
-.edition-artwork[data-density="dense"] .edition-poster-credit { padding-inline: 3.3333cqw; }
-
-.edition-artwork[data-density="dense"] .edition-ticket-heading {
-  inset-block-start: 3.3333cqw;
-  inset-inline: 4.4444cqw;
-  padding-block-end: 1.1111cqw;
-}
-
-.edition-artwork[data-density="dense"] .edition-ticket-title {
-  inset-block: 87.5cqw auto;
-  inset-inline: 8.3333cqw auto;
-  font-size: 2.5cqw;
-}
-
-.edition-artwork[data-density="dense"] .edition-ticket-dateline {
-  inset-block: 87.5cqw auto;
-  inset-inline: 38.888889cqw 8.3333cqw;
-  justify-content: flex-end;
-}
-.edition-artwork[data-density="dense"] .edition-ticket-language { display: none; }
+/* Dense furniture moves out of the line's measured space. The ticket's
+   caption/date stay on separate sides below the quote; no internal header
+   rule is allowed to cross the first line. */
+.edition-artwork[data-density="dense"] .edition-ticket-heading::after { display: none; }
+.edition-artwork[data-density="dense"] .edition-ticket-title { font-size: 2.5cqw; }
+.edition-artwork[data-density="dense"] .edition-ticket-dateline { text-align: end; }
 
 /* Vote/actions row: page furniture, never ink colors. */
 .edition-actions {

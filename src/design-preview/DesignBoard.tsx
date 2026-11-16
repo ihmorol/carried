@@ -38,7 +38,7 @@ export function DesignBoard() {
       <main id="board-main">
         <section className="board-introduction" aria-labelledby="board-title">
           <div><h1 id="board-title">A line worth keeping.</h1><p>Three editions. Your words, your name, your stamp.</p></div>
-          <p className="board-review-note">A working design study. Your saved cards and the live site haven’t changed.</p>
+          <p className="board-review-note">The live card renderer. Preview changes stay on this page.</p>
         </section>
 
         <section className="board-comparison" aria-label="Compare the card editions">
@@ -67,7 +67,7 @@ export function DesignBoard() {
             <div className="board-room-line" id="room-line"><div className="board-room-line-heading"><h3>Your next keepsake.</h3><p>{selected.name}, signed by you.</p></div><div className="board-room-card"><EditionCard edition={edition} content={content} ink={ink} stampKey={stamp} /></div><fieldset className="board-room-designs"><legend>Choose an edition</legend>{EDITIONS.map((item) => <label key={item.id} className={edition === item.id ? "is-active" : ""}><input type="radio" name="room-edition" value={item.id} checked={edition === item.id} onChange={() => setEdition(item.id)} />{item.name}</label>)}</fieldset><button type="button" className="board-room-stamp" onClick={() => setStamp((value) => value + 1)}><Stamp size={18} aria-hidden="true" />Make your mark</button><p className="board-room-private">Preview only. Nothing is published or added to your shelf.</p></div>
           </div>
         </section>
-        <footer className="board-footer"><p>Choose a design for its composition, not just its color.</p><p>Saving, sharing, and the rest of the app will be connected after your visual review.</p></footer>
+        <footer className="board-footer"><p>Choose a design for its composition, not just its color.</p><p>These are the same compositions used for saved cards and downloads.</p></footer>
       </main>
     </div>
   );

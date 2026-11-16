@@ -37,6 +37,8 @@ export function cardPresentation(payload: LinePayload, resolvedBook?: Book) {
 export function editionText(content: NonNullable<ReturnType<typeof cardPresentation>>, id: string): EditionText {
   return {
     quote: content.quote, name: content.name, book: content.title, author: content.author,
+    // The year is part of the measured credit, never appended by a renderer.
+    byline: content.byline,
     date: content.date, accession: accessionNo(id), language: content.quoteScript,
     quoteScript: content.quoteScript, nameScript: content.nameScript,
     bookScript: content.titleScript, authorScript: content.authorScript, dateScript: content.dateScript,

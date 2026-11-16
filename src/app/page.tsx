@@ -1,93 +1,46 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowRight, Books, Quotes } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
-import { LineCard } from "@/components/LineCard";
-import { TiltCard } from "@/components/TiltCard";
-import { FrontCover } from "@/components/FrontCover";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
+import { ReadingRoom } from "@/components/ReadingRoom";
+import { FeaturedPairCarousel } from "@/components/FeaturedPairCarousel";
 import { T } from "@/components/T";
-import { marqueeLines, lineOfTheDay } from "@/lib/seeds";
-import { getBook, originalName, type Book } from "@/lib/books";
+import { marqueeLines, lineOfTheDay, seedLinesFor } from "@/lib/seeds";
+import { getBook } from "@/lib/books";
 import { resolveCovers } from "@/lib/book-covers";
-import { isBengali } from "@/lib/line";
+import type { FeaturedPair } from "@/lib/featured-pair";
 
 export const revalidate = 3600;
 
-/** The featured book's front cover, resolved on the server while the page renders. */
-async function FeaturedBookCover({ book }: { book: Book }) {
-  const covers = await resolveCovers([book.slug]);
-  return (
-    <FrontCover
-      slug={book.slug}
-      title={originalName(book)}
-      author={book.authorBn ?? book.author}
-      spine={book.spine}
-      src={covers[book.slug] ?? undefined}
-      featured
-    />
-  );
-}
-
-export default function Home() {
-  const featured = lineOfTheDay();
-  const featuredBook = getBook(featured.b)!;
-  const title = originalName(featuredBook);
-  const author = featuredBook.authorBn ?? featuredBook.author;
+export default async function Home() {
+  const daily = lineOfTheDay();
+  const slugs = [...new Set([daily.b, "the-little-prince", "shesher-kobita", "the-alchemist", "pather-panchali"])].slice(0, 5);
+  const covers = await resolveCovers(slugs);
+  const pairs = slugs.map((slug): FeaturedPair => ({ book: getBook(slug)!, line: slug === daily.b ? daily : seedLinesFor(slug)[0], cover: covers[slug] ?? undefined }));
 
   return (
     <>
       <Header />
-      <main id="main-content" className="reading-workspace" tabIndex={-1}>
+      <ReadingRoom>
         <nav className="workspace-jumps" aria-labelledby="workspace-jump-label">
           <span id="workspace-jump-label" className="sr-only"><T k="home.jump" /></span>
-          <a href="#shelf"><Books size={18} weight="regular" aria-hidden="true" /><T k="home.jumpShelf" /></a>
-          <a href="#reader-lines"><Quotes size={18} weight="regular" aria-hidden="true" /><T k="home.jumpLines" /></a>
-          <Link href={`/b/${featured.b}#write`}><T k="nav.write" /><ArrowRight size={18} weight="regular" aria-hidden="true" /></Link>
+          <a href="#shelf"><Books size={18} aria-hidden="true" /><T k="home.jumpShelf" /></a>
+          <a href="#reader-lines"><Quotes size={18} aria-hidden="true" /><T k="home.jumpLines" /></a>
+          <Link href={`/b/${daily.b}#write`}><T k="nav.write" /><ArrowRight size={18} aria-hidden="true" /></Link>
         </nav>
-        <div className="workspace-columns">
-          <section id="shelf" className="workspace-shelf" aria-labelledby="workspace-shelf-heading" tabIndex={-1}>
-            <ShelfExplorer variant="workspace" pageSize={8}>
-              <div className="workspace-welcome">
-                <h1><T k="home.welcome" /></h1>
-                <p><T k="home.sub" /></p>
-              </div>
-              <div className="workspace-book">
-                <div className="workspace-book-art">
-                  <Suspense fallback={<FrontCover slug={featuredBook.slug} title={title} author={author} spine={featuredBook.spine} featured />}>
-                    <FeaturedBookCover book={featuredBook} />
-                  </Suspense>
-                </div>
-                <div className="workspace-book-copy">
-                  <p className="workspace-eyebrow"><T k="home.featuredBook" /></p>
-                  <h2 lang={isBengali(title) ? "bn" : "en"}>{title}</h2>
-                  <p className="workspace-book-author" lang={isBengali(author) ? "bn" : "en"}>{author}</p>
-                </div>
-                <div className="workspace-book-actions">
-                  <Link href={`/b/${featured.b}#write`} className="ui-button"><T k="nav.write" /><ArrowRight size={18} weight="regular" aria-hidden="true" /></Link>
-                  <Link href={`/b/${featured.b}`} className="workspace-book-link"><T k="home.openBook" /></Link>
-                </div>
-              </div>
-              <div className="workspace-section-heading"><h2 id="workspace-shelf-heading"><T k="shelf.title" /></h2></div>
-            </ShelfExplorer>
-          </section>
-          <section id="reader-lines" className="workspace-lines" aria-labelledby="workspace-lines-heading" tabIndex={-1}>
-            <div className="workspace-daily-heading">
-              <span id="workspace-lines-heading" className="sr-only"><T k="nav.lines" /></span>
-              <h2><T k="home.daily" /></h2>
-              <p><T k="home.featured" /></p>
-            </div>
-            <div className="workspace-daily-card"><TiltCard><LineCard payload={featured} id={featured.id} actions={false} asLink /></TiltCard></div>
-            <div className="workspace-daily-book">
-              <Link href={`/b/${featured.b}`} lang={isBengali(title) ? "bn" : "en"}>{title}</Link>
-              <p lang={isBengali(author) ? "bn" : "en"}>{author}</p>
-            </div>
-            <Link href={`/b/${featured.b}#write`} className="ui-button workspace-write"><T k="nav.write" /><ArrowRight size={18} weight="regular" aria-hidden="true" /></Link>
-            <RecentFeed seeds={marqueeLines()} variant="list" />
-          </section>
-        </div>
-      </main>
+        <FeaturedPairCarousel pairs={pairs} />
+        <section id="shelf" className="home-shelf" aria-labelledby="workspace-shelf-heading" tabIndex={-1}>
+          <div className="home-section-heading">
+            <h2 id="workspace-shelf-heading"><T k="shelf.title" /></h2>
+            <Link href="/books"><T k="home.allBooks" /><ArrowRight size={18} aria-hidden="true" /></Link>
+          </div>
+          <ShelfExplorer variant="workspace" pageSize={32} searchPlacement="header" />
+        </section>
+        <section id="reader-lines" className="home-reader-lines" aria-label="Reader lines" tabIndex={-1}>
+          <RecentFeed seeds={marqueeLines()} variant="cards" />
+        </section>
+      </ReadingRoom>
       <Footer />
     </>
   );

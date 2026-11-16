@@ -9,6 +9,8 @@ export type PreviewLine = {
   author: string;
   date: string;
   accession: string;
+  year?: number;
+  isoDate?: string;
   language: PreviewLanguage;
 };
 export type EditionProps = {

@@ -53,7 +53,7 @@ export function LineCard({
     <div className="edition-book-credit">
       <p className="edition-reading-label">{shared.afterReading[text.language]}</p>
       <cite className="edition-book-title" lang={lang(text.bookScript)}><FittedText value={text.book} fit={layout.book} /></cite>
-      <p className="edition-book-author" lang={lang(text.authorScript)}><FittedText value={text.author} fit={layout.author} /></p>
+      <p className="edition-book-author" lang={lang(text.authorScript)}><FittedText value={text.byline} fit={layout.author} /></p>
     </div>
   );
   const readerName = (
@@ -70,25 +70,20 @@ export function LineCard({
     <>
       {edition === "bookplate-v1" && (
         <>
-          {/* One hairline plate rule: the whole frame is a single line now. */}
-          <svg className="edition-bookplate-frame" viewBox="0 0 360 450" aria-hidden="true" focusable="false">
-            <rect className="edition-frame-rule" x="13.5" y="13.5" width="333" height="423" />
-          </svg>
           <header className="edition-bookplate-heading">
             <p className="edition-bookplate-wordmark" lang="en">{SITE_NAME}</p>
-            <p className="edition-bookplate-caption">{copy}</p>
+            <p className="edition-accession edition-bookplate-accession" lang="en">{text.accession}</p>
           </header>
           {quote}
           {credit}
-          <div className="edition-bookplate-ownership">
+          <footer className="edition-bookplate-ownership">
             <div key={stampKey ?? 0} className="edition-stamp edition-bookplate-mark" data-stamped={stampKey ? "true" : undefined}>
               <span className="edition-reader-label" style={label}>{shared.carriedBy[text.language]}</span>
               {readerName}
               <span className="edition-signature-rule" aria-hidden="true" />
               {dateLine}
             </div>
-          </div>
-          <p className="edition-accession edition-bookplate-accession" lang="en">{text.accession}</p>
+          </footer>
         </>
       )}
       {edition === "poster-v1" && (
@@ -124,10 +119,7 @@ export function LineCard({
             </header>
             <p className="edition-ticket-title">{copy}</p>
             {quote}
-            <div className="edition-ticket-dateline">
-              {dateLine}
-              <span className="edition-ticket-language">{shared.languageName[text.language]}</span>
-            </div>
+            <div className="edition-ticket-dateline">{dateLine}</div>
           </div>
           <footer className="edition-ticket-stub">
             {credit}
@@ -169,7 +161,7 @@ export function LineCard({
         <details className="edition-transcript" lang={lang(text.quoteScript)}>
           <summary>{text.language === "bengali" ? "লাইন ও বইয়ের পরিচয় পড়ো" : "Read the line and its details"}</summary>
           <blockquote>{text.quote}</blockquote>
-          <p><cite lang={lang(text.bookScript)}>{text.book}</cite><br /><span lang={lang(text.authorScript)}>{text.author}</span></p>
+          <p><cite lang={lang(text.bookScript)}>{text.book}</cite><br /><span lang={lang(text.authorScript)}>{text.byline}</span></p>
           <p>{shared.carriedBy[text.language]} <strong lang={lang(text.nameScript)}>{text.name}</strong> · <span lang={lang(text.dateScript)}>{text.date}</span></p>
         </details>
       </>}
@@ -202,6 +194,12 @@ function editionStyle(ink: Ink, _edition: CardTemplateId, layout: EditionLayout)
     "--edition-coral": ink.stamp,
     "--edition-poster-bg": ink.id === "midnight" ? ink.bg : ink.text,
     "--edition-poster-text": ink.id === "midnight" ? ink.text : ink.bg,
+    "--edition-header-top": editionCqw(layout.header.top),
+    "--edition-header-inset": editionCqw(layout.header.inset),
+    "--edition-wordmark-size": editionCqw(layout.header.wordmarkSize),
+    "--edition-wordmark-leading": String(layout.header.wordmarkLeading),
+    "--edition-accession-top": editionCqw(layout.header.accessionTop - layout.header.top),
+    "--edition-accession-size": editionCqw(layout.header.accessionSize),
     "--edition-quote-size": editionCqw(layout.quote.fontSize),
     "--edition-quote-leading": String(layout.quoteLeading),
     "--edition-quote-top": editionCqw(layout.quoteTop),
@@ -212,13 +210,18 @@ function editionStyle(ink: Ink, _edition: CardTemplateId, layout: EditionLayout)
     "--edition-credit-width": editionCqw(layout.credit.width),
     "--edition-label-height": editionCqw(layout.credit.labelHeight),
     "--edition-credit-gap": editionCqw(layout.credit.gap),
-    "--edition-metadata-size": editionCqw(layout.dense ? 8 : 11),
+    "--edition-metadata-size": editionCqw(layout.credit.labelSize),
+    "--edition-credit-relative-top": editionCqw(layout.credit.top - 333),
+    "--edition-credit-height": editionCqw(layout.credit.height),
     "--edition-ownership-top": editionCqw(layout.ownership.top),
     "--edition-ownership-height": editionCqw(layout.ownership.height),
+    "--edition-name-width": editionCqw(layout.ownership.nameWidth),
     "--edition-name-row": editionCqw(layout.ownership.nameHeight),
     "--edition-ticket-name-row": editionCqw(layout.name.height),
     "--edition-ownership-gap": editionCqw(layout.ownership.gap),
     "--edition-band-top": editionCqw(layout.bandTop),
+    "--edition-ticket-caption-top": editionCqw(layout.ticket.captionTop),
+    "--edition-ticket-dateline-top": editionCqw(layout.ticket.datelineTop),
     "--edition-name-size": editionCqw(layout.name.fontSize),
     "--edition-name-leading": String(layout.nameLeading),
     "--edition-name-break": layout.nameBreaks ? "anywhere" : "auto",

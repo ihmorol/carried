@@ -81,27 +81,19 @@ function drawLabel(ctx: Ctx, value: string, x: number, y: number, options: Parti
 }
 
 function drawCredit(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, edition: "bookplate" | "poster" | "ticket"): void {
-  const center = edition === "bookplate";
-  const x = center ? PW / 2 : layout.credit.inset;
+  const x = layout.credit.inset;
   const color = edition === "ticket" ? ink.bg : edition === "poster" && ink.id !== "midnight" ? ink.bg : ink.text;
   const soft = edition === "bookplate" ? ink.soft : color;
-  const align = center ? "center" : "left";
+  const align = "left";
   const top = layout.credit.top;
   drawLabel(ctx, EDITION_SHARED_COPY.afterReading[text.language], x, top,
-    { color: soft, script: text.language, align, size: layout.dense ? 8 : 11 });
+    { color: soft, script: text.language, align, size: layout.credit.labelSize });
   const bookTop = top + layout.credit.labelHeight + layout.credit.gap;
   drawFit(ctx, layout.book, x, bookTop, { script: text.bookScript, weight: EDITION_WEIGHTS.book, color, align, role: "text" });
   drawFit(ctx, layout.author, x, bookTop + layout.book.height, { script: text.authorScript, weight: EDITION_WEIGHTS.author, color: soft, align });
 }
 
-/** Rows of the ownership stack in print space: label, name, then the
- * optional coral signature rule, then the date. Mirrors the DOM grid. */
-function ownershipBlockHeight(layout: EditionLayout, withRule: boolean): number {
-  const dateHeight = 14, ruleHeight = withRule ? 1.5 : 0;
-  const gaps = layout.ownership.gap * (withRule ? 3 : 2);
-  return 14.3 + layout.ownership.nameHeight + dateHeight + ruleHeight + gaps;
-}
-
+/** Label, full name, optional signature rule, and date share measured rows. */
 function drawOwnershipRows(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, x: number, rowsTop: number,
   align: "center" | "left", withRule: boolean, colors: { label: string; name: string; date: string }): void {
   drawLabel(ctx, EDITION_SHARED_COPY.carriedBy[text.language], x, rowsTop,
@@ -112,7 +104,7 @@ function drawOwnershipRows(ctx: Ctx, ink: Ink, text: EditionText, layout: Editio
   if (withRule) {
     ruleTop = rowsTop + 14.3 + layout.ownership.gap + layout.ownership.nameHeight + layout.ownership.gap;
     ctx.fillStyle = ink.stamp;
-    ctx.fillRect((x - 28) * S, ruleTop * S, 56 * S, 1.5 * S);
+    ctx.fillRect(x * S, ruleTop * S, 84 * S, 1.5 * S);
   }
   const dateTop = withRule
     ? ruleTop + 1.5 + layout.ownership.gap
@@ -121,33 +113,23 @@ function drawOwnershipRows(ctx: Ctx, ink: Ink, text: EditionText, layout: Editio
     { color: colors.date, script: text.dateScript, align, size: 10, leading: 1.4 });
 }
 
-function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, copy: string): void {
+function drawHeader(ctx: Ctx, text: EditionText, layout: EditionLayout, color: string, soft = color): void {
+  const h = layout.header;
+  drawLabel(ctx, SITE_NAME, h.inset, h.top,
+    { color, size: h.wordmarkSize, weight: EDITION_WEIGHTS.wordmark, leading: h.wordmarkLeading, role: "text" });
+  drawLabel(ctx, text.accession, PW - h.inset, h.accessionTop,
+    { color: soft, size: h.accessionSize, align: "right" });
+}
+
+function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout): void {
   ctx.fillStyle = ink.bg;
   ctx.fillRect(0, 0, PW * S, PH * S);
-  // The whole frame is one hairline plate rule.
-  ctx.strokeStyle = ink.text;
-  ctx.lineWidth = 0.75 * S;
-  ctx.strokeRect(13.5 * S, 13.5 * S, 333 * S, 423 * S);
-
-  const cx = PW / 2;
-  if (layout.dense) {
-    drawLabel(ctx, SITE_NAME, 36, 23, { color: ink.text, size: 16, weight: EDITION_WEIGHTS.wordmark, leading: 1.1, role: "text" });
-    drawLabel(ctx, copy, 324, 27, { color: ink.soft, script: text.language, size: 9, align: "right", leading: 1.4 });
-  } else {
-    drawLabel(ctx, SITE_NAME, cx, 30, { color: ink.text, align: "center", size: 16, weight: EDITION_WEIGHTS.wordmark, leading: 1.1, role: "text" });
-    drawLabel(ctx, copy, cx, 50.6, { color: ink.soft, script: text.language, align: "center", size: 10, leading: 1.4 });
-  }
-  drawFit(ctx, layout.quote, cx, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.quote, color: ink.text, align: "center", role: "text" });
+  drawHeader(ctx, text, layout, ink.text, ink.soft);
+  drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY,
+    { script: text.quoteScript, weight: EDITION_WEIGHTS.quote, color: ink.text, role: "text" });
   drawCredit(ctx, ink, text, layout, "bookplate");
-
-  const { top, height } = layout.ownership;
-  const rowsTop = top + (height - ownershipBlockHeight(layout, true)) / 2;
-  drawOwnershipRows(ctx, ink, text, layout, cx, rowsTop, "center", true,
+  drawOwnershipRows(ctx, ink, text, layout, layout.quoteInset, layout.ownership.top, "left", true,
     { label: ink.soft, name: ink.text, date: ink.soft });
-  if (layout.dense) {
-    ctx.save(); ctx.translate(338 * S, 88 * S); ctx.rotate(Math.PI / 2);
-    drawLabel(ctx, text.accession, 0, 0, { color: ink.soft, size: 9 }); ctx.restore();
-  } else drawLabel(ctx, text.accession, cx, 425, { color: ink.soft, align: "center", size: 10 });
 }
 
 function drawPoster(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout): void {
@@ -155,19 +137,15 @@ function drawPoster(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   const textColor = ink.id === "midnight" ? ink.text : ink.bg;
   ctx.fillStyle = fieldColor;
   ctx.fillRect(0, 0, PW * S, PH * S);
-  drawLabel(ctx, SITE_NAME, 28, layout.dense ? 12 : 22, { color: textColor, size: 18, weight: EDITION_WEIGHTS.wordmark, leading: 1.2, role: "text" });
-  drawLabel(ctx, text.accession, PW - 28, layout.dense ? 16 : 26, { color: textColor, size: 10, align: "right" });
+  drawHeader(ctx, text, layout, textColor);
   drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.posterQuote, color: textColor, role: "text" });
   drawCredit(ctx, ink, text, layout, "poster");
 
   ctx.fillStyle = ink.stamp;
   ctx.fillRect(0, layout.bandTop * S, PW * S, (PH - layout.bandTop) * S);
 
-  // The ownership is a straight credit line on the band, left-aligned with
-  // the quote. Ink-pale text keeps 4.5:1 on every coral.
-  const bandHeight = PH - layout.bandTop;
-  const rowsTop = layout.bandTop + (bandHeight - ownershipBlockHeight(layout, false)) / 2;
-  drawOwnershipRows(ctx, ink, text, layout, layout.dense ? 12 : 28, rowsTop, "left", false,
+  // Same measured footer as the DOM; the band never covers its credit.
+  drawOwnershipRows(ctx, ink, text, layout, layout.quoteInset, layout.ownership.top, "left", false,
     { label: ink.bg, name: ink.bg, date: ink.bg });
 }
 
@@ -197,19 +175,16 @@ function drawTicket(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   ctx.strokeStyle = ink.rule; ctx.lineWidth = 0.7 * S;
   tracePath(ctx, "M18 7H342M353 18V312M7 18V312M18 443H342", S); ctx.stroke();
 
-  const headingTop = layout.dense ? 12 : 22;
-  const headingInset = layout.dense ? 16 : 30;
-  drawLabel(ctx, SITE_NAME, headingInset, headingTop, { color: ink.text, size: 18, weight: EDITION_WEIGHTS.wordmark, leading: 1.2, role: "text" });
-  drawLabel(ctx, text.accession, PW - headingInset, headingTop + 4, { color: ink.text, size: 10, align: "right" });
-  ctx.lineWidth = S;
-  tracePath(ctx, `M${headingInset} ${headingTop + (layout.dense ? 26 : 33)}H${PW - headingInset}`, S); ctx.stroke();
-  drawLabel(ctx, copy, 30, layout.dense ? 315 : 67, { color: ink.stamp, script: text.language, size: layout.dense ? 9 : 12, weight: EDITION_WEIGHTS.book, leading: 1.4 });
+  drawHeader(ctx, text, layout, ink.text);
+  if (!layout.dense) {
+    ctx.lineWidth = S;
+    tracePath(ctx, `M${layout.header.inset} ${layout.header.top + 26.4}H${PW - layout.header.inset}`, S); ctx.stroke();
+  }
+  drawLabel(ctx, copy, 30, layout.ticket.captionTop,
+    { color: ink.stamp, script: text.language, size: layout.dense ? 9 : 12, weight: EDITION_WEIGHTS.book, leading: 1.4 });
   drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY, { script: text.quoteScript, weight: EDITION_WEIGHTS.ticketQuote, color: ink.text, role: "text" });
-  const datelineTop = layout.dense ? 315 : 299;
-  drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, layout.dense ? PW - 30 : 30, datelineTop,
+  drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, layout.dense ? PW - 30 : 30, layout.ticket.datelineTop,
     { color: ink.soft, script: text.dateScript, size: 10, leading: 1.4, align: layout.dense ? "right" : "left" });
-  if (!layout.dense) drawLabel(ctx, EDITION_SHARED_COPY.languageName[text.language], PW - 30, datelineTop,
-    { color: ink.soft, script: text.language, align: "right", size: 10 });
   drawCredit(ctx, ink, text, layout, "ticket");
 
   ctx.save(); ctx.globalAlpha = 0.4; ctx.strokeStyle = ink.bg; ctx.lineWidth = S; ctx.setLineDash([2 * S, 2 * S]);
@@ -242,7 +217,7 @@ export async function exportLineCard(payload: LinePayload, id: string, book?: Bo
   const text = editionText(content, id);
   const layout = layoutEditionArtwork(text, content.edition);
   const copy = EDITION_COPY[content.edition][content.quoteScript];
-  if (content.edition === "bookplate-v1") drawBookplate(ctx, ink, text, layout, copy);
+  if (content.edition === "bookplate-v1") drawBookplate(ctx, ink, text, layout);
   else if (content.edition === "poster-v1") drawPoster(ctx, ink, text, layout);
   else drawTicket(ctx, ink, text, layout, copy);
   return new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Export failed")), "image/png"));

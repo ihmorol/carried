@@ -15,14 +15,14 @@ export default function BooksPage() {
   return (
     <>
       <Header />
-      <main id="main-content" className="page-shell mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:py-14">
-        <header className="max-w-2xl">
+      <main id="main-content" className="catalog-page" tabIndex={-1}>
+        <header className="catalog-heading">
           <h1 className="page-title"><T k="books.title" /></h1>
           <p className="mt-4 text-sm leading-relaxed text-[var(--color-ink-soft)] sm:text-base"><T k="books.sub" /></p>
         </header>
-        <div className="mt-10">
-          <ShelfExplorer />
-        </div>
+        <section id="shelf" className="catalog-shelf" aria-label="Books" tabIndex={-1}>
+          <ShelfExplorer searchPlacement="header" />
+        </section>
       </main>
       <Footer />
     </>
