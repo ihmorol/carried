@@ -418,6 +418,16 @@ input, textarea { caret-color: var(--color-stamp); }
   line-height: var(--edition-wordmark-leading);
 }
 
+/* The open Bookplate shares the Ticket's header furniture: one hairline
+   under the wordmark/accession row, positioned by the measured ruleTop. */
+.edition-bookplate-heading::after {
+  position: absolute;
+  inset-block-start: var(--edition-header-rule-top);
+  inset-inline: 0;
+  border-block-start: 0.277778cqw solid var(--edition-rule);
+  content: "";
+}
+
 .edition-artwork :is(.edition-bookplate-heading, .edition-poster-heading, .edition-ticket-heading) .edition-accession {
   position: absolute;
   inset-block-start: var(--edition-accession-top);
@@ -635,7 +645,7 @@ input, textarea { caret-color: var(--color-stamp); }
 /* Dense furniture moves out of the line's measured space. The ticket's
    caption/date stay on separate sides below the quote; no internal header
    rule is allowed to cross the first line. */
-.edition-artwork[data-density="dense"] .edition-ticket-heading::after { display: none; }
+.edition-artwork[data-density="dense"] :is(.edition-ticket-heading, .edition-bookplate-heading)::after { display: none; }
 .edition-artwork[data-density="dense"] .edition-ticket-title { font-size: 2.5cqw; }
 .edition-artwork[data-density="dense"] .edition-ticket-dateline { text-align: end; }
 

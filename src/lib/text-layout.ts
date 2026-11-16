@@ -148,7 +148,10 @@ export type EditionLayout = {
   quoteLeading: number; nameLeading: number; bookLeading: number; authorLeading: number;
   /** All positions are print pixels, including actual painted line boxes. */
   quoteTop: number; quoteInset: number; quoteHeight: number; quoteY: number;
-  header: { top: number; inset: number; wordmarkSize: number; wordmarkLeading: number; accessionTop: number; accessionSize: number };
+  header: { top: number; inset: number; wordmarkSize: number; wordmarkLeading: number; accessionTop: number; accessionSize: number;
+    /** Hairline under the wordmark/accession row: the open Bookplate shares
+     * the Ticket's header furniture; dense mode and other editions opt out. */
+    ruleTop: number; rule: boolean };
   credit: { top: number; inset: number; width: number; labelHeight: number; labelSize: number; gap: number; height: number };
   ownership: { top: number; height: number; nameHeight: number; nameWidth: number; gap: number };
   bandTop: number;
@@ -258,7 +261,8 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
       quoteLeading, nameLeading, bookLeading, authorLeading,
       quoteTop, quoteInset, quoteHeight, quoteY,
       header: { top: headerTop, inset: quoteInset, wordmarkSize, wordmarkLeading,
-        accessionTop: headerTop + wordmarkSize * wordmarkLeading - 10 * 1.3, accessionSize: 10 },
+        accessionTop: headerTop + wordmarkSize * wordmarkLeading - 10 * 1.3, accessionSize: 10,
+        ruleTop: headerTop + wordmarkSize * wordmarkLeading + 8, rule: !dense && edition === "bookplate-v1" },
       credit: { top: creditTop, inset: ticket ? 27 : quoteInset, width: ticket ? 196 : width,
         labelSize, labelHeight, gap, height: creditHeight },
       ownership: { top: ownershipTop, height: ownershipHeight, nameHeight, nameWidth: nameRegion.width, gap: ownershipGap },

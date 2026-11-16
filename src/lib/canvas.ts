@@ -125,6 +125,14 @@ function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLay
   ctx.fillStyle = ink.bg;
   ctx.fillRect(0, 0, PW * S, PH * S);
   drawHeader(ctx, text, layout, ink.text, ink.soft);
+  if (layout.header.rule) {
+    ctx.strokeStyle = ink.rule;
+    ctx.lineWidth = S;
+    ctx.beginPath();
+    ctx.moveTo(layout.header.inset * S, layout.header.ruleTop * S);
+    ctx.lineTo((PW - layout.header.inset) * S, layout.header.ruleTop * S);
+    ctx.stroke();
+  }
   drawFit(ctx, layout.quote, layout.quoteInset, layout.quoteY,
     { script: text.quoteScript, weight: EDITION_WEIGHTS.quote, color: ink.text, role: "text" });
   drawCredit(ctx, ink, text, layout, "bookplate");

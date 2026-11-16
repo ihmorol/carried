@@ -65,10 +65,15 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
     const field = poster && ink.id !== "midnight" ? ink.text : ink.bg;
     const foreground = poster && ink.id !== "midnight" ? ink.bg : ink.text;
     const soft = poster ? foreground : ink.soft;
+    // The Bookplate carries the landscape header's hairline too: under the
+    // wordmark box (top 40 + 30 × 1.2) with the shared 8px gap, at the same
+    // 64px inset as the portrait rule's print-space furniture.
+    const headerRuleTop = 40 + 30 * 1.2 + 8;
     return new ImageResponse(
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", backgroundColor: field, color: foreground }}>
         <div style={{ position: "absolute", left: 64, top: 40, display: "flex", ...voice("latin", "text", EDITION_WEIGHTS.wordmark), fontSize: 30, lineHeight: 1.2 }}>{SITE_NAME}</div>
         {span(text.accession, { right: 64, top: 52, fontSize: 16, color: soft })}
+        {!poster && <div style={{ position: "absolute", left: 64, width: W - 128, top: headerRuleTop, borderTop: `1px solid ${ink.rule}` }} />}
         {block(layout.quote, r.quote, voice(text.quoteScript, "text", poster ? EDITION_WEIGHTS.posterQuote : EDITION_WEIGHTS.quote))}
         {credit(foreground, soft)}
         {poster && <div style={{ position: "absolute", left: 0, right: 0, top: layout.bandTop, bottom: 0, backgroundColor: ink.stamp, display: "flex" }} />}

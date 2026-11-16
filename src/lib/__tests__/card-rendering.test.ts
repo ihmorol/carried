@@ -203,6 +203,7 @@ describe("three edition DOM compositions", () => {
     expect(html).toContain("edition-bookplate-mark");
     expect(html).toContain("edition-signature-rule");
     expect(html).toMatch(/<header class="edition-bookplate-heading">[\s\S]*edition-bookplate-accession[\s\S]*<\/header>/);
+    expect(html).toContain("--edition-header-rule-top");
     expect(html).toContain("Carried");
   });
   it("ports the poster's reversed field and coral band credit line", async () => {
@@ -390,6 +391,17 @@ describe("per-edition artwork fitting", () => {
     expect(poster.quote.fontSize).toBe(34);
     expect(editionLeading(text.language, "poster-v1", "quote")).toBe(1.12);
   });
+  it("gives the open Bookplate the shared hairline header rule, reserved in dense mode", () => {
+    const text = editionText(base, "header-rule", nativeBook);
+    const bookplate = layoutEditionArtwork(text, "bookplate-v1");
+    expect(bookplate.header.rule).toBe(true);
+    expect(bookplate.header.ruleTop).toBe(bookplate.header.top + bookplate.header.wordmarkSize * bookplate.header.wordmarkLeading + 8);
+    for (const edition of ["poster-v1", "ticket-v1"] as const) {
+      expect(layoutEditionArtwork(text, edition).header.rule).toBe(false);
+    }
+    const dense = layoutEditionArtwork(editionText(atLimit("bookplate-v1"), "dense-rule", limitBook(false)), "bookplate-v1");
+    if (dense.dense) expect(dense.header.rule).toBe(false);
+  });
   it("reserves real label height and a clear gap before the book credit", () => {
     for (const edition of ["bookplate-v1", "poster-v1"] as const) {
       const text = editionText({ ...base, q: "A longer reflection. ".repeat(10) }, "credit-gap", nativeBook);
@@ -497,14 +509,17 @@ describe("per-edition OG images", () => {
       if (edition === "bookplate-v1") {
         // An open field: the coral signature rule is the only mark.
         expect(html).toContain("border-top:3px solid");
+        // The header hairline is present at the landscape wordmark box.
+        expect(html).toContain("border-top:1px solid");
         expect(html).not.toContain("<rect");
         expect(html).not.toContain("text-align:center");
         expect(html).not.toContain("border-radius:50%");
       }
       if (edition === "poster-v1") {
-        // Straight credit line on the band; no rotated box remains.
+        // Straight credit line on the band; no rotated box or header rule.
         expect(html).not.toContain("rotate(-6deg)");
         expect(html).toContain(`background-color:${INKS.paper.stamp}`);
+        expect(html).not.toContain("border-top:1px solid");
       }
       if (edition === "ticket-v1") {
         expect(html).toContain("stroke-dasharray");

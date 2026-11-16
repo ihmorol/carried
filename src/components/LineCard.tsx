@@ -200,6 +200,7 @@ function editionStyle(ink: Ink, _edition: CardTemplateId, layout: EditionLayout)
     "--edition-wordmark-leading": String(layout.header.wordmarkLeading),
     "--edition-accession-top": editionCqw(layout.header.accessionTop - layout.header.top),
     "--edition-accession-size": editionCqw(layout.header.accessionSize),
+    "--edition-header-rule-top": editionCqw(layout.header.ruleTop - layout.header.top),
     "--edition-quote-size": editionCqw(layout.quote.fontSize),
     "--edition-quote-leading": String(layout.quoteLeading),
     "--edition-quote-top": editionCqw(layout.quoteTop),
