@@ -1,57 +1,43 @@
-# Carried, Brand Guidelines
+# Carried brand guidelines
 
-The identity in one sentence: **a library catalog card you get to author.**
-Every decision below serves that. If a change makes the product feel like a
-generic web app, it's off-brand.
+The identity in one sentence: **the line a book left in you, made yours.**
 
 ## Voice
 
-- **Understated, literary, warm.** We sound like a well-read friend, not a growth hacker.
-- Say the true small thing: "the sentence you'd underline," "the residue," "stamp it with your name."
-- Never say: boost, unlock, supercharge, level up, 🚀, "unleash your creativity."
-- Second person, plain verbs, short sentences. Wordplay allowed; exclamation marks rare.
-- No fake urgency, no fake stats. If a count is shown it is real.
+Warm, direct, literary without ornament. Use plain action labels and short sentences. No fake urgency, fake statistics, promises of virality, or sales claims for unlaunched products. Digital creation, all three inks and editions, downloading, and sharing remain free.
 
 ## Palette
 
-| Token | Hex | Use |
-|---|---|---|
-| `paper` | `#f2ecdd` | page background |
-| `paper-raised` | `#faf6ea` | cards, inputs |
-| `ink` | `#211d17` | primary text, primary buttons |
-| `ink-soft` | `#6d6354` | secondary text |
-| `ink-faint` | `#9c917f` | metadata, placeholders |
-| `rule` | `#d8cdb6` | hairlines, double-rule card borders |
-| `stamp` | `#b23c25` | **the only accent**, stamps, key CTAs, focus rings |
+Keep the approved reading-room palette: butter paper (`#f5edda`), raised paper (`#fff9ee`), petrol (`#173f3c`), persimmon (`#ff8755`), and pistachio (`#d0dcaf`). Supporting token values are unchanged and recorded once in `DESIGN.md`. Petrol belongs to the rail and the featured line field, not a permanent half-page sector; pistachio supports the feature stage and shelf edges, not a cutout bookcase. The selected book's cloth changes the featured color field, not the interface's action colors.
 
-Rules: stamp red is scarce, if everything is stamped, nothing is. Buttons are
-ink-on-paper; red is reserved for the ownership moment and small emphasis.
-Card inks (Paper / Midnight `#1c1814` / Moss `#2c3a30`) invert the scheme and
-must come from `lib/inks.ts`, never re-derived.
+These are **page tokens**, separate from immutable card inks. `paper`, `midnight`, and `moss` retain all artwork values in `src/lib/inks.ts`, including backgrounds `#fffefa`, `#252a34`, and `#e7eee6`, their text/rules, and coral ownership marks. Moss stays pale sage. Deep `stamp` is the readable light-surface accent; bright `accent` handles dark-surface actions/focus. No fourth ink, gradients, glass, or grain. Colorful cloth is book content, not permission for rainbow controls.
 
-## Type
+## Type and history
 
-- **Fraunces** (500/600 + italic), headlines, the line itself, book titles, the name in the stamp. Serif is the voice of the book.
-- **IBM Plex Mono** (400–600), everything else: UI, metadata, buttons, labels. Letter-spaced uppercase for ledger labels (`CARRIED OUT OF`, `No. 4F2A1C`).
-- No third family. Body text is mono at 12–14px with generous leading, the site is text-light by design.
+Three locally hosted OFL faces at 400/500/600: **Noto Serif Bengali** for bilingual display, quotes, book titles, and wordmarks; **Manrope/Anek Bangla** for the Latin/Bengali interface, labels, metadata, and reader names. Keep prose and metadata tracking normal, Bengali script-safe leading and normal tracking, and serif display tracking no tighter than -0.01em. No forced italics, all-caps ledger labels, tiny monospace prose, or excessive spacing.
 
-## Signature elements
+The former Fraunces/Plex letterpress system is superseded. November 2026 added Noto Serif Bengali as the display voice, superseding the earlier keep-only-the-pair display rule while retaining the interface pair. Research, comparisons, and full font licensing history remain in `docs/design/modern-bangla-typography.md`; active font assets and roles are documented in `DESIGN.md`.
 
-1. **The stamp**, "CARRIED BY ⟨name⟩ ⟨date⟩", slightly crooked (-6.5°), ink-textured, always vermilion. It's the ownership moment; it never appears without a name.
-2. **The double rule**, every card gets an inner border like a filed catalog card.
-3. **The accession number**, `No. XXXXXX`, minted from the line, on every card.
-4. **The spine**, books are drawn as book-cloth spines with a head/foot band and edge lighting; never use downloaded cover images.
+## Discovery and interaction
 
-## Motion
+The approved sequence is **compact header → paired book/line carousel → dense full-width spine shelf → reader lines**. The sparse eight-cover grid, giant welcome, cutout bookcase, and whole-page 56/44 split are rejected history. Use a small 20–28px home headline. Header search sits beside the brand, wraps below it on mobile, and shares URL query/filter state with the shelf through `carried:search`; do not add a duplicate hero search.
 
-Quiet, mechanical, satisfying: the stamp thumps in (scale 1.7 → overshoot → rest, 550ms), sections rise 14px on load, the marquee drifts slowly and pauses on hover. `prefers-reduced-motion` disables all of it. Nothing bounces for fun.
+Retain the detached petrol rail: 72px inside a 96px gutter, 208px inside 232px when expanded, offset 12px left and 16px top/bottom at desktop widths. Preserve outline icons, persimmon active circles, accessible collapsed labels, bottom expansion, mobile keyboard navigation, and one document scroll.
 
-Depth works the same way. Cards toss with a small hand-laid lean and straighten when a reader reaches for them, the hero pile drifts a few pixels with the pointer and settles when it lets go, books stand slightly off square and pull off the shelf on approach. The slow idle drift belongs to the hero's background ghosts only, under fine pointers; the card being read never bounces on its own. Touch devices and `prefers-reduced-motion` get the still poses.
+One active carousel pair keeps the book, line, signature, and links together. The book is a real closed 3D volume with front-cover, back, spine, and page planes; its front uses the bounded identity-checked cover resolver with a labeled cloth fallback. Decorative planes are hidden from assistive technology, never extra inventory. Home initially shows 20 shelf books; `/books` shows 24 and **no carousel**. Dense spines use 148px-minimum tracks, 16px column gaps, and 260–316px height. Titles wrap vertically at 14/16/18px; author/year remain readable horizontal text below.
 
-## Do / Don't
+On screens 639px and below, show the full quote and name on a solid petrol right-hand field rather than a miniature full card. Book metadata uses petrol ink on the actual cloth/paper mix. Clicking the featured book or line opens a lazy right-side Base UI modal with canonical card, Save/share actions, and real line/writing routes. Keep normal route links available without the drawer, plus modal title, close/Escape, focus containment, and return focus.
 
-- **Do** keep the wordmark small; the reader's name is the loudest thing on the card.
-- **Do** let paper grain (`/grain` overlay) sit over everything at low opacity.
-- **Don't** add gradients, glassmorphism, drop-shadowed floating blobs, or emoji in UI copy.
-- **Don't** introduce a fourth ink or a second accent color.
-- **Don't** require an account for anything. The device remembers the name; the link carries the line.
+Idle rotation waits 9 seconds and stops for hover, focus/manual interaction, pause, reduced motion, hidden/offscreen state, or an open drawer. Use one visible pause/resume control; readable text and the dense shelf never drift continuously. Reduced motion removes automatic rotation, decorative loops, and slide travel; the current manual slide change keeps a short fade. Motion 14.12.0 and Base UI 1.9.0 are MIT-licensed UI dependencies. No animation-gated content, tracking, or stored motion preference. See `docs/design/motion-reading-room.md` for the revision history.
+
+## Collectible cards
+
+The quote, book title, **measured author/publication-year byline**, reader name/date, and identity-derived accession stay complete. Bookplate is now an open left-aligned header/quote/credit/footer with a coral signature rule, not a centered certificate or outer frame. Poster keeps its ink field and coral ownership band; Reader's ticket keeps its die-cut stub, perforation, and single-ring cancellation with simpler furniture. Do not accumulate those edition-specific marks across designs.
+
+Preserve `bookplate-v1`, `poster-v1`, `ticket-v1`, all ink values, and payload/URL identity. DOM, PNG, OG, and merchandise previews share content/type decisions and measured geometry; landscape OG is an explicit adaptation. Fit full valid content by reserving measured credit/ownership space before the quote, with dense fallbacks and clearance rather than clipping. Keep the canonical portrait 4:5, never stretched to fill a page panel. Utilities and readable companion provenance stay outside the artwork; Save is primary.
+
+Depth belongs to physical book planes, contact shadows, and the floating rail, not raised boxes around every group. Interface controls/panels/rail retain 10/14/22px radii and 44px action targets; physical book corners and card editions follow their own geometry.
+
+## Boundaries
+
+No accounts, tracking, new locale cookies, or private server-side customer data. Optional public sharing is distinct from the device-local personal shelf, language, and merchandise concept cart. Cover access does not establish commercial reproduction rights; cover art remains display-only and publisher covers never appear on merchandise. Physical ordering stays disabled until business, fulfillment, payment, rights, and policy details are supplied and approved. Do not treat source inspection or passing code checks as visual approval.

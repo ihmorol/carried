@@ -39,7 +39,7 @@ export const SPINE_COLORS: Record<SpineColor, { bg: string; text: string; deep: 
   forest:     { bg: "#2f4a38", text: "#f2ecdd", deep: "#23392b" },
   navy:       { bg: "#24344d", text: "#f2ecdd", deep: "#1a2739" },
   mustard:    { bg: "#c79a3b", text: "#211d17", deep: "#a87e2c" },
-  terracotta: { bg: "#b4593b", text: "#f2ecdd", deep: "#96452c" },
+  terracotta: { bg: "#a34b34", text: "#fffefa", deep: "#853a28" },
   cream:      { bg: "#e7dcc2", text: "#211d17", deep: "#cfc2a4" },
   slate:      { bg: "#55606e", text: "#f2ecdd", deep: "#434d59" },
   plum:       { bg: "#5a3a50", text: "#f2ecdd", deep: "#462c3e" },
@@ -240,6 +240,37 @@ export function getBook(slug: string): Book | undefined {
   return BOOKS_BY_SLUG.get(slug);
 }
 
+/** Deterministic spine color from the slug, so reader-added books get cloth too. */
+export function spineForSlug(slug: string): SpineColor {
+  const keys = Object.keys(SPINE_COLORS) as SpineColor[];
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 33 + slug.charCodeAt(i)) >>> 0;
+  return keys[h % keys.length];
+}
+
+/** The book-bearing slice of a line payload. */
+export type BookRef = { b: string; bt?: string; ba?: string; by?: number };
+
+/**
+ * Resolve the book behind a line: the curated shelf answers first, then
+ * the metadata carried inside the payload itself (reader-added books
+ * travel in their URLs, so cards render with zero server state), then
+ * nothing and the caller decides.
+ */
+export function bookForPayload(p: BookRef): Book | undefined {
+  const known = getBook(p.b);
+  if (known) return known;
+  if (!p.bt) return undefined;
+  return {
+    slug: p.b,
+    title: p.bt,
+    author: p.ba ?? "",
+    year: p.by ?? new Date().getFullYear(),
+    tags: ["reader-added"],
+    spine: spineForSlug(p.b),
+  };
+}
+
 export function bookTagline(b: Book): string {
   return `${b.author}, ${b.year < 0 ? `${Math.abs(b.year)} BC` : b.year}`;
 }
@@ -258,21 +289,19 @@ export function normalize(s: string): string {
 }
 
 /** Client-side instant search over title, original title, author and tags. */
-export function searchBooks(query: string, limit = 40): Book[] {
+export function searchBooks(query: string, limit = 40, books: readonly Book[] = BOOKS): Book[] {
   const q = normalize(query.trim());
   if (!q) return [];
   const scored: Array<{ b: Book; s: number }> = [];
-  for (const b of BOOKS) {
-    const t = normalize(b.title);
-    const tb = normalize(b.titleBn ?? "");
-    const a = normalize(b.author);
+  for (const b of books) {
+    const titles = [b.title, b.titleBn ?? "", b.slug.replace(/-/g, " ")].map(normalize);
+    const authors = [b.author, b.authorBn ?? ""].map(normalize);
     let s = 0;
-    if (t.startsWith(q) || (tb && tb.startsWith(q))) s = 3;
-    else if (t.includes(q) || (tb && tb.includes(q))) s = 2;
-    else if (a.startsWith(q)) s = 2;
-    else if (a.includes(q)) s = 1.5;
-    else if (b.tags.some((tag) => tag.startsWith(q) || normalize(tag).includes(q))) s = 1;
-    else if (q.length > 2 && (t.includes(q) || a.includes(q))) s = 0.5;
+    if (titles.some((title) => title.startsWith(q))) s = 3;
+    else if (titles.some((title) => title.includes(q))) s = 2;
+    else if (authors.some((author) => author.startsWith(q))) s = 2;
+    else if (authors.some((author) => author.includes(q))) s = 1.5;
+    else if (b.tags.some((tag) => normalize(tag).includes(q))) s = 1;
     if (s > 0) scored.push({ b, s });
   }
   scored.sort((x, y) => y.s - x.s || x.b.title.localeCompare(y.b.title));

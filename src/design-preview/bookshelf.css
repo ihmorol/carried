@@ -1,0 +1,883 @@
+/* Isolated bookshop study. Cover colors belong to the artwork, not the UI. */
+.bookshelf-preview {
+  --bookshelf-ink: var(--color-ink, #26292f);
+  --bookshelf-muted: var(--color-ink-soft, #60646c);
+  --bookshelf-paper: var(--color-paper, #f0f0e6);
+  --bookshelf-raised: var(--color-paper-raised, #fffefa);
+  --bookshelf-rule: var(--color-rule, #dbddd4);
+  --bookshelf-accent: #b3404e;
+  --bookshelf-gap: 24px;
+  container: bookshelf / inline-size;
+  min-inline-size: 0;
+  color: var(--bookshelf-ink);
+  font-family: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+
+.bookshelf-preview,
+.bookshelf-preview *,
+.bookshelf-preview *::before,
+.bookshelf-preview *::after,
+.cover-preview,
+.cover-preview *,
+.cover-preview *::before,
+.cover-preview *::after {
+  box-sizing: border-box;
+}
+
+.bookshelf-preview button {
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.bookshelf-preview button:focus-visible {
+  outline: 2px solid var(--bookshelf-accent);
+  outline-offset: 5px;
+}
+
+.bookshelf-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(22px, 5cqi, 40px);
+  inline-size: 100%;
+  margin: 0 0 24px;
+  padding: 10px 0 20px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+}
+
+.bookshelf-feature-cover {
+  display: flex;
+  justify-content: center;
+  min-inline-size: 0;
+  padding-inline: 4px 8px;
+}
+
+.bookshelf-feature-cover .cover-preview {
+  inline-size: clamp(152px, 32cqi, 176px);
+}
+
+.bookshelf-feature-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-inline-size: 0;
+  padding-block-end: 22px;
+}
+
+.bookshelf-feature-heading {
+  font-size: clamp(25px, 5.5cqi, 39px);
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.bookshelf-feature-copy {
+  max-inline-size: 24ch;
+  margin-block-start: 16px;
+  color: var(--bookshelf-muted);
+  font-size: 13px;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.bookshelf-feature-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 44px;
+  margin-block-start: 12px;
+  color: var(--bookshelf-accent);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bookshelf-tools {
+  margin-block-end: 26px;
+}
+
+.bookshelf-search-label {
+  display: block;
+  margin-block-end: 13px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.bookshelf-search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 52px;
+  padding-inline: 15px 5px;
+  border: 1px solid var(--bookshelf-rule);
+  border-radius: 7px;
+  background: var(--bookshelf-raised);
+  color: var(--bookshelf-muted);
+}
+
+.bookshelf-search-field > svg {
+  flex-shrink: 0;
+}
+
+.bookshelf-search-field:focus-within {
+  border-color: var(--bookshelf-accent);
+  outline: 2px solid var(--bookshelf-accent);
+  outline-offset: 2px;
+}
+
+.bookshelf-search-input {
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 50px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--bookshelf-ink);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  appearance: none;
+}
+
+.bookshelf-search-input::placeholder {
+  color: var(--bookshelf-muted);
+  opacity: 1;
+}
+
+.bookshelf-search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.bookshelf-search-clear {
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--bookshelf-muted);
+}
+
+.bookshelf-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block-start: 13px;
+}
+
+.bookshelf-preview .bookshelf-filter {
+  min-block-size: 44px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--bookshelf-muted);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.bookshelf-preview .bookshelf-filter[aria-pressed="true"] {
+  border-color: var(--bookshelf-ink);
+  background: var(--bookshelf-ink);
+  color: var(--bookshelf-raised);
+}
+
+.bookshelf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px var(--bookshelf-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bookshelf-book-item {
+  min-inline-size: 0;
+}
+
+.bookshelf-book {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+}
+
+.bookshelf-book-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-inline-size: 0;
+  padding-block-start: 8px;
+}
+
+/* One narrow ledge joins across each row. No enclosing card surfaces. */
+.bookshelf-book-stage::after {
+  position: absolute;
+  z-index: 0;
+  inset-inline: calc(var(--bookshelf-gap) / -2);
+  inset-block-end: 22px;
+  block-size: 5px;
+  border-block-start: 1px solid var(--bookshelf-raised);
+  background: var(--bookshelf-rule);
+  box-shadow: 0 5px 8px color-mix(in srgb, var(--bookshelf-ink) 6%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.bookshelf-book-item:nth-child(2n + 1) .bookshelf-book-stage::after {
+  inset-inline-start: 0;
+}
+
+.bookshelf-book-item:nth-child(2n) .bookshelf-book-stage::after,
+.bookshelf-book-item:last-child .bookshelf-book-stage::after {
+  inset-inline-end: 0;
+}
+
+.bookshelf-book-stage .cover-preview,
+.bookshelf-book-info,
+.bookshelf-book-selection {
+  inline-size: min(152px, calc(100% - 20px));
+  margin-inline: auto;
+}
+
+.bookshelf-book-stage .cover-preview {
+  z-index: 1;
+}
+
+.bookshelf-book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-block-start: 9px;
+}
+
+.bookshelf-book-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.bookshelf-book-author {
+  color: var(--bookshelf-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.bookshelf-book-info[lang="bn"] {
+  font-family: var(--font-anek-bangla), var(--font-manrope), sans-serif;
+  line-height: 1.65;
+}
+
+.bookshelf-book-info[lang="bn"] .bookshelf-book-title {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.bookshelf-book-info[lang="bn"] .bookshelf-book-author {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.bookshelf-book-selection {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-block-size: 24px;
+  margin-block-start: 5px;
+  color: var(--bookshelf-accent);
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+.bookshelf-book[aria-pressed="true"] .bookshelf-book-selection,
+.bookshelf-book:focus-visible .bookshelf-book-selection {
+  opacity: 1;
+}
+
+.bookshelf-book[aria-pressed="true"] .cover-preview-book {
+  outline: 2px solid var(--bookshelf-accent);
+  outline-offset: 5px;
+}
+
+.bookshelf-book[aria-pressed="true"] .bookshelf-book-title {
+  color: var(--bookshelf-accent);
+}
+
+.bookshelf-empty {
+  padding-block: 40px;
+  border-block: 1px solid var(--bookshelf-rule);
+}
+
+.bookshelf-empty p {
+  max-inline-size: 38ch;
+  margin: 0 0 10px;
+  color: var(--bookshelf-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.bookshelf-empty .bookshelf-empty-title {
+  color: var(--bookshelf-ink);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.bookshelf-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 44px;
+  margin-block-start: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--bookshelf-accent);
+}
+
+.bookshelf-collection-note {
+  margin: 24px 0 0;
+  padding-block-start: 15px;
+  border-block-start: 1px solid var(--bookshelf-rule);
+  color: var(--bookshelf-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.bookshelf-sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Covers keep their own inline-size container, so lettering scales with art. */
+.cover-preview {
+  position: relative;
+  display: inline-block;
+  container: cover-preview / inline-size;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  vertical-align: bottom;
+  font-family: var(--font-manrope), var(--font-anek-bangla), sans-serif;
+  letter-spacing: normal;
+}
+
+.cover-preview-book {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 1px 3px 3px 1px;
+  box-shadow:
+    2px 3px 3px color-mix(in srgb, var(--color-ink, #26292f) 12%, transparent),
+    8px 12px 17px color-mix(in srgb, var(--color-ink, #26292f) 14%, transparent);
+}
+
+.cover-preview-book::before {
+  position: absolute;
+  z-index: -1;
+  inset: 4px -4px 2px 5px;
+  border: 1px solid var(--color-rule, #dbddd4);
+  border-radius: 0 3px 3px 0;
+  background: var(--color-paper-raised, #fffefa);
+  box-shadow: 2px 0 0 color-mix(in srgb, var(--color-paper-raised, #fffefa) 70%, var(--color-rule, #dbddd4));
+  content: "";
+}
+
+.cover-preview-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--color-paper-raised, #fffefa);
+}
+
+.cover-preview-face::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border: 1px solid color-mix(in srgb, var(--color-ink, #26292f) 12%, transparent);
+  border-radius: inherit;
+  box-shadow:
+    inset 3px 0 0 rgb(24 26 31 / 12%),
+    inset 5px 0 1px rgb(255 254 250 / 9%);
+  content: "";
+  pointer-events: none;
+}
+
+.cover-preview-image {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.cover-preview[data-design="prince"] .cover-preview-face { background: #193380; }
+.cover-preview[data-design="orwell"] .cover-preview-face { background: #dddeda; }
+.cover-preview[data-design="alchemist"] .cover-preview-face { background: #ddd0ab; }
+.cover-preview[data-design="dune"] .cover-preview-face { background: #171613; }
+
+.cover-preview-caption {
+  display: block;
+  block-size: 22px;
+  padding-block-start: 7px;
+  color: var(--color-ink-soft, #60646c);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: start;
+}
+
+.cover-preview-study,
+.cover-preview-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.cover-preview-art {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12% 11% 10% 13%;
+  background: var(--cover-preview-ground);
+  color: var(--cover-preview-ink);
+  text-align: start;
+}
+
+.cover-preview-title,
+.cover-preview-author {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+
+.cover-preview-title {
+  font-size: 21cqi;
+  line-height: 1.1;
+}
+
+.cover-preview-author {
+  font-size: clamp(9px, 7cqi, 14px);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* The Little Prince: a field of blue, a distant orbit, a small golden world. */
+.cover-preview-art--prince {
+  --cover-preview-ground: #193c54;
+  --cover-preview-ink: #f4e5bb;
+}
+
+.cover-preview-art--prince .cover-preview-title {
+  margin-block-start: 15%;
+  font-size: 24cqi;
+  line-height: 1.18;
+}
+
+.cover-preview-art--prince .cover-preview-title > span:first-child {
+  margin-block-end: 3%;
+  font-size: 14cqi;
+}
+
+.cover-preview-prince-orbit {
+  position: absolute;
+  inset-inline-end: -21%;
+  inset-block-end: -17%;
+  inline-size: 97%;
+  aspect-ratio: 1;
+  border: 1px solid #bbaa78;
+  border-radius: 50%;
+}
+
+.cover-preview-prince-planet {
+  position: absolute;
+  inset-inline-end: -10%;
+  inset-block-end: -17%;
+  inline-size: 67%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #d4b66b;
+}
+
+.cover-preview-prince-moon {
+  position: absolute;
+  inset-inline-start: 28%;
+  inset-block-end: 28%;
+  inline-size: 7%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #f4e5bb;
+}
+
+/* Orwell: confrontational typography and a single watchful aperture. */
+.cover-preview-art--orwell {
+  --cover-preview-ground: #c44739;
+  --cover-preview-ink: #f9edce;
+  justify-content: space-between;
+}
+
+.cover-preview-art--orwell .cover-preview-title {
+  font-size: 34cqi;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.cover-preview-art--orwell .cover-preview-author {
+  font-size: 10cqi;
+  font-weight: 600;
+}
+
+.cover-preview-orwell-eye {
+  position: absolute;
+  inset-inline: 13%;
+  inset-block-start: 39%;
+  block-size: 24%;
+  overflow: hidden;
+  border-radius: 80% 20% 80% 20%;
+  background: #f9edce;
+  transform: rotate(13deg);
+}
+
+.cover-preview-orwell-eye > span {
+  position: absolute;
+  inset-block: 6%;
+  inset-inline-start: 29%;
+  block-size: 88%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #27333b;
+}
+
+/* The Alchemist: sun and two flat planes, without borrowed edition artwork. */
+.cover-preview-art--alchemist {
+  --cover-preview-ground: #e4b858;
+  --cover-preview-ink: #483629;
+}
+
+.cover-preview-art--alchemist .cover-preview-title {
+  margin-block-start: 14%;
+  font-size: 14.5cqi;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.cover-preview-alchemist-sun {
+  position: absolute;
+  inset-inline-start: 43%;
+  inset-block-start: 49%;
+  inline-size: 24%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #f8e1a2;
+}
+
+.cover-preview-alchemist-pyramid {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: -22%;
+  inline-size: 119%;
+  block-size: 39%;
+  background: #755033;
+  clip-path: polygon(51% 0, 100% 100%, 0 100%);
+}
+
+.cover-preview-alchemist-pyramid--back {
+  inset-block-end: 0;
+  inset-inline-start: 40%;
+  inline-size: 100%;
+  block-size: 49%;
+  background: #af763e;
+}
+
+/* Dune: a severe horizon and a red sun, deliberately unlike the other studies. */
+.cover-preview-art--dune {
+  --cover-preview-ground: #e99a6d;
+  --cover-preview-ink: #3e3036;
+}
+
+.cover-preview-art--dune .cover-preview-title {
+  margin-block-start: 8%;
+  font-size: 31cqi;
+  font-weight: 500;
+}
+
+.cover-preview-dune-sun {
+  position: absolute;
+  inset-inline-start: 43%;
+  inset-block-start: 47%;
+  inline-size: 24%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ab443b;
+}
+
+.cover-preview-dune-ridge {
+  position: absolute;
+  inset-inline: -1%;
+  inset-block-end: -1%;
+  block-size: 31%;
+  background: #353c4a;
+  clip-path: polygon(0 30%, 42% 61%, 73% 25%, 100% 46%, 100% 100%, 0 100%);
+}
+
+.cover-preview-dune-ridge--back {
+  inset-block-end: 8%;
+  block-size: 37%;
+  background: #a95344;
+  clip-path: polygon(0 65%, 47% 1%, 100% 67%, 100% 100%, 0 100%);
+}
+
+/* Pather Panchali: script-first, with a narrow path through green fields. */
+.cover-preview-art--pather {
+  --cover-preview-ground: #244f40;
+  --cover-preview-ink: #f3e9be;
+  justify-content: space-between;
+  font-family: var(--font-anek-bangla), var(--font-manrope), sans-serif;
+}
+
+.cover-preview-art--pather .cover-preview-title {
+  font-size: 24cqi;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.cover-preview-art--pather .cover-preview-author {
+  font-size: clamp(10px, 7.6cqi, 16px);
+  line-height: 1.65;
+}
+
+.cover-preview-pather-path {
+  position: absolute;
+  inset-inline-start: 33%;
+  inset-block-start: 49%;
+  inline-size: 32%;
+  block-size: 29%;
+  background: #dbc878;
+  clip-path: polygon(73% 0, 83% 0, 28% 100%, 0 100%);
+}
+
+.cover-preview-pather-field {
+  position: absolute;
+  inset-inline-end: 12%;
+  inset-block-start: 56%;
+  inline-size: 21%;
+  aspect-ratio: 1;
+  border: 1px solid #9ea966;
+  border-radius: 50%;
+}
+
+/* The Bell Jar: cool paper, an enclosing arch, one isolated warm shape. */
+.cover-preview-art--bell {
+  --cover-preview-ground: #bdd7d4;
+  --cover-preview-ink: #29474b;
+  justify-content: space-between;
+}
+
+.cover-preview-art--bell .cover-preview-title {
+  font-size: 24cqi;
+  font-weight: 500;
+  line-height: 1.13;
+}
+
+.cover-preview-art--bell .cover-preview-author {
+  font-size: 9cqi;
+}
+
+.cover-preview-bell-vessel {
+  position: absolute;
+  inset-inline-start: 21%;
+  inset-block-start: 43%;
+  inline-size: 57%;
+  block-size: 35%;
+  border: 2px solid #416269;
+  border-radius: 48% 48% 3px 3px;
+}
+
+.cover-preview-bell-vessel > span {
+  position: absolute;
+  inset-inline-start: 25%;
+  inset-block-end: 11%;
+  inline-size: 48%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #b85a49;
+}
+
+/* Responsiveness follows the shelf sector, not the whole scene's viewport. */
+@container bookshelf (min-width: 500px) {
+  .bookshelf-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bookshelf-book-item:nth-child(n) .bookshelf-book-stage::after {
+    inset-inline: calc(var(--bookshelf-gap) / -2);
+  }
+
+  .bookshelf-book-item:nth-child(3n + 1) .bookshelf-book-stage::after {
+    inset-inline-start: 0;
+  }
+
+  .bookshelf-book-item:nth-child(3n) .bookshelf-book-stage::after,
+  .bookshelf-book-item:last-child .bookshelf-book-stage::after {
+    inset-inline-end: 0;
+  }
+}
+
+@container bookshelf (min-width: 700px) {
+  .bookshelf-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .bookshelf-book-item:nth-child(n) .bookshelf-book-stage::after {
+    inset-inline: calc(var(--bookshelf-gap) / -2);
+  }
+
+  .bookshelf-book-item:nth-child(4n + 1) .bookshelf-book-stage::after {
+    inset-inline-start: 0;
+  }
+
+  .bookshelf-book-item:nth-child(4n) .bookshelf-book-stage::after,
+  .bookshelf-book-item:last-child .bookshelf-book-stage::after {
+    inset-inline-end: 0;
+  }
+}
+
+@container bookshelf (max-width: 359px) {
+  .bookshelf-feature {
+    gap: 17px;
+    margin-block-end: 16px;
+    padding-block-end: 10px;
+  }
+
+  .bookshelf-feature-cover .cover-preview {
+    inline-size: min(140px, 100%);
+  }
+
+  .bookshelf-feature-heading {
+    font-size: 22px;
+  }
+
+  .bookshelf-feature-copy {
+    margin-block-start: 11px;
+    font-size: 12px;
+  }
+
+  .bookshelf-feature-action {
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .bookshelf-preview .bookshelf-filter {
+    padding-inline: 12px;
+  }
+
+  .bookshelf-book-stage .cover-preview,
+  .bookshelf-book-info,
+  .bookshelf-book-selection {
+    inline-size: calc(100% - 12px);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bookshelf-filter:not([aria-pressed="true"]):hover {
+    border-color: var(--bookshelf-rule);
+    color: var(--bookshelf-ink);
+  }
+
+  .bookshelf-search-clear:hover {
+    color: var(--bookshelf-ink);
+  }
+
+  .bookshelf-book:hover .bookshelf-book-selection {
+    opacity: 1;
+  }
+
+  .bookshelf-feature:hover .bookshelf-feature-action,
+  .bookshelf-reset:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bookshelf-preview .cover-preview-book {
+    transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .bookshelf-book-selection {
+    transition: opacity 160ms ease-out;
+  }
+
+  .bookshelf-feature:active .cover-preview-book,
+  .bookshelf-book:active .cover-preview-book {
+    transform: translateY(1px);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .bookshelf-feature:hover .cover-preview-book,
+    .bookshelf-book:hover .cover-preview-book,
+    .bookshelf-book:focus-visible .cover-preview-book {
+      transform: translateY(-4px);
+    }
+  }
+}
+
+@media (forced-colors: active) {
+  .bookshelf-search-field,
+  .bookshelf-filter,
+  .cover-preview-book {
+    border: 1px solid CanvasText;
+  }
+
+  .bookshelf-preview .bookshelf-filter[aria-pressed="true"] {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .bookshelf-book[aria-pressed="true"] .cover-preview-book {
+    outline-color: Highlight;
+  }
+
+  .cover-preview-art {
+    forced-color-adjust: none;
+  }
+}

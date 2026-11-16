@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { getStore } from "@/lib/store";
+import { getStore, StoreError } from "@/lib/store";
+import { queryLimit } from "@/lib/api-input";
 
 export const dynamic = "force-dynamic";
 
 /** The freshest lines across the whole shelf, home page ticker. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const limit = Math.min(Number(url.searchParams.get("limit") ?? 40) || 40, 100);
   try {
+    const limit = queryLimit(url.searchParams.get("limit"), 40, 100);
     const store = getStore();
     const lines = await store.getRecent(limit);
     const counts = await store
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
       { lines: withVotes, live: store.kind === "redis" },
       { headers: { "cache-control": "no-store" } },
     );
-  } catch {
-    return NextResponse.json({ lines: [], live: false }, { status: 502 });
+  } catch (err) {
+    return NextResponse.json({ lines: [], live: false, error: err instanceof StoreError ? err.message : "The live shelf is unreachable." }, { status: err instanceof StoreError ? err.status : 502 });
   }
 }

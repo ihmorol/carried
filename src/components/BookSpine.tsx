@@ -1,33 +1,30 @@
 import { SPINE_COLORS, originalName, type Book, spineHeight } from "@/lib/books";
+import { isBengali } from "@/lib/line";
 import { leanFor, ryFor } from "@/lib/tilt";
 
 /**
- * A book drawn as a book-cloth spine, top-to-bottom title, author at the foot.
- * Pure CSS, so the whole shelf renders instantly and nothing can 404.
- * On the shelf it stands in 3D, seen a hair off square (a few books lean);
- * a hovering reader pulls it forward off the shelf. The fore-edge shows a
- * sliver of pages. Compact spines stay flat.
+ * Authored cloth, without image lookups. Shelf spines have separate physical
+ * planes and a full-height title; the shelf link carries readable metadata.
+ * Existing detail and compact search spines retain their original dimensions.
  */
 export function BookSpine({
   book,
   className = "",
   height,
   compact = false,
+  variant = "default",
 }: {
   book: Book;
   className?: string;
   height?: number;
   compact?: boolean;
+  variant?: "default" | "shelf";
 }) {
   const c = SPINE_COLORS[book.spine];
   const h = height ?? spineHeight(book);
-  // Book-cloth shading, the brand doc's sanctioned edge lighting, is
-  // one definition so both spine sizes can never drift apart.
   const cloth = {
     backgroundColor: c.bg,
     color: c.text,
-    backgroundImage:
-      "linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 9%, rgba(255,255,255,0.10) 26%, rgba(255,255,255,0) 60%, rgba(0,0,0,0.22) 100%)",
   };
 
   if (compact) {
@@ -48,12 +45,40 @@ export function BookSpine({
         >
           <span
             className="font-serif font-semibold leading-none"
-            style={{ fontSize: 9.5, letterSpacing: "0.02em", maxWidth: h - 10 }}
+            style={{ fontSize: 9.5, letterSpacing: "normal", maxWidth: h - 10 }}
           >
             {originalName(book)}
           </span>
         </div>
       </div>
+    );
+  }
+
+  if (variant === "shelf") {
+    const title = originalName(book);
+    const longTitle = title.length > 50;
+    const shelfHeight = Math.max(238, Math.min(332, height ?? spineHeight(book, longTitle ? 316 : 238, 332)));
+    return (
+      <span
+        className={`book-spine book-spine--shelf ${className}`}
+        style={{
+          "--spine-cloth": c.bg,
+          "--spine-ink": c.text,
+          "--spine-deep": c.deep,
+          "--spine-height": `${shelfHeight}px`,
+          "--spine-title-size": `${longTitle ? 14 : title.length > 30 ? 16 : 18}px`,
+          "--ry": `${ryFor(book.slug)}deg`,
+          "--lean": `${leanFor(book.slug)}deg`,
+        } as React.CSSProperties}
+        aria-hidden="true"
+      >
+        <span className="book-spine-back" />
+        <span className="book-spine-pages" />
+        <span className="book-spine-top" />
+        <span className="book-spine-face">
+          <span className="book-spine-title" lang={isBengali(title) ? "bn" : "en"}>{title}</span>
+        </span>
+      </span>
     );
   }
 
@@ -94,20 +119,20 @@ export function BookSpine({
       >
         <span
           className="font-serif font-semibold leading-none"
-          style={{ fontSize: 15, letterSpacing: "0.02em" }}
+          style={{ fontSize: 15, letterSpacing: "normal", lineHeight: 1.15 }}
         >
           {originalName(book)}
         </span>
       </div>
       <span
-        className="w-full text-center font-mono leading-tight opacity-80"
-        style={{ fontSize: 8.5, letterSpacing: "0.06em" }}
+        className="w-full text-center font-sans leading-tight"
+        style={{ fontSize: 10, letterSpacing: "normal" }}
       >
         {book.author}
       </span>
       <span
-        className="font-mono opacity-60"
-        style={{ fontSize: 8 }}
+        className="font-sans"
+        style={{ fontSize: 10 }}
       >
         {book.year < 0 ? `${Math.abs(book.year)} BC` : book.year}
       </span>

@@ -1,134 +1,46 @@
 import Link from "next/link";
+import { ArrowRight, Books, Quotes } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { RecentFeed } from "@/components/RecentFeed";
-import { HeroStage } from "@/components/HeroStage";
 import { ShelfExplorer } from "@/components/ShelfExplorer";
-import { HeroSearch } from "@/components/HeroSearch";
+import { ReadingRoom } from "@/components/ReadingRoom";
+import { FeaturedPairCarousel } from "@/components/FeaturedPairCarousel";
 import { T } from "@/components/T";
-import { marqueeLines, lineOfTheDay, SEED_LINES } from "@/lib/seeds";
-import { BOOKS } from "@/lib/books";
+import { marqueeLines, lineOfTheDay, seedLinesFor } from "@/lib/seeds";
+import { getBook } from "@/lib/books";
+import { resolveCovers } from "@/lib/book-covers";
+import type { FeaturedPair } from "@/lib/featured-pair";
 
-// The "front page" pick rotates daily, revalidate keeps it fresh
-// without giving up static speed. The pick itself is computed per render.
 export const revalidate = 3600;
 
-export default function Home() {
-  const FEATURED = lineOfTheDay();
+export default async function Home() {
+  const daily = lineOfTheDay();
+  const slugs = [...new Set([daily.b, "the-little-prince", "shesher-kobita", "the-alchemist", "pather-panchali"])].slice(0, 5);
+  const covers = await resolveCovers(slugs);
+  const pairs = slugs.map((slug): FeaturedPair => ({ book: getBook(slug)!, line: slug === daily.b ? daily : seedLinesFor(slug)[0], cover: covers[slug] ?? undefined }));
 
   return (
     <>
       <Header />
-      <main className="flex-1">
-        {/* ── Hero ─────────────────────────────────────────── */}
-        <section className="mx-auto max-w-6xl px-5 pb-20 pt-14 sm:pt-20">
-          <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-            <div className="animate-rise-in">
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-[var(--color-ink-soft)]">
-                <T k="hero.kicker" />
-              </p>
-              <h1 className="mt-5 font-serif text-5xl font-semibold leading-[1.04] tracking-[-0.01em] sm:text-6xl">
-                <T k="hero.h1a" />
-                <span className="italic text-[var(--color-stamp)]"><T k="hero.h1b" /></span>
-                <T k="hero.h1c" />
-              </h1>
-              <p className="mt-6 max-w-md font-mono text-sm leading-relaxed text-[var(--color-ink-soft)]">
-                <T k="hero.sub" />
-              </p>
-
-              <div className="mt-8">
-                <HeroSearch />
-              </div>
-
-              <p className="mt-10 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)]">
-                <span><strong className="font-semibold text-[var(--color-ink)]">{BOOKS.length}</strong> <T k="hero.stat.books" /></span>
-                <span><strong className="font-semibold text-[var(--color-ink)]">{SEED_LINES.length}+</strong> <T k="hero.stat.lines" /></span>
-                <span className="text-[var(--color-stamp)]"><T k="hero.stat.next" /></span>
-              </p>
-            </div>
-
-            <div className="mx-auto w-[340px] min-w-0 max-w-full lg:justify-self-end">
-              <HeroStage payload={FEATURED} id={FEATURED.id} />
-              <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--color-ink-faint)]">
-                <T k="hero.today" v={{ n: FEATURED.n }} />
-              </p>
-              <p className="mt-3 text-center">
-                <Link
-                  href={`/b/${FEATURED.b}#write`}
-                  className="link-ledger font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-ink)]"
-                >
-                  <T k="hero.loop" />
-                </Link>
-              </p>
-            </div>
+      <ReadingRoom>
+        <nav className="workspace-jumps" aria-labelledby="workspace-jump-label">
+          <span id="workspace-jump-label" className="sr-only"><T k="home.jump" /></span>
+          <a href="#shelf"><Books size={18} aria-hidden="true" /><T k="home.jumpShelf" /></a>
+          <a href="#reader-lines"><Quotes size={18} aria-hidden="true" /><T k="home.jumpLines" /></a>
+          <Link href={`/b/${daily.b}#write`}><T k="nav.write" /><ArrowRight size={18} aria-hidden="true" /></Link>
+        </nav>
+        <FeaturedPairCarousel pairs={pairs} />
+        <section id="shelf" className="home-shelf" aria-labelledby="workspace-shelf-heading" tabIndex={-1}>
+          <div className="home-section-heading">
+            <h2 id="workspace-shelf-heading"><T k="shelf.title" /></h2>
+            <Link href="/books"><T k="home.allBooks" /><ArrowRight size={18} aria-hidden="true" /></Link>
           </div>
+          <ShelfExplorer variant="workspace" pageSize={20} searchPlacement="header" />
         </section>
-
-        {/* ── Fresh from the margins (live) ────────────────── */}
-        <section
-          className="border-y py-14"
-          style={{ borderColor: "var(--color-rule)" }}
-          aria-label="Lines readers carried"
-        >
-          <RecentFeed seeds={marqueeLines()} />
+        <section id="reader-lines" className="home-reader-lines" aria-label="Reader lines" tabIndex={-1}>
+          <RecentFeed seeds={marqueeLines()} variant="cards" />
         </section>
-
-        {/* ── How it works, ink band ──────────────────────── */}
-        <section className="band-ink py-20">
-          <div className="mx-auto max-w-6xl px-5">
-            <h2 className="font-serif text-3xl font-semibold sm:text-4xl">
-              <T k="band.title" />
-            </h2>
-            <ol className="mt-12 grid items-start gap-10 sm:grid-cols-3">
-              {[
-                { n: "01", t: "band.1.t", d: "band.1.d" },
-                { n: "02", t: "band.2.t", d: "band.2.d" },
-                { n: "03", t: "band.3.t", d: "band.3.d" },
-              ].map((s, i) => (
-                <li key={s.n} className={i === 1 ? "lg:mt-12" : i === 2 ? "lg:mt-24" : undefined}>
-                  <span className="font-serif text-5xl italic text-[var(--color-stamp-soft)]">{s.n}</span>
-                  <h3 className="mt-4 font-serif text-2xl font-semibold"><T k={s.t} /></h3>
-                  <p className="soft mt-3 font-mono text-xs leading-relaxed"><T k={s.d} /></p>
-                </li>
-              ))}
-            </ol>
-            <p className="soft mt-14 border-t border-[#3a332a] pt-6 font-mono text-[11px] uppercase tracking-[0.2em]">
-              <T k="band.note" />
-            </p>
-          </div>
-        </section>
-
-        {/* ── The shelf ────────────────────────────────────── */}
-        <section id="shelf" className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-8 pt-20">
-          <div className="mb-10 flex items-end justify-between gap-6">
-            <div>
-              <h2 className="font-serif text-4xl font-semibold"><T k="shelf.title" /></h2>
-              <p className="mt-3 max-w-lg font-mono text-xs leading-relaxed text-[var(--color-ink-soft)]">
-                <T k="shelf.sub" />
-              </p>
-            </div>
-            <span className="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] sm:block">
-              <T k="shelf.est" />
-            </span>
-          </div>
-          <ShelfExplorer />
-        </section>
-
-        {/* ── Closing invitation ───────────────────────────── */}
-        <section className="mx-auto max-w-6xl px-5 py-24 text-center">
-          <p className="mx-auto max-w-2xl font-serif text-3xl font-medium italic leading-snug sm:text-4xl">
-            &ldquo;<T k="hero.kicker" />&rdquo;
-          </p>
-          <Link
-            href="#shelf"
-            className="btn-press mt-10 inline-block rounded-[3px] bg-[var(--color-stamp)] px-8 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-paper-raised)] hover:opacity-85"
-          >
-            <T k="nav.write" />
-          </Link>
-          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)]">
-            <T k="c.note" />
-          </p>
-        </section>
-      </main>
+      </ReadingRoom>
       <Footer />
     </>
   );
