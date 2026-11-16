@@ -94,10 +94,10 @@ describe("shelf layout contracts", () => {
 });
 
 describe("dense shelf discovery", () => {
-  it("starts at 32 fully named spine links, shows author and year, and never fetches shelf covers", async () => {
+  it("starts at 24 fully named spine links, shows author and year, and never fetches shelf covers", async () => {
     wrap(<ShelfExplorer />); await flush();
     expect(screen.getByRole("searchbox", { name: "Search the shelf" })).toBeTruthy();
-    expect(screen.getAllByRole("listitem")).toHaveLength(32);
+    expect(screen.getAllByRole("listitem")).toHaveLength(24);
     const first = screen.getByRole("link", { name: nameFor(BOOKS[0]) });
     expect(first.getAttribute("href")).toBe(`/b/${BOOKS[0].slug}`);
     expect(within(first).getByText(BOOKS[0].author)).toBeTruthy();
@@ -222,6 +222,6 @@ describe("dense shelf discovery", () => {
     fireEvent.click(screen.getByRole("button", { name: "+ Add a book" }));
     expect(screen.queryByLabelText("Title")).toBeNull();
     expect(screen.getByRole("status").textContent).toContain("could not be reached");
-    expect(screen.getAllByRole("listitem")).toHaveLength(32);
+    expect(screen.getAllByRole("listitem")).toHaveLength(24);
   });
 });

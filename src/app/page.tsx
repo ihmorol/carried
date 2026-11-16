@@ -35,7 +35,7 @@ export default async function Home() {
             <h2 id="workspace-shelf-heading"><T k="shelf.title" /></h2>
             <Link href="/books"><T k="home.allBooks" /><ArrowRight size={18} aria-hidden="true" /></Link>
           </div>
-          <ShelfExplorer variant="workspace" pageSize={32} searchPlacement="header" />
+          <ShelfExplorer variant="workspace" pageSize={20} searchPlacement="header" />
         </section>
         <section id="reader-lines" className="home-reader-lines" aria-label="Reader lines" tabIndex={-1}>
           <RecentFeed seeds={marqueeLines()} variant="cards" />
