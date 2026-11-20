@@ -104,10 +104,10 @@ function drawOwnershipRows(ctx: Ctx, ink: Ink, text: EditionText, layout: Editio
   if (withRule) {
     ruleTop = rowsTop + 14.3 + layout.ownership.gap + layout.ownership.nameHeight + layout.ownership.gap;
     ctx.fillStyle = ink.stamp;
-    ctx.fillRect(x * S, ruleTop * S, 84 * S, 1.5 * S);
+    ctx.fillRect(x * S, ruleTop * S, 96 * S, 2.5 * S);
   }
   const dateTop = withRule
-    ? ruleTop + 1.5 + layout.ownership.gap
+    ? ruleTop + 2.5 + layout.ownership.gap
     : rowsTop + 14.3 + layout.ownership.gap + layout.ownership.nameHeight + layout.ownership.gap;
   drawLabel(ctx, `${EDITION_SHARED_COPY.dated[text.language]} ${text.date}`, x, dateTop,
     { color: colors.date, script: text.dateScript, align, size: 10, leading: 1.4 });
@@ -118,13 +118,14 @@ function drawHeader(ctx: Ctx, text: EditionText, layout: EditionLayout, color: s
   drawLabel(ctx, SITE_NAME, h.inset, h.top,
     { color, size: h.wordmarkSize, weight: EDITION_WEIGHTS.wordmark, leading: h.wordmarkLeading, role: "text" });
   drawLabel(ctx, text.accession, PW - h.inset, h.accessionTop,
-    { color: soft, size: h.accessionSize, align: "right" });
+    { color: soft, size: h.accessionSize, weight: EDITION_WEIGHTS.accession, align: "right" });
 }
 
 function drawBookplate(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout): void {
   ctx.fillStyle = ink.bg;
   ctx.fillRect(0, 0, PW * S, PH * S);
-  drawHeader(ctx, text, layout, ink.text, ink.soft);
+  // The accession serial speaks in the same coral ink as the signature rule.
+  drawHeader(ctx, text, layout, ink.text, ink.stamp);
   if (layout.header.rule) {
     ctx.strokeStyle = ink.rule;
     ctx.lineWidth = S;
@@ -176,14 +177,15 @@ function ticketStock(ctx: Ctx, stub = false): void {
 }
 
 function drawTicket(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout, copy: string): void {
-  ticketStock(ctx); ctx.fillStyle = ink.bg; ctx.fill(); ctx.strokeStyle = ink.rule; ctx.lineWidth = 0.8 * S; ctx.stroke();
+  ticketStock(ctx); ctx.fillStyle = ink.bg; ctx.fill(); ctx.strokeStyle = ink.rule; ctx.lineWidth = S; ctx.stroke();
   ticketStock(ctx, true); ctx.fillStyle = ink.text; ctx.fill();
   ctx.strokeStyle = ink.bg; ctx.lineWidth = 1.5 * S; ctx.setLineDash([3 * S, 4 * S]);
   tracePath(ctx, "M19 333H341", S); ctx.stroke(); ctx.setLineDash([]);
-  ctx.strokeStyle = ink.rule; ctx.lineWidth = 0.7 * S;
+  ctx.strokeStyle = ink.rule; ctx.lineWidth = 0.8 * S;
   tracePath(ctx, "M18 7H342M353 18V312M7 18V312M18 443H342", S); ctx.stroke();
 
-  drawHeader(ctx, text, layout, ink.text);
+  // The accession serial carries the same coral ownership ink as the ring.
+  drawHeader(ctx, text, layout, ink.text, ink.stamp);
   if (!layout.dense) {
     ctx.lineWidth = S;
     tracePath(ctx, `M${layout.header.inset} ${layout.header.top + 26.4}H${PW - layout.header.inset}`, S); ctx.stroke();
@@ -200,11 +202,11 @@ function drawTicket(ctx: Ctx, ink: Ink, text: EditionText, layout: EditionLayout
   ctx.stroke(); ctx.restore();
 
   ctx.save(); ctx.translate(297 * S, 391.5 * S); ctx.rotate(-5 * Math.PI / 180);
-  // One coral ring; the inner circle and tick marks are gone.
+  // One coral ring, pressed hard; the inner circle and tick marks are gone.
   const k = 108 / 132;
   ctx.beginPath(); ctx.arc(0, 0, 64 * k * S, 0, Math.PI * 2);
   ctx.fillStyle = ink.bg; ctx.fill();
-  ctx.strokeStyle = ink.stamp; ctx.lineWidth = 1.4 * k * S; ctx.stroke();
+  ctx.strokeStyle = ink.stamp; ctx.lineWidth = 2.2 * k * S; ctx.stroke();
   const rowsTop = -(12.35 + 2 + layout.name.height) / 2;
   drawLabel(ctx, EDITION_SHARED_COPY.carriedBy[text.language], 0, rowsTop, { color: ink.stamp, script: text.language, align: "center", size: 9.5 });
   drawFit(ctx, layout.name, 0, rowsTop + 14.35,

@@ -370,7 +370,7 @@ input, textarea { caret-color: var(--color-stamp); }
 
 .edition-accession {
   font-size: 2.6389cqw;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
@@ -425,12 +425,13 @@ input, textarea { caret-color: var(--color-stamp); }
 }
 
 /* The open Bookplate shares the Ticket's header furniture: one hairline
-   under the wordmark/accession row, positioned by the measured ruleTop. */
+   under the wordmark/accession row, positioned by the measured ruleTop.
+   The 1px floor keeps the ledger line crisp at feed render sizes. */
 .edition-bookplate-heading::after {
   position: absolute;
   inset-block-start: var(--edition-header-rule-top);
   inset-inline: 0;
-  border-block-start: 0.277778cqw solid var(--edition-rule);
+  border-block-start: max(1px, 0.277778cqw) solid var(--edition-rule);
   content: "";
 }
 
@@ -443,7 +444,11 @@ input, textarea { caret-color: var(--color-stamp); }
   text-align: end;
 }
 
-.edition-bookplate-accession { color: var(--edition-soft); }
+/* The accession serial is stamped in the same coral ownership ink as the
+   signature rule (Bookplate) and the cancellation ring (Ticket). */
+.edition-bookplate-accession { color: var(--edition-coral); }
+
+.edition-ticket-heading .edition-accession { color: var(--edition-coral); }
 
 .edition-artwork .edition-quote {
   position: absolute;
@@ -476,7 +481,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-bookplate-mark,
 .edition-poster-credit {
   display: grid;
-  grid-template-rows: 3.972222cqw var(--edition-name-row) 0.416667cqw 3.888889cqw;
+  grid-template-rows: 3.972222cqw var(--edition-name-row) 0.694444cqw 3.888889cqw;
   gap: var(--edition-ownership-gap);
   align-content: start;
   justify-items: start;
@@ -490,9 +495,11 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-bookplate-mark .edition-reader-label,
 .edition-bookplate-mark .edition-date { color: var(--edition-soft); }
 
+/* The stamp bar: the card's one coral ownership moment, kept >= 2 physical
+   pixels so the pressed mark survives small feed renderings. */
 .edition-signature-rule {
-  inline-size: 23.333333cqw;
-  block-size: 0.416667cqw;
+  inline-size: 26.666667cqw;
+  block-size: max(2px, 0.694444cqw);
   background: var(--edition-coral);
 }
 
@@ -536,7 +543,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-ticket-paper {
   fill: var(--edition-bg);
   stroke: var(--edition-rule);
-  stroke-width: 0.8;
+  stroke-width: 1;
 }
 
 .edition-ticket-stub-stock {
@@ -553,7 +560,7 @@ input, textarea { caret-color: var(--color-stamp); }
 .edition-ticket-edge {
   fill: none;
   stroke: var(--edition-rule);
-  stroke-width: 0.7;
+  stroke-width: 0.8;
 }
 
 .edition-ticket-body {
@@ -566,7 +573,7 @@ input, textarea { caret-color: var(--color-stamp); }
   position: absolute;
   inset-block-start: 7.333333cqw;
   inset-inline: 0;
-  border-block-start: 0.277778cqw solid var(--edition-rule);
+  border-block-start: max(1px, 0.277778cqw) solid var(--edition-rule);
   content: "";
 }
 
@@ -645,7 +652,7 @@ input, textarea { caret-color: var(--color-stamp); }
 
 .edition-cancellation-outer {
   fill: var(--edition-bg);
-  stroke-width: 1.4;
+  stroke-width: 2.2;
 }
 
 /* Dense furniture moves out of the line's measured space. The ticket's

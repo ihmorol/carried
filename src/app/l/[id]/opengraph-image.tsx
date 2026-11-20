@@ -72,7 +72,8 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
     return new ImageResponse(
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", backgroundColor: field, color: foreground }}>
         <div style={{ position: "absolute", left: 64, top: 40, display: "flex", ...voice("latin", "text", EDITION_WEIGHTS.wordmark), fontSize: 30, lineHeight: 1.2 }}>{SITE_NAME}</div>
-        {span(text.accession, { right: 64, top: 52, fontSize: 16, color: soft })}
+        {/* The accession serial is stamped in the ownership coral on the open editions. */}
+        {span(text.accession, { right: 64, top: 50, fontSize: 18, fontWeight: EDITION_WEIGHTS.accession, color: poster ? foreground : ink.stamp })}
         {!poster && <div style={{ position: "absolute", left: 64, width: W - 128, top: headerRuleTop, borderTop: `1px solid ${ink.rule}` }} />}
         {block(layout.quote, r.quote, voice(text.quoteScript, "text", poster ? EDITION_WEIGHTS.posterQuote : EDITION_WEIGHTS.quote))}
         {credit(foreground, soft)}
@@ -80,7 +81,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
         {span(shared.carriedBy[text.language], { ...at(r.readerLabel), fontSize: 14, color: poster ? ink.bg : ink.soft,
           ...voice(text.language, "meta", EDITION_WEIGHTS.label) })}
         {block(layout.name, r.name, { ...voice(text.nameScript, "meta", EDITION_WEIGHTS.name), color: poster ? ink.bg : ink.text })}
-        {!poster && <div style={{ position: "absolute", ...at(r.signature), borderTop: `3px solid ${ink.stamp}` }} />}
+        {!poster && <div style={{ position: "absolute", ...at(r.signature), borderTop: `4px solid ${ink.stamp}` }} />}
         {span(dated, { ...at(r.date), fontSize: 14, color: poster ? ink.bg : ink.soft, ...voice(text.dateScript, "meta", EDITION_WEIGHTS.date) })}
       </div>, { ...size, fonts });
   }
@@ -97,7 +98,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
       </svg>
       <div style={{ position: "absolute", left: 64, top: 44, width: 752, display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
         <span style={{ ...voice("latin", "text", EDITION_WEIGHTS.wordmark), fontSize: 32, lineHeight: 1.2 }}>{SITE_NAME}</span>
-        <span style={{ ...voice("latin", "meta", EDITION_WEIGHTS.label), fontSize: 15 }}>{text.accession}</span>
+        <span style={{ ...voice("latin", "meta", EDITION_WEIGHTS.accession), fontSize: 16, color: ink.stamp }}>{text.accession}</span>
       </div>
       <div style={{ position: "absolute", left: 64, top: 96, width: 752, borderTop: `2px solid ${ink.rule}` }} />
       {span(EDITION_COPY["ticket-v1"][text.language], { left: 64, top: 114, fontSize: 19, color: ink.stamp, ...voice(text.language, "meta", EDITION_WEIGHTS.book) })}
@@ -105,7 +106,7 @@ export default async function OgImage({ params }: { params: Promise<{ id: string
       {span(dated, { ...at(r.date), fontSize: 15, color: ink.soft, ...voice(text.dateScript, "meta", EDITION_WEIGHTS.date) })}
       {credit(ink.bg)}
       <svg width={264} height={240} viewBox="0 0 264 240" style={{ position: "absolute", left: 908, top: 328 }}>
-        <circle cx="132" cy="120" r="112" fill={ink.bg} stroke={ink.stamp} strokeWidth={3} />
+        <circle cx="132" cy="120" r="112" fill={ink.bg} stroke={ink.stamp} strokeWidth={4} />
       </svg>
       {span(shared.carriedBy[text.language], { ...at(r.readerLabel), fontSize: 13, color: ink.stamp,
         textAlign: "center", ...voice(text.language, "meta", EDITION_WEIGHTS.label) })}

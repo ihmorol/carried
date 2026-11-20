@@ -68,6 +68,8 @@ export const EDITION_WEIGHTS = {
   quote: 500, posterQuote: 600, ticketQuote: 400,
   wordmark: 600, book: 600, author: 400,
   label: 500, name: 600, date: 500,
+  /** The accession serial reads as stamped ownership ink, not faint metadata. */
+  accession: 600,
 } as const;
 
 /** Script-safe leading. Bangla keeps 1.5 for names and generic card text;

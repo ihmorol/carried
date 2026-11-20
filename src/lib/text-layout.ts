@@ -116,15 +116,15 @@ export type EditionMeasure = (role: EditionRole, text: string, size: number) => 
  * name 9px, and metadata 8px. The author fit includes the publication year. */
 const EDITION_TYPE_REGIONS: Record<CardTemplateId, Record<Exclude<EditionRole, "date">, EditionRegion>> = {
   "bookplate-v1": {
-    quote: { width: 296, height: 210, size: 28, min: 14 },
-    name: { width: 296, height: 40, size: 20, min: 9 },
-    book: { width: 296, height: 56, size: 17, min: 9 },
+    quote: { width: 296, height: 210, size: 30, min: 14 },
+    name: { width: 296, height: 40, size: 22, min: 9 },
+    book: { width: 296, height: 56, size: 18, min: 9 },
     author: { width: 296, height: 48, size: 12, min: 9 },
   },
   "poster-v1": {
-    quote: { width: 304, height: 210, size: 34, min: 14 },
+    quote: { width: 304, height: 210, size: 36, min: 14 },
     name: { width: 304, height: 40, size: 22, min: 9 },
-    book: { width: 304, height: 56, size: 17, min: 9 },
+    book: { width: 304, height: 56, size: 18, min: 9 },
     author: { width: 304, height: 48, size: 12, min: 9 },
   },
   "ticket-v1": {
@@ -236,7 +236,8 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
     const creditHeight = labelHeight + gap + book.height + author.height;
     const ownershipGap = dense ? 1 : 3;
     const nameHeight = ticket ? name.height : Math.max(dense ? 16 : 30, name.height);
-    const ownershipHeight = 14.3 + nameHeight + 14 + (poster ? 0 : 1.5) + ownershipGap * (poster ? 2 : 3);
+    // The signature rule row carries the 2.5px coral stamp bar on the Bookplate.
+    const ownershipHeight = 14.3 + nameHeight + 14 + (poster ? 0 : 2.5) + ownershipGap * (poster ? 2 : 3);
     const bandPadding = dense ? 5 : 18;
     const bandTop = poster ? EDITION_ARTWORK.height - ownershipHeight - bandPadding * 2 : 333;
     const ownershipTop = poster ? bandTop + bandPadding : EDITION_ARTWORK.height - (dense ? 8 : 24) - ownershipHeight;
@@ -261,7 +262,7 @@ export function layoutEditionArtwork(text: EditionText, edition: CardTemplateId,
       quoteLeading, nameLeading, bookLeading, authorLeading,
       quoteTop, quoteInset, quoteHeight, quoteY,
       header: { top: headerTop, inset: quoteInset, wordmarkSize, wordmarkLeading,
-        accessionTop: headerTop + wordmarkSize * wordmarkLeading - 10 * 1.3, accessionSize: 10,
+        accessionTop: headerTop + wordmarkSize * wordmarkLeading - 12 * 1.3, accessionSize: 12,
         ruleTop: headerTop + wordmarkSize * wordmarkLeading + 8, rule: !dense && edition === "bookplate-v1" },
       credit: { top: creditTop, inset: ticket ? 27 : quoteInset, width: ticket ? 196 : width,
         labelSize, labelHeight, gap, height: creditHeight },
@@ -336,11 +337,11 @@ export function layoutEditionOg(text: EditionText, edition: CardTemplateId, meas
   const creditHeight = labelHeight + book.height + 4 + author.height;
   const quoteZone = ticket ? { x: 64, y: 156, width: 752, height: 314 }
     : { x: 64, y: poster ? 116 : 124, width: 1072, height: (poster ? 500 : 498) - creditHeight - 18 - (poster ? 116 : 124) };
-  const quote = ogFit("quote", m, text.quote, quoteZone, ticket ? 36 : poster ? 46 : 38,
+  const quote = ogFit("quote", m, text.quote, quoteZone, ticket ? 36 : poster ? 48 : 40,
     poster ? 24 : !ticket && text.quoteScript === "bengali" ? 20 : 22, quoteLeading);
   const creditTop = ticket ? creditZone.y : quoteZone.y + quote.height + 18;
   const nameZone = ticket ? { x: 942, y: 0, width: 196, height: 72 } : { x: 64, y: poster ? 546 : 540, width: 1072, height: 42 };
-  const name = ogFit("name", m, text.name, nameZone, ticket ? 24 : 26, 14, nameLeading);
+  const name = ogFit("name", m, text.name, nameZone, ticket ? 24 : 28, 14, nameLeading);
   const readerTop = ticket ? 448 - (16.9 + 10 + name.height) / 2 : poster ? 522 : 518;
   const dateZone = ticket ? { x: 64, y: 540, width: 500, height: 24 }
     : { x: 64, y: poster ? 594 : 596, width: 1072, height: 21 };

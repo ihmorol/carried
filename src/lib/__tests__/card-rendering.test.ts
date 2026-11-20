@@ -381,14 +381,14 @@ describe("per-edition artwork fitting", () => {
   it("keeps short lines beside their provenance in the approved furniture", () => {
     const text = editionText(base, "test-id", nativeBook);
     const layout = layoutEditionArtwork(text, "bookplate-v1");
-    expect(layout.quote.fontSize).toBe(28);
+    expect(layout.quote.fontSize).toBe(30);
     expect(layout.quoteTop).toBe(96);
     expect(layout.quoteInset).toBe(32);
     expect(layout.quoteY).toBe(layout.quoteTop);
     expect(layout.credit.inset).toBe(layout.quoteInset);
     expect(layout.credit.top - (layout.quoteY + layout.quote.height)).toBeCloseTo(16);
     const poster = layoutEditionArtwork(text, "poster-v1");
-    expect(poster.quote.fontSize).toBe(34);
+    expect(poster.quote.fontSize).toBe(36);
     expect(editionLeading(text.language, "poster-v1", "quote")).toBe(1.12);
   });
   it("gives the open Bookplate the shared hairline header rule, reserved in dense mode", () => {
@@ -508,7 +508,7 @@ describe("per-edition OG images", () => {
       expect(html).toContain('"Anek Bangla", "Manrope"'.replace(/"/g, "&quot;"));
       if (edition === "bookplate-v1") {
         // An open field: the coral signature rule is the only mark.
-        expect(html).toContain("border-top:3px solid");
+        expect(html).toContain("border-top:4px solid");
         // The header hairline is present at the landscape wordmark box.
         expect(html).toContain("border-top:1px solid");
         expect(html).not.toContain("<rect");
