@@ -49,25 +49,49 @@
 .shop-object-scene { position: absolute; left: 50%; top: 50%; width: 340px; height: 420px; transform: translate(-50%, -50%) scale(.55); transition: transform 220ms ease-out; }
 .shop-preview-featured .shop-object-scene { transform: translate(-50%, -50%) scale(.88); }
 .shop-object { position: absolute; background: var(--color-paper-raised); border: 1px solid var(--color-rule); }
-.shop-object-art-print { width: 330px; height: 410px; top: 5px; left: 5px; box-shadow: 0 12px 24px -12px color-mix(in srgb, var(--color-ink) 24%, transparent); }
-.shop-artwork { position: absolute; width: 300px; height: 390px; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(.75); transform-origin: center; }
-.shop-placement-lower .shop-artwork { top: 59%; }
+/* Each print area is an explicit box; ArtworkFit scales the real card inside it,
+   so the proof never stretches and the scene scales stay breakpoint-driven. */
+.shop-artwork { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.shop-object[data-variant="lower"] .shop-artwork { top: 59%; }
 .shop-rendered-card { width: 300px; }
 .shop-artwork-fit { position: relative; width: 100%; height: 100%; }
 .shop-artwork-content { position: absolute; width: 300px; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(var(--artwork-fit, .7)); transform-origin: center; }
-.shop-object-art-print .shop-artwork { transform: translate(-50%, -50%) scale(.73); }
+.shop-object-quote-card { width: 332px; height: 400px; top: 10px; left: 4px; box-shadow: 0 12px 24px -12px color-mix(in srgb, var(--color-ink) 24%, transparent); }
+.shop-object-quote-card .shop-artwork { width: 272px; height: 340px; }
 .shop-object-bookmark { width: 126px; height: 394px; top: 13px; left: 107px; border-radius: 3px; }
-.shop-object-bookmark .shop-artwork { transform: translate(-50%, -50%) scale(.32); }
+.shop-object-bookmark .shop-artwork { width: 96px; height: 122px; top: 56%; }
 .shop-object-bookmark::after { content: ""; position: absolute; top: 15px; left: 57px; width: 11px; height: 11px; border: 1px solid var(--color-rule); border-radius: 50%; background: var(--color-paper); }
-.shop-object-tote { width: 308px; height: 314px; left: 16px; top: 102px; border-radius: 2px 2px 28px 28px; }
-.shop-object-tote::before { content: ""; position: absolute; width: 126px; height: 111px; border: 13px solid var(--color-rule); border-bottom: none; border-radius: 62px 62px 0 0; top: -111px; left: 90px; }
-.shop-object-tote .shop-artwork { transform: translate(-50%, -50%) scale(.52); }
-.shop-object-notebook { width: 272px; height: 378px; top: 21px; left: 34px; border-radius: 3px 10px 10px 3px; }
-.shop-object-notebook::before { content: ""; position: absolute; width: 14px; height: 100%; top: 0; left: 8px; border-inline: 1px solid var(--color-rule); }
-.shop-object-notebook .shop-artwork { left: 54%; transform: translate(-50%, -50%) scale(.57); }
-.shop-object-mug { width: 247px; height: 264px; top: 84px; left: 22px; border-radius: 6px 6px 44px 44px; }
-.shop-object-mug::after { content: ""; position: absolute; width: 79px; height: 164px; border: 17px solid var(--color-rule); border-left-width: 5px; border-radius: 8px 52px 52px 8px; top: 36px; right: -70px; }
-.shop-object-mug .shop-artwork { transform: translate(-50%, -50%) scale(.42); }
+.shop-object-framed-print { width: 312px; height: 388px; top: 16px; left: 14px; border: 12px solid var(--color-ink); box-shadow: 0 18px 34px -14px color-mix(in srgb, var(--color-ink) 28%, transparent); }
+.shop-object-framed-print .shop-artwork { width: 208px; height: 260px; }
+/* The sticker sheet shows one real plate proof; its siblings are kiss-cut outlines. */
+.shop-plate, .shop-object-bookplate-set .shop-artwork { position: absolute; background: var(--color-paper); border: 1px dashed color-mix(in srgb, var(--color-rule) 88%, transparent); border-radius: 3px; }
+.shop-object-bookplate-set { width: 296px; height: 360px; top: 30px; left: 22px; }
+.shop-object-bookplate-set .shop-artwork { width: 130px; height: 152px; top: 14px; left: 14px; transform: none; z-index: 1; }
+.shop-object-bookplate-set .shop-plate-b { width: 130px; height: 152px; top: 14px; left: 156px; }
+.shop-object-bookplate-set .shop-plate-c { width: 130px; height: 152px; top: 178px; left: 14px; }
+.shop-object-bookplate-set .shop-plate-d { width: 130px; height: 152px; top: 178px; left: 156px; }
+.shop-object-bookplate-set[data-variant="single"] .shop-plate { display: none; }
+.shop-object-bookplate-set[data-variant="single"] .shop-artwork { width: 200px; height: 232px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+/* The gift-set scene is the one rich moment: a box with the real card rising out of it. */
+.shop-box-lid, .shop-box-base, .shop-box-bookmark { position: absolute; border: 1px solid var(--color-rule); border-radius: 3px; }
+.shop-object-gift-set { width: 238px; height: 146px; top: 248px; left: 50px; box-shadow: 0 16px 30px -14px color-mix(in srgb, var(--color-ink) 26%, transparent); }
+.shop-object-gift-set .shop-box-lid { width: 246px; height: 54px; top: -52px; left: -6px; background: var(--color-library); transform: rotate(-6deg); z-index: 1; }
+.shop-object-gift-set .shop-box-base { inset: 0; background: var(--color-paper-raised); z-index: 3; }
+.shop-object-gift-set .shop-box-bookmark { width: 54px; height: 148px; top: -134px; left: 178px; background: var(--color-paper); transform: rotate(7deg); z-index: 2; }
+.shop-object-gift-set .shop-artwork { width: 168px; height: 210px; top: -84px; left: 50%; transform: translate(-50%, -50%) rotate(-2deg); z-index: 2; }
+.shop-object-gift-set[data-variant="closed"] .shop-box-lid { top: -14px; left: -4px; width: 250px; height: 60px; transform: none; z-index: 4; }
+.shop-object-gift-set[data-variant="closed"] .shop-box-base { height: 112px; top: 34px; }
+.shop-object-gift-set[data-variant="closed"] .shop-box-bookmark { display: none; }
+.shop-object-gift-set[data-variant="closed"] .shop-artwork { width: 124px; height: 152px; top: 66px; left: 270px; transform: translate(-50%, -50%) rotate(8deg); z-index: 5; }
+/* One card in copies: the stack hides the duplicates behind the proof; the fan shows them. */
+.shop-copy { position: absolute; background: var(--color-paper); border: 1px solid var(--color-rule); border-radius: 3px; }
+.shop-object-club-pack { width: 190px; height: 236px; top: 112px; left: 76px; background: var(--color-paper-raised); box-shadow: 0 14px 26px -14px color-mix(in srgb, var(--color-ink) 22%, transparent); }
+.shop-object-club-pack .shop-copy-2 { inset: -10px 0 10px 10px; }
+.shop-object-club-pack .shop-copy-3 { inset: -20px 0 20px 20px; }
+.shop-object-club-pack .shop-artwork { width: 168px; height: 210px; top: 50%; left: 50%; z-index: 1; }
+.shop-object-club-pack[data-variant="spread"] { width: 168px; height: 210px; top: 150px; left: 86px; }
+.shop-object-club-pack[data-variant="spread"] .shop-copy-2 { inset: auto; width: 160px; height: 200px; top: 26px; left: -126px; transform: rotate(-10deg); }
+.shop-object-club-pack[data-variant="spread"] .shop-copy-3 { inset: auto; width: 160px; height: 200px; top: 26px; left: 126px; transform: rotate(10deg); }
 .shop-sidebar { grid-area: selection; min-width: 0; padding: 24px 20px; }
 .shop-sidebar .section-title { font-size: 24px; max-width: 18ch; }
 .shop-source-label { margin-top: 8px; }
