@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T00:00:00Z",
+  "title": "Design System: Carried",
+  "extensions": {
+    "colorMeta": {
+      "paper": { "role": "neutral", "displayName": "Butter paper · page surface, not Paper ink" },
+      "paper-raised": { "role": "neutral", "displayName": "Warm raised paper" },
+      "surface-soft": { "role": "neutral", "displayName": "Soft paper grouping" },
+      "ink": { "role": "neutral", "displayName": "Petrol reading ink" },
+      "ink-soft": { "role": "neutral", "displayName": "Supporting petrol" },
+      "ink-faint": { "role": "neutral", "displayName": "Readable placeholder ink" },
+      "rule": { "role": "neutral", "displayName": "Paper separator" },
+      "stamp": { "role": "primary", "displayName": "Deep persimmon · page accent, not card coral" },
+      "stamp-soft": { "role": "primary", "displayName": "Persimmon selection tint" },
+      "accent": { "role": "primary", "displayName": "Persimmon action" },
+      "accent-hover": { "role": "primary", "displayName": "Persimmon action hover" },
+      "night": { "role": "neutral", "displayName": "Petrol page alias · not Midnight ink" },
+      "night-raised": { "role": "neutral", "displayName": "Petrol primary-action hover" },
+      "room": { "role": "secondary", "displayName": "Petrol reading room" },
+      "room-raised": { "role": "secondary", "displayName": "Raised petrol hover" },
+      "room-text": { "role": "neutral", "displayName": "Cream on petrol" },
+      "room-muted": { "role": "neutral", "displayName": "Muted cream on petrol" },
+      "room-rule": { "role": "neutral", "displayName": "Petrol room separator" },
+      "library": { "role": "secondary", "displayName": "Pistachio library plane" },
+      "library-deep": { "role": "secondary", "displayName": "Pistachio shelf edge" },
+      "shadow": { "role": "neutral", "displayName": "Physical-object shadow tint" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Bilingual display serif", "purpose": "Noto Serif Bengali global page headings, 34–54px; not the home welcome. The same face carries card quotes, book titles, and wordmarks." },
+      "welcome": { "displayName": "Compact home headline", "purpose": "Noto Serif Bengali, 20–28px, weight 500 and 1.4 leading; normal tracking." },
+      "featured-book": { "displayName": "Featured book title", "purpose": "Noto Serif Bengali, 22–30px on desktop, 18–20px on mobile; weight 600." },
+      "section": { "displayName": "Section serif", "purpose": "Global sections use 24–31px; home shelf headings use 28px and reader-feed headings remain 24px." },
+      "body": { "displayName": "Proportional reading text", "purpose": "Manrope/Anek Bangla at 16px for body and ordinary fields; header search is 15px desktop, 16px mobile. All three local OFL faces remain at 400/500/600." },
+      "metadata": { "displayName": "Readable shelf metadata", "purpose": "Vertical spine titles use 14/16/18px; horizontal authors use 13px (14px Bengali), years 12px. Normal tracking; card metadata follows shared measured geometry." }
+    },
+    "shadows": [
+      { "name": "object", "value": "0 4px 8px color-mix(in srgb, var(--color-shadow) 12%, transparent), 10px 22px 30px color-mix(in srgb, var(--color-shadow) 18%, transparent)", "purpose": "Shared --shadow-object vocabulary; featured volumes and shelf spines also use scoped contact shadows." },
+      { "name": "floating", "value": "0 8px 30px color-mix(in srgb, var(--color-shadow) 14%, transparent)", "purpose": "Detached petrol rail; the intentional UI exception to artwork shadows." },
+      { "name": "featured-line", "value": "0 6px 12px color-mix(in srgb, var(--color-shadow) 15%, transparent), 0 22px 38px color-mix(in srgb, var(--color-shadow) 20%, transparent)", "purpose": "Depth around the featured card, never a replacement for canonical inks or geometry." }
+    ],
+    "motion": [
+      { "name": "ease-out-soft", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Paired transitions and interface feedback." },
+      { "name": "ease-ambient", "value": "cubic-bezier(0.37, 0, 0.63, 1)", "purpose": "Bounded closed-volume and decorative-field motion only." },
+      { "name": "fast", "value": "150ms", "purpose": "Press, rail, and motion-control feedback." },
+      { "name": "state", "value": "240ms", "purpose": "Standard interface and drawer transitions; drawer transitions stop under reduced motion." },
+      { "name": "paired-slide", "value": "320ms; reduced 100ms", "purpose": "One keyed book/line pair, wait-mode enter/exit, no initial hiding. Reduced motion removes slide travel and retains a short fade." },
+      { "name": "idle-rotation", "value": "9s", "purpose": "Stops for hover, focus/manual selection, pause, open drawer, hidden/offscreen state, or reduced motion. Manual interaction keeps motion paused until resumed." },
+      { "name": "closed-volume", "value": "9s", "purpose": "Separate preserve-3d cover/back/spine/page planes turn only while the carousel is rotating." },
+      { "name": "cloth-field", "value": "18s", "purpose": "Decorative color field follows the active cloth; its loop shares rotation gates and is removed on compact mobile." },
+      { "name": "stamp", "value": "420ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Discrete ownership press, not ambient motion; disabled by reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "compact-hero-max", "value": "639px" },
+      { "name": "header-wrap-max", "value": "767px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "rail", "value": "1024px" },
+      { "name": "feature-compact-max", "value": "1199px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A clear next action with a 44px touch target; petrol on warm paper.",
+      "html": "<button type=\"button\" class=\"ds-primary\">Write your line</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--color-ink);color:var(--color-paper-raised);border:1px solid transparent;border-radius:10px;padding:11px 20px;min-height:44px;font-family:var(--font-sans);font-size:14px;font-weight:500;line-height:1.4;cursor:pointer;transition:background-color 240ms cubic-bezier(0.16,1,0.3,1),transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-primary:hover{background:var(--color-night-raised)}.ds-primary:active{transform:translateY(1px)}.ds-primary:focus-visible{outline:2px solid var(--color-stamp);outline-offset:4px}.ds-primary:disabled{opacity:.55;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}.ds-primary:active{transform:none}}"
+    },
+    {
+      "name": "Reading-room writing action",
+      "kind": "button",
+      "refersTo": "button-room",
+      "description": "Persimmon writing action in the featured petrol line field; canonical card coral is unchanged.",
+      "html": "<div class=\"ds-room-action-sample\"><button type=\"button\" class=\"ds-room-action\">Write your line</button></div>",
+      "css": ".ds-room-action-sample{background:var(--color-room);padding:16px}.ds-room-action{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:44px;padding:11px 20px;border:1px solid transparent;border-radius:10px;background:var(--color-accent);color:var(--color-ink);font-family:var(--font-sans);font-size:14px;font-weight:500;line-height:1.4;cursor:pointer;transition:background-color 240ms cubic-bezier(0.16,1,0.3,1),transform 150ms cubic-bezier(0.16,1,0.3,1)}.ds-room-action:hover{background:var(--color-accent-hover)}.ds-room-action:active{transform:translateY(1px)}.ds-room-action:focus-visible{outline:2px solid var(--color-accent);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-room-action{transition:none}.ds-room-action:active{transform:none}}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "description": "Readable editable text, never a placeholder-only label.",
+      "html": "<label for=\"ds-line\">Your line</label><input id=\"ds-line\" class=\"ds-field\" placeholder=\"What stayed with you?\">",
+      "css": ".ds-field{display:block;width:100%;background:var(--color-paper-raised);color:var(--color-ink);border:1px solid var(--color-rule);border-radius:10px;padding:12px 16px;font-family:var(--font-sans);font-size:16px;line-height:1.5;min-height:48px;caret-color:var(--color-stamp)}.ds-field::placeholder{color:var(--color-ink-faint);opacity:1}.ds-field:focus-visible{outline:2px solid var(--color-stamp);outline-offset:4px}"
+    },
+    {
+      "name": "Genre filter",
+      "kind": "chip",
+      "description": "Soft-filled 44px pill; selection uses petrol and raised-paper text, not a category color.",
+      "html": "<div class=\"ds-filter-sample\"><button type=\"button\" class=\"ds-filter\" aria-pressed=\"true\">All</button><button type=\"button\" class=\"ds-filter\" aria-pressed=\"false\">Fiction</button></div>",
+      "css": ".ds-filter-sample{display:flex;flex-wrap:wrap;gap:10px;background:var(--color-paper);padding:12px}.ds-filter{min-height:44px;padding:9px 16px;border:1px solid transparent;border-radius:999px;background:var(--color-surface-soft);color:var(--color-ink-soft);font-family:var(--font-sans);font-size:13px;line-height:1.5;cursor:pointer;transition:background-color 240ms cubic-bezier(0.16,1,0.3,1),color 240ms cubic-bezier(0.16,1,0.3,1)}.ds-filter[aria-pressed=true]{background:var(--color-ink);color:var(--color-paper-raised)}.ds-filter[aria-pressed=false]:hover{background:var(--color-rule);color:var(--color-ink)}.ds-filter:focus-visible{outline:2px solid var(--color-stamp);outline-offset:4px}@media(prefers-reduced-motion:reduce){.ds-filter{transition:none}}"
+    },
+    {
+      "name": "Floating navigation rail",
+      "kind": "nav",
+      "refersTo": "navigation-rail",
+      "description": "Collapsed-rail state excerpt. Production rail is 72px inside a 96px gutter, or 208px inside 232px expanded, fixed 12px left and 16px top/bottom at 1024px and above. Physical book-plane radii (1–4px) are separate from this 22px UI radius.",
+      "html": "<nav class=\"ds-rail\" aria-label=\"Navigation specimen\"><a href=\"/\" class=\"ds-rail-link\" aria-label=\"Home\" aria-current=\"page\"><span class=\"ds-rail-icon\"><svg viewBox=\"0 0 256 256\" width=\"23\" height=\"23\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z\"/></svg></span></a><button type=\"button\" class=\"ds-rail-link ds-rail-toggle\" aria-label=\"Expand navigation\" aria-expanded=\"false\"><span class=\"ds-rail-icon\"><svg viewBox=\"0 0 256 256\" width=\"23\" height=\"23\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z\"/></svg></span></button></nav>",
+      "css": ".ds-rail{box-sizing:border-box;display:flex;flex-direction:column;gap:36px;width:72px;padding:16px 14px;border-radius:22px;background:var(--color-room);color:var(--color-room-muted);box-shadow:0 8px 30px color-mix(in srgb,var(--color-shadow) 14%,transparent)}.ds-rail-link{position:relative;display:flex;align-items:center;min-height:44px;padding:0;border:0;border-radius:999px;background:transparent;color:inherit;text-decoration:none;cursor:pointer}.ds-rail-icon{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:0 0 44px;border-radius:50%;transition:background-color 150ms cubic-bezier(0.16,1,0.3,1),color 150ms cubic-bezier(0.16,1,0.3,1)}.ds-rail-link:hover .ds-rail-icon{background:var(--color-room-raised);color:var(--color-room-text)}.ds-rail-link[aria-current=page] .ds-rail-icon{background:var(--color-accent);color:var(--color-ink)}.ds-rail-link:focus-visible{outline:2px solid var(--color-accent);outline-offset:4px}.ds-rail-link:is(:hover,:focus-visible)::after{content:attr(aria-label);position:absolute;left:calc(100% + 14px);top:50%;transform:translateY(-50%);padding:8px 12px;border:1px solid var(--color-rule);border-radius:8px;background:var(--color-paper-raised);color:var(--color-ink);font-family:var(--font-sans);font-size:12px;line-height:1.5;white-space:nowrap;pointer-events:none}@media(prefers-reduced-motion:reduce){.ds-rail-icon{transition:none}}"
+    },
+    {
+      "name": "Carousel motion control",
+      "kind": "button",
+      "refersTo": "motion-control",
+      "description": "Running-state specimen. One localized carousel control beside the compact headline manages in-memory pause/resume and disables under live reduced motion. Focus/manual selection pauses until resumed; rotation and decorative loops share hover, drawer, and visibility gates.",
+      "html": "<div class=\"ds-motion-sample\"><button type=\"button\" class=\"ds-motion-toggle\" aria-label=\"Pause motion\" title=\"Pause motion\" aria-pressed=\"true\"><svg viewBox=\"0 0 256 256\" width=\"18\" height=\"18\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z\"/></svg></button></div>",
+      "css": ".ds-motion-sample{background:var(--color-paper);padding:16px}.ds-motion-toggle{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--color-rule);border-radius:50%;background:var(--color-paper-raised);color:var(--color-ink);cursor:pointer;transition:background-color 150ms cubic-bezier(0.16,1,0.3,1)}.ds-motion-toggle:hover:not(:disabled){background:var(--color-surface-soft)}.ds-motion-toggle:focus-visible{outline:2px solid var(--color-stamp);outline-offset:4px}.ds-motion-toggle:disabled{cursor:default;opacity:.55}@media(prefers-reduced-motion:reduce){.ds-motion-toggle{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A book becomes a personal keepsake",
+    "overview": "Carried is an energetic nostalgic bilingual reading room: compact header search, a small headline, one paired book-and-line carousel, a dense full-width cloth-spine shelf, then reader lines. A real closed 3D cover volume and its matching line share a changing cloth-color field. The rejected sparse covers, giant welcome, cutout bookcase, and whole-page 56/44 split are historical, not active requirements. The floating rail and approved page palette remain.\n\nNoto Serif Bengali remains the display voice, with Manrope/Anek Bangla for the interface, all locally hosted OFL faces at 400/500/600. The former Fraunces/Plex letterpress fonts, sepia treatment, and wide tracking stay superseded; licensing history remains in docs/design/modern-bangla-typography.md. Original card inks, payloads, and edition IDs stay intact while all renderers adopt the approved open Bookplate and simpler Poster/Ticket furniture.",
+    "keyCharacteristics": [
+      "Floating 72/208px rail inside 96/232px gutters; one document scroll, not permanent page sectors.",
+      "Compact header search shares URL q/genre state with the shelf via carried:search and popstate.",
+      "One active book/line pair; 9-second idle rotation with pause, manual, reduced-motion, visibility, and drawer gates.",
+      "Dense shelf starts at 20 books on home and 24 on /books; no carousel on /books. Tracks are at least 148px with 16px column gaps and 260–316px spines; titles use 14/16/18px with horizontal author/year below.",
+      "Compact mobile shows full quote and name; lazy modal drawer supplies canonical card, Save/share, and real routes.",
+      "Unchanged butter-paper, petrol, persimmon, and pistachio page tokens; immutable card inks inside the artwork."
+    ],
+    "rules": [
+      { "name": "Artifact parity", "body": "DOM, 1080×1350 PNG, and 1200×630 landscape OG share content decisions and measured layout. Bookplate is open and left-aligned without an outer certificate frame; Poster/Ticket retain simpler edition-specific furniture. Measure the complete author/publication-year byline and ownership before allocating quote space; preserve full content, dense clearances, ink/edition IDs, and legacy payload identity.", "section": "components" },
+      { "name": "The Artifact Boundary Rule", "body": "Page tokens never recolor collectible artwork. All values in src/lib/inks.ts remain unchanged for paper, midnight, and moss, including text, rules, and coral ownership marks. Moss stays pale sage. Page Paper/Petrol are not card Paper/Midnight, and there is no fourth ink.", "section": "colors" },
+      { "name": "Interaction dependencies", "body": "Motion 14.12.0 supplies paired enter/exit; Base UI 1.9.0 supplies the lazy modal drawer with close/Escape, focus containment and return focus. Both lockfile entries are MIT-licensed. No new accounts, tracking, or persistence.", "section": "components" }
+    ],
+    "dos": [
+      "Keep digital creation, every ink/edition, downloads, and sharing free.",
+      "Preserve line identity, measured publication-year credit, reader signatures, local shelves, and concept-cart contents.",
+      "Use actual canonical artwork in the drawer, exports, and merchandise mockups; keep its portrait proportions.",
+      "Keep full bilingual content, readable horizontal shelf metadata, visible focus, and 44px action targets.",
+      "Keep real route anchors, truthful editorial/live status, and content available without animation.",
+      "Keep rotation pauseable and the dense shelf still; source or code checks are not visual acceptance."
+    ],
+    "donts": [
+      "Do not add accounts, tracking, locale cookies, or private server-side customer data; public sharing remains distinct from the local personal shelf.",
+      "Do not restore sparse cover grids, giant home headlines, cutout bookcase scenery, or the whole-page split.",
+      "Do not add gradients, glass, grain, fake statistics, invented profiles, or social-proof placeholders.",
+      "Do not recolor Paper/Midnight/Moss with page tokens or introduce a fourth ink.",
+      "Do not gate reading behind animation or replace mobile quotes with tiny full cards.",
+      "Do not add prices, checkout, orders, or delivery promises to the concept shop.",
+      "Do not treat public cover access, editorial reflections, translations, art, or reader submissions as commercial merchandise clearance."
+    ]
+  }
+}

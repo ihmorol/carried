@@ -1,5 +1,6 @@
-import { BOOKS, getBook, SPINE_COLORS, type Book, type SpineColor } from "./books";
-import { decodeLine, lineSlugId, type LinePayload } from "./line";
+import { BOOKS, getBook, bookForPayload, spineForSlug, type Book } from "./books";
+import { decodeLine, encodePayload, validateLinePayload, lineSlugId, type LinePayload } from "./line";
+import { isCardTemplateId, type CardTemplateId } from "./card-templates";
 import { SEED_LINES, SEED_LINE_BY_ID } from "./seeds";
 import { isInkId, type InkId } from "./inks";
 import { LINE_MAX, NAME_MAX } from "./site";
@@ -19,11 +20,13 @@ import { LINE_MAX, NAME_MAX } from "./site";
 
 export type LineRecord = { id: string; payload: LinePayload; t: number };
 
+export type NewLineInput = { q: string; n: string; s: InkId; ct?: CardTemplateId };
+
 export interface Store {
   readonly kind: "redis" | "memory";
   getLines(slug: string, limit?: number): Promise<LineRecord[]>;
   countLines(slug: string): Promise<number>;
-  addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord>;
+  addLine(slug: string, input: NewLineInput): Promise<LineRecord>;
   /** Resolve a short slug id to its payload. */
   getLineById(id: string): Promise<LinePayload | undefined>;
   /** Toggle a reader's "underline" on a line, one vote per voter id. */
@@ -37,7 +40,7 @@ export interface Store {
 }
 
 function samePayload(a: LinePayload, b: LinePayload): boolean {
-  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d;
+  return a.b === b.b && a.q === b.q && a.n === b.n && a.s === b.s && a.d === b.d && a.bt === b.bt && a.ba === b.ba && a.by === b.by && a.ct === b.ct;
 }
 
 /** Voters identify themselves with an anonymous, persistent device id. */
@@ -56,8 +59,9 @@ export class StoreError extends Error {
 /* ── shared validation (server side mirror of encodeLine's rules) ── */
 
 export function validateLineInput(input: { q: string; n: string; s: InkId }): { q: string; n: string } {
-  const q = String(input?.q ?? "").trim().replace(/\s+/g, " ");
-  const n = String(input?.n ?? "").trim().replace(/\s+/g, " ");
+  if (!input || typeof input.q !== "string" || typeof input.n !== "string" || !isInkId(input.s)) throw new StoreError("That line has unreadable fields.", 400);
+  const q = input.q.trim().replace(/\s+/g, " ");
+  const n = input.n.trim().replace(/\s+/g, " ");
   if (!q) throw new StoreError("Write the line first.", 400);
   if (q.length > LINE_MAX) throw new StoreError(`Lines carry at most ${LINE_MAX} characters.`, 400);
   if (!n) throw new StoreError("Sign your name.", 400);
@@ -70,14 +74,13 @@ export function validateBookInput(input: { title: string; author: string; year?:
   author: string;
   year: number;
 } {
-  const title = String(input?.title ?? "").trim().replace(/\s+/g, " ");
-  const author = String(input?.author ?? "").trim().replace(/\s+/g, " ");
+  if (!input || typeof input.title !== "string" || typeof input.author !== "string") throw new StoreError("A title and author are needed.", 400);
+  const title = input.title.trim().replace(/\s+/g, " ");
+  const author = input.author.trim().replace(/\s+/g, " ");
   if (!title || title.length > 90) throw new StoreError("A title is needed (max 90 characters).", 400);
   if (!author || author.length > 60) throw new StoreError("An author is needed (max 60 characters).", 400);
-  let year = Number(input?.year);
-  if (!Number.isFinite(year) || year === 0) year = new Date().getFullYear();
-  year = Math.trunc(year);
-  if (year < -3000 || year > new Date().getFullYear()) throw new StoreError("That year reads wrong.", 400);
+  const year = input.year === undefined ? new Date().getFullYear() : input.year;
+  if (typeof year !== "number" || !Number.isFinite(year) || !Number.isInteger(year) || year < -3000 || year > new Date().getFullYear()) throw new StoreError("That year reads wrong.", 400);
   return { title, author, year };
 }
 
@@ -92,11 +95,18 @@ export function slugifyTitle(title: string): string {
     .replace(/-+$/g, "");
 }
 
-function spineFor(slug: string): SpineColor {
-  const keys = Object.keys(SPINE_COLORS) as SpineColor[];
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) h = (h * 33 + slug.charCodeAt(i)) >>> 0;
-  return keys[h % keys.length];
+function bookIdentity(title: string, author: string): string {
+  let hash = 0x811c9dc5;
+  for (const character of `${title.toLocaleLowerCase()}|${author.toLocaleLowerCase()}`) hash = Math.imul(hash ^ character.codePointAt(0)!, 0x01000193) >>> 0;
+  return hash.toString(36);
+}
+
+function newBookSlug(title: string, author: string): string {
+  return slugifyTitle(title) || `book-${bookIdentity(title, author)}`;
+}
+
+function disambiguatedBookSlug(title: string, author: string): string {
+  return `${newBookSlug(title, author).slice(0, 48)}-${bookIdentity(title, author)}`;
 }
 
 /* ── Upstash Redis REST ── */
@@ -124,12 +134,13 @@ class RedisStore implements Store {
         Authorization: `Bearer ${this.token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify(cmds.map((c) => ({ command: c.map(String) }))),
+      body: JSON.stringify(cmds.map((command) => command.map(String))),
       cache: "no-store",
     });
     if (!res.ok) throw new StoreError("The live shelf is unreachable.", 502);
     const json = (await res.json()) as Array<{ result?: T; error?: string }>;
-    return json.map((j) => (j.error ? (undefined as T) : (j.result as T)));
+    if (!Array.isArray(json) || json.some((entry) => entry.error)) throw new StoreError("The live shelf is unreachable.", 502);
+    return json.map((entry) => entry.result as T);
   }
 
   async limit(kind: "line" | "book" | "vote", ip: string, max: number): Promise<void> {
@@ -148,18 +159,15 @@ class RedisStore implements Store {
     return this.cmd<number>("LLEN", `carried:lines:${slug}`);
   }
 
-  async addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord> {
+  async addLine(slug: string, input: NewLineInput): Promise<LineRecord> {
     const book = (await this.getUserBook(slug)) ?? getBook(slug);
     if (!book) throw new StoreError("That book is not on the shelf.", 404);
     const { q, n } = validateLineInput(input);
     if (!isInkId(input.s)) throw new StoreError("Unknown ink.", 400);
+    if (input.ct !== undefined && !isCardTemplateId(input.ct)) throw new StoreError("Unknown card design.", 400);
 
-    // idempotent-ish: return the existing record for an exact repeat
+    // Identical payloads share an id; ink, date, and case remain the reader's choice.
     const existing = await this.getLines(slug, 20);
-    const dup = existing.find(
-      (r) => r.payload.q.toLowerCase() === q.toLowerCase() && r.payload.n.toLowerCase() === n.toLowerCase(),
-    );
-    if (dup) return dup;
 
     const payload: LinePayload = {
       v: 1,
@@ -169,13 +177,28 @@ class RedisStore implements Store {
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
     };
+    // reader-added books travel inside their lines: the metadata rides on
+    // every stored payload, so cards render even with no store behind them
+    if (!getBook(slug) && book) {
+      payload.bt = book.title;
+      payload.ba = book.author;
+      payload.by = book.year;
+    }
+    // The edition rides with the line, so a restyled repost is a distinct card.
+    if (input.ct !== undefined) payload.ct = input.ct;
+
+    const dup = existing.find((record) => samePayload(record.payload, payload));
+    if (dup) return dup;
 
     // short meaningful id, extend the hash suffix only if a different
     // line already claims it (deterministic, so reposts reuse the id)
     let suffixChars = 5;
     let id = lineSlugId(payload, suffixChars);
     let claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
-    while (claimed && !samePayload(safeParse<LinePayload>(claimed)!, payload)) {
+    while (claimed) {
+      const previous = parsePayload(claimed);
+      if (previous && samePayload(previous, payload)) return existing.find((record) => record.id === id) ?? { id, payload: previous, t: Date.now() };
+      if (suffixChars >= 10) throw new StoreError("That line needs a fresh identifier. Try again.", 409);
       suffixChars++;
       id = lineSlugId(payload, suffixChars);
       claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
@@ -216,33 +239,31 @@ class RedisStore implements Store {
   async getLineById(id: string): Promise<LinePayload | undefined> {
     if (id.length > 64) return undefined;
     const raw = await this.cmd<string | null>("GET", `carried:line:${id}`);
-    return raw ? safeParse<LinePayload>(raw) ?? undefined : undefined;
+    return raw ? parsePayload(raw) : undefined;
   }
 
   async addBook(input: { title: string; author: string; year?: number }): Promise<Book> {
     const { title, author, year } = validateBookInput(input);
-    let slug = slugifyTitle(title) || "untitled";
+    let slug = newBookSlug(title, author);
     if (getBook(slug) || (await this.getUserBook(slug))) {
-      const authorWord = slugifyTitle(author.split(" ")[0] ?? "");
-      slug = authorWord && !slug.includes(authorWord) ? `${slug}-${authorWord}` : `${slug}-2`;
+      slug = disambiguatedBookSlug(title, author);
       if (getBook(slug) || (await this.getUserBook(slug))) throw new StoreError("That book is already on the shelf.", 409);
     }
-    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineFor(slug) };
+    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineForSlug(slug) };
     await this.cmd("HSET", "carried:books:user", slug, JSON.stringify(book));
     return book;
   }
 
   async getUserBooks(): Promise<Book[]> {
-    const raw = await this.cmd<Record<string, string> | null>("HGETALL", "carried:books:user");
+    const raw = await this.cmd<Record<string, string> | string[] | null>("HGETALL", "carried:books:user");
     if (!raw) return [];
-    return Object.values(raw)
-      .map((v) => safeParse<Book>(v))
-      .filter((b): b is Book => !!b);
+    const values = Array.isArray(raw) ? raw.filter((_, index) => index % 2 === 1) : Object.values(raw);
+    return values.map(parseBook).filter((book): book is Book => book !== undefined);
   }
 
   async getUserBook(slug: string): Promise<Book | undefined> {
     const raw = await this.cmd<string | null>("HGET", "carried:books:user", slug);
-    return raw ? safeParse<Book>(raw) ?? undefined : undefined;
+    return raw ? parseBook(raw) : undefined;
   }
 
   async getRecent(limit: number): Promise<LineRecord[]> {
@@ -285,8 +306,10 @@ export class MemoryStore implements Store {
     return (this.lines.get(`carried:lines:${slug}`) ?? []).length;
   }
 
-  async addLine(slug: string, input: { q: string; n: string; s: InkId }): Promise<LineRecord> {
+  async addLine(slug: string, input: NewLineInput): Promise<LineRecord> {
+    if (!getBook(slug) && !this.books.has(slug)) throw new StoreError("That book is not on the shelf.", 404);
     if (!isInkId(input.s)) throw new StoreError("Unknown ink.", 400);
+    if (input.ct !== undefined && !isCardTemplateId(input.ct)) throw new StoreError("Unknown card design.", 400);
     const { q, n } = validateLineInput(input);
     const payload: LinePayload = {
       v: 1,
@@ -296,13 +319,16 @@ export class MemoryStore implements Store {
       s: input.s,
       d: new Date().toISOString().slice(0, 10),
     };
-
-    let suffixChars = 5;
-    let id = lineSlugId(payload, suffixChars);
-    while (this.byId.has(id) && !samePayload(this.byId.get(id)!, payload)) {
-      suffixChars++;
-      id = lineSlugId(payload, suffixChars);
+    // reader-added books travel inside their lines (mirror of RedisStore)
+    const local = getBook(slug) ? undefined : this.books.get(slug);
+    if (local) {
+      payload.bt = local.title;
+      payload.ba = local.author;
+      payload.by = local.year;
     }
+    if (input.ct !== undefined) payload.ct = input.ct;
+
+    const id = encodePayload(payload);
     const dup = this.byId.get(id);
     if (dup) {
       const existing = (this.lines.get(`carried:lines:${slug}`) ?? []).find((r) => r.id === id);
@@ -320,7 +346,6 @@ export class MemoryStore implements Store {
   }
 
   async getLineById(id: string): Promise<LinePayload | undefined> {
-    if (id.length > 64) return undefined;
     return this.byId.get(id);
   }
 
@@ -346,10 +371,10 @@ export class MemoryStore implements Store {
 
   async addBook(input: { title: string; author: string; year?: number }): Promise<Book> {
     const { title, author, year } = validateBookInput(input);
-    let slug = slugifyTitle(title) || "untitled";
-    if (getBook(slug) || this.books.has(slug)) slug = `${slug}-2`;
+    let slug = newBookSlug(title, author);
+    if (getBook(slug) || this.books.has(slug)) slug = disambiguatedBookSlug(title, author);
     if (getBook(slug) || this.books.has(slug)) throw new StoreError("That book is already on the shelf.", 409);
-    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineFor(slug) };
+    const book: Book = { slug, title, author, year, tags: ["reader-added"], spine: spineForSlug(slug) };
     this.books.set(slug, book);
     return book;
   }
@@ -369,18 +394,30 @@ export class MemoryStore implements Store {
 
 /* ── singleton ── */
 
-function parseRecords(raw: string[]): LineRecord[] {
-  return raw
-    .map((v) => safeParse<LineRecord>(v))
-    .filter((r): r is LineRecord => !!r?.id && !!r.payload);
+function parsePayload(raw: string): LinePayload | undefined {
+  try { return validateLinePayload(JSON.parse(raw)); } catch { return undefined; }
 }
 
-function safeParse<T>(v: string): T | null {
+function parseBook(raw: string): Book | undefined {
   try {
-    return JSON.parse(v) as T;
-  } catch {
-    return null;
-  }
+    const book: unknown = JSON.parse(raw);
+    if (!book || typeof book !== "object" || Array.isArray(book)) return undefined;
+    const value = book as Book;
+    const fields = validateBookInput(value);
+    if (typeof value.slug !== "string" || !/^[a-z0-9-]{1,128}$/.test(value.slug)) return undefined;
+    return { ...fields, slug: value.slug, tags: ["reader-added"], spine: spineForSlug(value.slug) };
+  } catch { return undefined; }
+}
+
+function parseRecords(raw: string[]): LineRecord[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((value) => {
+    try {
+      const record = JSON.parse(value) as LineRecord;
+      if (!record || typeof record.id !== "string" || !Number.isFinite(record.t)) return [];
+      return [{ id: record.id, t: record.t, payload: validateLinePayload(record.payload) }];
+    } catch { return []; }
+  });
 }
 
 const g = globalThis as typeof globalThis & { __carriedStore?: Store };
@@ -406,6 +443,15 @@ export async function allBooks(): Promise<Book[]> {
 
 export async function findBook(slug: string): Promise<Book | undefined> {
   return getBook(slug) ?? (await getStore().getUserBook(slug));
+}
+
+/** Carried metadata is sufficient even when the shared shelf is unreachable. */
+export async function resolveBookForLine(payload: LinePayload): Promise<Book | undefined> {
+  return bookForPayload(payload) ?? await findBook(payload.b).catch(() => undefined);
+}
+
+export function enrichLineBook(payload: LinePayload, book: Book): LinePayload {
+  return getBook(payload.b) || payload.bt ? payload : { ...payload, bt: book.title, ba: book.author, by: book.year };
 }
 
 /** Basic per-IP limiter for the API routes. */
