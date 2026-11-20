@@ -27,7 +27,7 @@ export function ShopExplorer({ initial, example }: { initial: Personalization; e
       </aside>
       <div className="shop-main-column">
         <section className="shop-feature">
-          <ProductPreview product="art-print" selection={selection} featured label={c("diagram")} />
+          <ProductPreview product="gift-set" selection={selection} featured label={c("diagram")} />
           <div className="shop-feature-copy">
             <h2>{c("featured")}</h2>
             <p>{c("featureBody")}</p>

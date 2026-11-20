@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Bag, FrameCorners, BookmarkSimple, Tote, Notebook, Coffee } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, ArrowRight, Bag, FrameCorners, BookmarkSimple, Quotes, Sticker, Gift, Cards } from "@phosphor-icons/react/dist/ssr";
 import { useCart } from "@/lib/commerce/hooks";
 import { useShopCopy } from "@/lib/commerce/copy";
 import type { ProductSlug } from "@/lib/commerce/catalog";
 import { selectionHref, type Selection } from "@/lib/commerce/personalization";
 
-export const FORMAT_ICONS = { "art-print": FrameCorners, bookmark: BookmarkSimple, tote: Tote, notebook: Notebook, mug: Coffee } satisfies Record<ProductSlug, typeof FrameCorners>;
+export const FORMAT_ICONS = { "quote-card": Quotes, bookmark: BookmarkSimple, "bookplate-set": Sticker, "framed-print": FrameCorners, "gift-set": Gift, "club-pack": Cards } satisfies Record<ProductSlug, typeof FrameCorners>;
 export function ShopNav({ selection, back = false }: { selection: Selection | null; back?: boolean }) {
   const { c, locale } = useShopCopy(); const { items } = useCart();
   const count = items.reduce((sum, item) => sum + item.qty, 0);

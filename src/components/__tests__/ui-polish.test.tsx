@@ -106,7 +106,7 @@ describe("skip-link destinations", () => {
   it.each([
     ["personal shelf", async () => <ShelfPage />],
     ["shop", () => ShopPage({ searchParams: Promise.resolve({}) })],
-    ["product", () => ProductPage({ params: Promise.resolve({ slug: "art-print" }), searchParams: Promise.resolve({}) })],
+    ["product", () => ProductPage({ params: Promise.resolve({ slug: "gift-set" }), searchParams: Promise.resolve({}) })],
     ["cart", () => CartPage({ searchParams: Promise.resolve({}) })],
   ] as const)("makes the %s main programmatically focusable", async (_name, page) => {
     wrap(await page()); await flush();

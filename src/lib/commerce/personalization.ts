@@ -16,7 +16,7 @@ export function validateSelection(value: unknown): Selection {
   const selection = { payload, sourceId: data.sourceId, isExample: data.isExample };
   // Reserve room for the longest product path and cart-edit parameters.
   // Every accepted selection must remain navigable, including URL-only source IDs.
-  selectionHref("/shop/art-print", selection, { variant: "center", edit: "0".repeat(32), qty: 10 });
+  selectionHref("/shop/quote-card", selection, { variant: "center", edit: "0".repeat(32), qty: 10 });
   return selection;
 }
 export function parsePersonalization(query: ShopQuery): Personalization {

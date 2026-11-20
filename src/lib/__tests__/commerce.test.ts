@@ -6,7 +6,7 @@ import { CART_KEY, MAX_CART_ITEMS, createCartStore, itemIdentity, makeCartItem, 
 
 const payload = encodeLine({ bookSlug: "the-alchemist", text: "The treasure was never behind the dunes.", name: "Amara", ink: "paper", date: "2026-01-12" }).payload;
 const selection = { payload, sourceId: "treasure-behind-dunes-abc12", isExample: false };
-const input = { ...selection, productSlug: "art-print" as const, variant: "center", qty: 1 };
+const input = { ...selection, productSlug: "quote-card" as const, variant: "center", qty: 1 };
 
 function storage() {
   const data = new Map<string, string>();
@@ -14,8 +14,8 @@ function storage() {
 }
 
 describe("concept catalog", () => {
-  it("has only the five proposed formats, no invented price, and valid default placements", () => {
-    expect(CATALOG.map(p => p.slug)).toEqual(["art-print", "bookmark", "tote", "notebook", "mug"]);
+  it("has only the six planned formats, no invented price, and valid default placements", () => {
+    expect(CATALOG.map(p => p.slug)).toEqual(["quote-card", "bookmark", "bookplate-set", "framed-print", "gift-set", "club-pack"]);
     for (const product of CATALOG) {
       expect(product.availability).toBe("concept");
       expect(product.price).toBeUndefined();
@@ -29,7 +29,7 @@ describe("concept catalog", () => {
 
 describe("personalization boundary", () => {
   it("carries the exact line, ink and original accession through a product link", () => {
-    const href = selectionHref("/shop/art-print", selection, { variant: "lower" });
+    const href = selectionHref("/shop/quote-card", selection, { variant: "lower" });
     const query = Object.fromEntries(new URL(href, "https://carried.test").searchParams);
     expect(parsePersonalization(query)).toMatchObject({ selection, variant: "lower", issue: null });
   });
@@ -53,7 +53,7 @@ describe("personalization boundary", () => {
   it("omits redundant encoded accession ids so long valid links stay transportable", () => {
     const longPayload = { ...payload, q: "আ".repeat(220), b: "reader-book", bt: "ব".repeat(90), ba: "ল".repeat(60), by: 2024 };
     const encoded = encodePayload(longPayload);
-    const href = selectionHref("/shop/art-print", { payload: longPayload, sourceId: encoded, isExample: false });
+    const href = selectionHref("/shop/quote-card", { payload: longPayload, sourceId: encoded, isExample: false });
     expect(new URL(href, "https://carried.test").searchParams.has("id")).toBe(false);
     expect(parsePersonalization(Object.fromEntries(new URL(href, "https://carried.test").searchParams)).selection?.sourceId).toBe(encoded);
   });

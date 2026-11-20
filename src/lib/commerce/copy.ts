@@ -4,15 +4,14 @@ import type { LocalText } from "./catalog";
 
 const copy = {
   shop: ["The reading room shop", "রিডিং রুমের দোকান"],
-  intro: ["The line stays. Give it a place.", "কথাটি রয়ে যায়। তাকে একটি জায়গা দিন।"],
-  introBody: ["Explore five physical product concepts with your own Carried card. Save a selection here; download the digital card for free.", "আপনার Carried কার্ড দিয়ে পাঁচটি পণ্যের ধারণা দেখুন। পছন্দ এখানে রাখুন; ডিজিটাল কার্ড বিনামূল্যে ডাউনলোড করুন।"],
+  introBody: ["Explore the planned print products with your own Carried card. Save a selection here; download the digital card for free.", "আপনার Carried কার্ড দিয়ে পরিকল্পিত প্রিন্ট পণ্যগুলো দেখুন। পছন্দ এখানে রাখুন; ডিজিটাল কার্ড বিনামূল্যে ডাউনলোড করুন।"],
   cart: ["Your cart", "আপনার কার্ট"],
   browse: ["Browse concepts", "ধারণাগুলো দেখুন"],
   all: ["All formats", "সব ধরন"],
   formats: ["Find its next home", "তার পরের ঠিকানা খুঁজুন"],
-  featured: ["A line worth making room for.", "যে কথার জন্য জায়গা রাখতে হয়।"],
-  featureBody: ["Start with an art print. Your words, your signature, and a little space around them.", "একটি আর্ট প্রিন্ট দিয়ে শুরু করুন। আপনার কথা, আপনার স্বাক্ষর, আর চারপাশে একটু খোলা জায়গা।"],
-  personalize: ["Personalize the art print", "আর্ট প্রিন্ট সাজান"],
+  featured: ["One line, packed to be given.", "উপহার দেওয়ার জন্য বাক্সবন্দী একটি কথা।"],
+  featureBody: ["Start with the gift set — your line as cards, a bookmark, and bookplates, packed together in one box.", "উপহার সেট দিয়ে শুরু করুন — আপনার কথার কার্ড, একটি বুকমার্ক আর বুকপ্লেট, এক বাক্সে ভরা।"],
+  personalize: ["Personalize the gift set", "উপহার সেট সাজান"],
   explore: ["Explore this format", "এই ধরনটি দেখুন"],
   concept: ["Product concept", "পণ্যের ধারণা"],
   diagram: ["Flat placement preview · concept, not a physical sample", "সমতল নকশার প্রিভিউ · ধারণা, বাস্তব নমুনা নয়"],
@@ -41,8 +40,8 @@ const copy = {
   downloaded: ["Your digital card is ready. Check your downloads.", "আপনার ডিজিটাল কার্ড তৈরি। ডাউনলোডগুলো দেখুন।"],
   back: ["Back to concepts", "ধারণাগুলোতে ফিরুন"],
   edit: ["Edit personalization", "পছন্দ সম্পাদনা করুন"],
-  placement: ["Artwork placement", "কার্ডের অবস্থান"],
-  placementHint: ["Placement only changes this concept preview. Your digital download is the original catalog card.", "অবস্থান শুধু ধারণার প্রিভিউতে বদলায়। ডিজিটাল ডাউনলোডে মূল কার্ডই পাবেন।"],
+  placement: ["Arrangement", "বিন্যাস"],
+  placementHint: ["The arrangement only changes this concept preview. Your digital download is the original catalog card.", "বিন্যাস শুধু ধারণার প্রিভিউতে বদলায়। ডিজিটাল ডাউনলোডে মূল কার্ডই পাবেন।"],
   qty: ["Quantity", "পরিমাণ"],
   qtyHint: ["Save 1–10 of this selection. This is not an order.", "এই পছন্দের ১–১০টি রাখুন। এটি অর্ডার নয়।"],
   save: ["Save to cart", "কার্টে রাখুন"],
@@ -72,7 +71,6 @@ const copy = {
   noPrice: ["No price set · not for sale", "দাম নির্ধারিত নয় · বিক্রির জন্য নয়"],
   artwork: ["The artwork", "মূল কার্ড"],
   artworkBody: ["The complete Carried card is used in every preview. No book cover is reproduced on a product.", "প্রতি প্রিভিউতে পুরো Carried কার্ড ব্যবহৃত হয়েছে। কোনো পণ্যে বইয়ের প্রচ্ছদ ব্যবহার করা হয়নি।"],
-  readLine: ["Open the original line", "মূল কথাটি খুলুন"],
 } satisfies Record<string, readonly [string, string]>;
 export type ShopCopyKey = keyof typeof copy;
 export function useShopCopy() {

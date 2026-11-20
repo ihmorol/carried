@@ -1,17 +1,35 @@
-export type ProductSlug = "art-print" | "bookmark" | "tote" | "notebook" | "mug";
+export type ProductSlug = "quote-card" | "bookmark" | "bookplate-set" | "framed-print" | "gift-set" | "club-pack";
 export type LocalText = { en: string; bn: string };
 export type ProductVariant = { id: string; name: LocalText };
 export type Product = { slug: ProductSlug; category: ProductSlug; name: LocalText; description: LocalText; availability: "concept"; price: undefined; variants: readonly ProductVariant[] };
-const variants: readonly ProductVariant[] = [
+/* Flat placements describe where the whole card proof sits on each proposal.
+   Names describe arrangement only; no material, size, or price is claimed. */
+const flatVariants: readonly ProductVariant[] = [
   { id: "center", name: { en: "Centered artwork", bn: "মাঝখানে কার্ড" } },
   { id: "lower", name: { en: "Lower placement", bn: "নিচের দিকে কার্ড" } },
 ];
+const plateVariants: readonly ProductVariant[] = [
+  { id: "sheet", name: { en: "Full sheet", bn: "পুরো শিট" } },
+  { id: "single", name: { en: "Single plate", bn: "একটি প্লেট" } },
+];
+const boxVariants: readonly ProductVariant[] = [
+  { id: "open", name: { en: "Open box", bn: "খোলা বাক্স" } },
+  { id: "closed", name: { en: "Closed box", bn: "বন্ধ বাক্স" } },
+];
+const packVariants: readonly ProductVariant[] = [
+  { id: "stacked", name: { en: "Stacked", bn: "একের উপর এক" } },
+  { id: "spread", name: { en: "Fanned out", bn: "পাশে পাশে" } },
+];
+/* The planned assortment follows the physical-products business plan:
+   quote card, bookmark, bookplate set, framed print, gift set, club pack.
+   Ordering is not open and every price/spec remains a launch decision. */
 export const CATALOG: readonly Product[] = [
-  { slug: "art-print", category: "art-print", name: { en: "Art print", bn: "আর্ট প্রিন্ট" }, description: { en: "A little room for the line that stayed. Your catalog card, with a generous paper margin.", bn: "যে কথাটি রয়ে গেল, তার জন্য একটু জায়গা। চারপাশে খোলা কাগজের সঙ্গে আপনার কার্ড।" }, availability: "concept", price: undefined, variants },
-  { slug: "bookmark", category: "bookmark", name: { en: "Bookmark", bn: "বুকমার্ক" }, description: { en: "Keep your line beside the page. A narrow bookmark concept carrying your whole card.", bn: "পাতার পাশে থাকুক আপনার কথা। পুরো কার্ড নিয়ে সরু একটি বুকমার্কের ধারণা।" }, availability: "concept", price: undefined, variants },
-  { slug: "tote", category: "tote", name: { en: "Tote", bn: "টোট ব্যাগ" }, description: { en: "A line to take along. A simple tote concept with your card on the front.", bn: "সঙ্গে নেওয়ার মতো একটি কথা। সামনে আপনার কার্ডসহ সহজ টোট ব্যাগের ধারণা।" }, availability: "concept", price: undefined, variants },
-  { slug: "notebook", category: "notebook", name: { en: "Notebook", bn: "নোটবুক" }, description: { en: "One thought on the cover, room for the next inside. A notebook concept for your card.", bn: "প্রচ্ছদে একটি ভাবনা, ভেতরে পরের ভাবনার জায়গা। আপনার কার্ডসহ নোটবুকের ধারণা।" }, availability: "concept", price: undefined, variants },
-  { slug: "mug", category: "mug", name: { en: "Mug", bn: "মগ" }, description: { en: "A line beside your reading. A mug concept showing your card on one side.", bn: "পড়ার সময় পাশে থাকুক একটি কথা। এক পাশে আপনার কার্ডসহ মগের ধারণা।" }, availability: "concept", price: undefined, variants },
+  { slug: "quote-card", category: "quote-card", name: { en: "Quote card", bn: "কোট কার্ড" }, description: { en: "Your line, printed as the card you made it — your own copy to keep or give.", bn: "আপনার কথাই, আপনার বানানো কার্ডেই ছাপা — রাখার বা দেওয়ার জন্য নিজের একটি কপি।" }, availability: "concept", price: undefined, variants: flatVariants },
+  { slug: "bookmark", category: "bookmark", name: { en: "Bookmark", bn: "বুকমার্ক" }, description: { en: "Keep your line beside the page. A narrow bookmark concept carrying your whole card.", bn: "পাতার পাশে থাকুক আপনার কথা। পুরো কার্ড নিয়ে সরু একটি বুকমার্কের ধারণা।" }, availability: "concept", price: undefined, variants: flatVariants },
+  { slug: "bookplate-set", category: "bookplate-set", name: { en: "Bookplate set", bn: "বুকপ্লেট সেট" }, description: { en: "Small plates for the books on your own shelf, each carrying your line where a library stamp once went.", bn: "নিজের তাকের বইগুলোর জন্য ছোট ছোট প্লেট — যেখানে একসময় লাইব্রেরির সিল বসত, সেখানেই আপনার কথা।" }, availability: "concept", price: undefined, variants: plateVariants },
+  { slug: "framed-print", category: "framed-print", name: { en: "Framed print", bn: "ফ্রেম করা প্রিন্ট" }, description: { en: "The line leaves the shelf for the wall. Your card, framed for a reading room or a doorway.", bn: "কথাটি তাক ছেড়ে দেয়ালে যায়। পড়ার ঘর বা দরজার কাছে ফ্রেমে বাঁধা আপনার কার্ড।" }, availability: "concept", price: undefined, variants: flatVariants },
+  { slug: "gift-set", category: "gift-set", name: { en: "Gift set", bn: "উপহার সেট" }, description: { en: "Your line packed to be given — cards, a bookmark, and bookplates together in one box.", bn: "উপহার দেওয়ার জন্য ভরা আপনার কথা — এক বাক্সে কার্ড, একটি বুকমার্ক আর বুকপ্লেট।" }, availability: "concept", price: undefined, variants: boxVariants },
+  { slug: "club-pack", category: "club-pack", name: { en: "Book club pack", bn: "বুক ক্লাব প্যাক" }, description: { en: "One card in many copies — for a book club, a classroom, or a stall at the book fair.", bn: "একটি কার্ডের অনেক কপি — বুক ক্লাব, ক্লাসরুম বা বইয়ের মেলার স্টলের জন্য।" }, availability: "concept", price: undefined, variants: packVariants },
 ];
 export function getProduct(slug: string, category?: ProductSlug): Product | undefined {
   return CATALOG.find(p => p.slug === slug && (!category || p.category === category));
