@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Tote } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Printer } from "@phosphor-icons/react/dist/ssr";
 import { Header, Footer } from "@/components/Chrome";
 import { LineCard } from "@/components/LineCard";
 import { TiltCard } from "@/components/TiltCard";
@@ -41,7 +41,7 @@ export default async function LinePage({ params, searchParams }: Props) {
   const payload = enrichLineBook(raw, book);
   const others = seedLinesFor(payload.b).filter((line) => line.q !== payload.q).slice(0, 3);
   const counts = await getStore().getVoteCounts([id, ...others.map((line) => line.id)]).catch(() => new Map<string, number>());
-  const merchandiseUrl = selectionHref("/shop", { payload, sourceId: id, isExample: false });
+  const merchandiseUrl = selectionHref("/shop/quote-card", { payload, sourceId: id, isExample: false });
   const recreateUrl = `/l/${id}?restyle=1#write`;
   const onShelf = getBook(book.slug) ?? await findBook(book.slug).catch(() => undefined);
   const restyle = (await searchParams)?.restyle === "1";
@@ -59,7 +59,7 @@ export default async function LinePage({ params, searchParams }: Props) {
             <div><ShareRow payload={payload} id={id} /></div>
             <p><Link href={recreateUrl} className="link-ledger inline-flex min-h-11 items-center"><T k="card.restyle" /></Link></p>
             <div className="border-t border-[var(--color-rule)] pt-6">
-              <Link href={merchandiseUrl} className="ui-button-secondary"><Tote size={19} aria-hidden="true" /><T k="card.shop" /></Link>
+              <Link href={merchandiseUrl} className="ui-button-secondary"><Printer size={19} aria-hidden="true" /><T k="card.shop" /></Link>
               <p className="muted mt-3 text-xs"><T k="card.shopNote" /></p>
             </div>
           </div>

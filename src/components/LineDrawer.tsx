@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { Dialog } from "@base-ui/react/dialog";
-import { X, ArrowUpRight } from "@phosphor-icons/react";
+import { X, ArrowUpRight, Printer } from "@phosphor-icons/react";
 import type { RefObject } from "react";
 import type { FeaturedPair } from "@/lib/featured-pair";
 import { originalName } from "@/lib/books";
+import { selectionHref } from "@/lib/commerce/personalization";
 import { LineCard } from "./LineCard";
 import { ShareRow } from "./ShareRow";
 import { TiltCard } from "./TiltCard";
@@ -41,6 +42,7 @@ export default function LineDrawer({ pair, open, onOpenChange, returnFocus }: {
               </TiltCard>
               <ShareRow payload={pair.line} id={pair.line.id} />
               <div className="line-drawer-links">
+                <Link href={selectionHref("/shop/quote-card", { payload: pair.line, sourceId: pair.line.id, isExample: false })}>{t("card.shop")}<Printer size={18} aria-hidden="true" /></Link>
                 <Link href={`/l/${pair.line.id}`}>{t("hero.openLine")}<ArrowUpRight size={18} aria-hidden="true" /></Link>
                 <Link href={`/b/${pair.book.slug}#write`} className="ui-button">{t("nav.write")}</Link>
               </div>

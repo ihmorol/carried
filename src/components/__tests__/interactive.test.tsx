@@ -400,7 +400,7 @@ describe("resolved restyle", () => {
     expect((screen.getByLabelText("01. The line it left in you") as HTMLTextAreaElement).value).toBe("What stayed");
     expect((screen.getByLabelText("02. Sign it") as HTMLInputElement).value).toBe("Original Reader");
     expect(screen.getByText(/link-only/i)).toBeTruthy();
-    const shopUrl = new URL(screen.getByRole("link", { name: "Put it on something" }).getAttribute("href")!, window.location.origin);
+    const shopUrl = new URL(screen.getByRole("link", { name: "Print this card" }).getAttribute("href")!, window.location.origin);
     const selection = parsePersonalization(Object.fromEntries(shopUrl.searchParams)).selection!;
     expect(selection.sourceId).toBe(id);
     expect(selection.payload.d).toBe("2026-11-09");
