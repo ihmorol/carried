@@ -16,7 +16,10 @@ export async function GET(req: Request, { params }: Params) {
     const [records, total] = await Promise.all([store.getLines(slug, limit), store.countLines(slug)]);
     const seeds = seedLinesFor(slug).map((payload) => ({ id: payload.id, payload, t: new Date(`${payload.d}T12:00:00Z`).getTime() }));
     const merged = [...new Map([...seeds, ...records].map((record) => [record.id, record])).values()].slice(0, limit);
-    const counts = await store.getVoteCounts(merged.map((record) => record.id));
+    // Vote counts are enrichment, not load-bearing: a failed SCARD pipeline
+    // degrades to zero counts instead of 502ing the whole feed, matching
+    // /api/recent's contract.
+    const counts = await store.getVoteCounts(merged.map((record) => record.id)).catch(() => new Map<string, number>());
     const lines = merged.map((record) => ({ ...record, votes: counts.get(record.id) ?? 0 }));
     return NextResponse.json({ lines, total: store.kind === "memory" ? total : total + seeds.length, live: store.kind === "redis" }, { headers: { "cache-control": "no-store" } });
   } catch (err) {
