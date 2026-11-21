@@ -19,7 +19,7 @@ All notable changes to Carried are recorded here. Digital cards stay free in eve
 - Noto Serif Bengali is the bilingual display voice with the Manrope/Anek Bangla interface pair; the reading-room theme (butter paper, petrol, persimmon, pistachio) replaced the letterpress look.
 - Book covers resolve through Open Library and Internet Archive with labeled cloth fallbacks; book links resolve without API keys.
 - Live feeds poll only while the tab is visible, with offline fallbacks: unreachable shelf (502/503 or network failure) still mints a link-only card, and rate limiting stops the stamp with a retry message.
-- Line writes batch their Redis commands into one pipeline and the per-IP rate limiter self-heals its expiry window atomically.
+- Publishing a line is one Redis round trip instead of several, and the per-IP rate limiter self-heals its hourly window atomically, so a lost request can never leave your address stuck rejected.
 
 ### Fixed
 

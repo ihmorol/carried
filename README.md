@@ -68,7 +68,7 @@ UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
 UPSTASH_REDIS_REST_TOKEN=your-token
 ```
 
-That's it. The API routes (`/api/books`, `/api/books/[slug]/lines`, `/api/recent`) switch to Redis, rate limits kick in (8 lines/hour and 4 books/hour per IP), and every feed goes live. The codec and card components don't change; only the source of truth does.
+That's it. The API routes (`/api/books`, `/api/books/[slug]/lines`, `/api/lines/[id]/vote`, `/api/recent`) switch to Redis, rate limits kick in (8 lines/hour, 4 books/hour, and 240 underline votes/hour per IP), and every feed goes live. Cover art is separate: `GET /api/covers?slugs=…` resolves front covers for up to 64 shelf slugs at a time, and unknown slugs return `null` so tiles draw their authored fallback. Feeds take a `limit` up to their cap (200 on book feeds, 100 on `/api/recent`; anything else is a 400), and shelf responses carry a `live` field that tells shared-shelf data from offline fallbacks. The codec and card components don't change; only the source of truth does.
 
 ### Deploy
 
@@ -87,11 +87,13 @@ src/
 │   ├── api/
 │   │   ├── books/route.ts           # GET all books · POST add a book
 │   │   ├── books/[slug]/lines/      # GET + POST everyone's lines for a book
+│   │   ├── lines/[id]/vote/         # POST toggle an underline (one per device id)
+│   │   ├── covers/route.ts          # GET front covers for shelf slugs
 │   │   └── recent/route.ts          # GET freshest lines across the shelf
 │   ├── shelf/page.tsx               # "my lines", local and private
 │   └── sitemap.ts / robots.ts       # SEO plumbing
 ├── components/                      # LineCard, BookSpine, BookCover, BookLinks,
-│                                    # StampMark, Composer, LinesFeed, RecentFeed,
+│                                    # CardDesignPicker, Composer, LinesFeed, RecentFeed,
 │                                    # ShelfExplorer, ShareRow…
 └── lib/
     ├── books.ts                     # 143-book dataset + instant search
@@ -101,17 +103,20 @@ src/
     ├── bookmeta.ts                  # free-archive resolver: Open Library →
     │                                #   Internet Archive → drawn spine fallback
     ├── inks.ts                      # the three card inks (paper/midnight/moss)
+    ├── card-templates.ts            # the three card editions (bookplate/poster/ticket)
+    ├── commerce/                    # shop catalog, cart validation, product copy
     ├── canvas.ts                    # 1080×1350 PNG export
     ├── seeds/                       # 1,430 editorial seed lines, ten per book
     └── use-poll.ts                  # visibility-aware polling hook
-public/fonts/                        # Fraunces + IBM Plex Mono TTFs (canvas + satori)
+public/fonts/                        # locally hosted OFL faces (TTF for canvas/OG,
+                                     #   WOFF2 for web): Noto Serif Bengali, Manrope, Anek Bangla
 ```
 
 ## Merchandise concepts
 
-Digital cards, Paper/Midnight/Moss styles, PNG downloads, and sharing stay free. `/shop` previews five proposed physical formats with actual Carried artwork. `/shop/[slug]` personalizes a concept; `/shop/cart` keeps device-local selections. Ordering is not open: no prices, payment, delivery details, or fake order-success flow.
+Digital cards, Paper/Midnight/Moss styles, PNG downloads, and sharing stay free. `/shop` previews six planned print products with actual Carried artwork. `/shop/[slug]` personalizes a concept; `/shop/cart` keeps device-local selections. Ordering is not open: no prices, payment, delivery details, or fake order-success flow.
 
-See [the theme migration](docs/theme-migration.md), [design system](DESIGN.md), and [commerce boundary ADR](docs/adr/0002-free-digital-local-merchandise.md) for what changed and what is still required to launch physical sales.
+See [the theme migration](docs/theme-migration.md), [design system](DESIGN.md), [product boundaries](PRODUCT.md), and the commerce ADRs ([boundary](docs/adr/0002-free-digital-local-merchandise.md), [catalog](docs/adr/0003-shop-catalog-follows-the-physical-products-plan.md)) for what changed and what is still required to launch physical sales.
 
 ## Design language
 

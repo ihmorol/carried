@@ -25,7 +25,7 @@ toggleVote uses three sequential round trips; SISMEMBER+SCARD can share a pipeli
 Unify API error envelopes: GET /api/books returns `{ error, live: false }`, GET /api/books/[slug]/lines returns `{ error }` only, POSTs return bare `{ error }`. Standardize on `{ error, live: false }`. (specialist finding)
 
 **Priority:** P2
-Upstash error text reaches API clients verbatim (`Shelf error: ${json.error}` at store.ts:126). Log server-side, return the generic client-safe message. (specialist finding)
+Upstash error text no longer reaches clients (`store.ts` `cmd` returns the generic unreachable message; fixed by 226b5e1), but the upstream error is dropped silently instead of logged. Log it server-side so shelf outages stay diagnosable. (specialist finding)
 
 **Priority:** P2
 Vote sets never expire while the vote route accepts URL-minted payload ids, so key space grows unbounded. Decide: TTL on vote sets, or persist votes only for ids that exist in `carried:line:*`/seeds. Revisit the documented trade-off in CONTEXT.md when deciding. (specialist finding)
@@ -50,11 +50,8 @@ RedisStore short-id collision exhaustion (all ten suffix widths claimed → 409)
 **Priority:** P3
 LinePage 404 contract (garbage id, oversized id, unresolvable book) is untested end-to-end. (specialist finding)
 
-## Docs
-
-**Priority:** P3
-README API section: document GET /api/covers (slugs param, 64 cap, null-for-unknown), the vote rate limit (240/h), the `live` field on the line-creation response, and the new limit-param 400 behavior. (specialist finding)
-
 ## Completed
 
 **Completed:** v0.2.0 (2026-11-21) — collectible card editions, reading room shop concept storefront, print pathway, card stamp restrike, rate-limiter self-heal, line-write pipeline, coverage 37 → ~280 tests.
+
+**Completed:** v0.2.0.0 (2026-11-21) — README API section now documents GET /api/covers (slugs param, 64 cap, null-for-unknown), the 240/h vote rate limit, the `live` field on shelf responses, and the feed limit-param 400 behavior.
