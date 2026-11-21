@@ -11,7 +11,7 @@ import { ShareRow } from "@/components/ShareRow";
 import { T } from "@/components/T";
 import { seedLinesFor } from "@/lib/seeds";
 import { originalName, getBook } from "@/lib/books";
-import { selectionHref } from "@/lib/commerce/personalization";
+import { merchandiseHref } from "@/lib/commerce/personalization";
 import { resolveBookForLine, enrichLineBook, findBook, getStore, resolveLine } from "@/lib/store";
 
 type Props = {
@@ -41,7 +41,7 @@ export default async function LinePage({ params, searchParams }: Props) {
   const payload = enrichLineBook(raw, book);
   const others = seedLinesFor(payload.b).filter((line) => line.q !== payload.q).slice(0, 3);
   const counts = await getStore().getVoteCounts([id, ...others.map((line) => line.id)]).catch(() => new Map<string, number>());
-  const merchandiseUrl = selectionHref("/shop/quote-card", { payload, sourceId: id, isExample: false });
+  const merchandiseUrl = merchandiseHref(payload, id);
   const recreateUrl = `/l/${id}?restyle=1#write`;
   const onShelf = getBook(book.slug) ?? await findBook(book.slug).catch(() => undefined);
   const restyle = (await searchParams)?.restyle === "1";
@@ -51,7 +51,7 @@ export default async function LinePage({ params, searchParams }: Props) {
       <Header />
       <main id="main-content" className="page-content">
         <div className="card-workspace">
-          <div className="card-workspace-art"><TiltCard land><LineCard payload={payload} book={book} id={id} size="lg" animateStamp votes={counts.get(id) ?? 0} /></TiltCard></div>
+          <div className="card-workspace-art"><TiltCard land><LineCard payload={payload} book={book} id={id} animateStamp votes={counts.get(id) ?? 0} /></TiltCard></div>
           <div className="card-workspace-copy">
             <h1 className="page-title"><T k="card.ready" /></h1>
             <p><T k="card.travel" /></p>

@@ -6,7 +6,7 @@ import { Printer } from "@phosphor-icons/react/dist/ssr";
 import { bookForPayload } from "@/lib/books";
 import { accessionNo, type LinePayload } from "@/lib/line";
 import { downloadLineCard, lineCardBlob } from "@/lib/canvas";
-import { selectionHref } from "@/lib/commerce/personalization";
+import { merchandiseHref } from "@/lib/commerce/personalization";
 import { SITE_URL } from "@/lib/site";
 import { useLocale } from "./LocaleProvider";
 
@@ -89,7 +89,7 @@ function CardShare({ payload, id }: { payload: LinePayload; id: string }) {
       <a href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="share-destination">{t("share.wa")}</a>
     </div>
     {error && <p role="alert" className="mt-3 text-sm text-[var(--color-stamp)]">{error}</p>}
-    {savedCard && <p className="mt-3"><Link href={selectionHref("/shop/quote-card", { payload, sourceId: id, isExample: false })} className="link-ledger inline-flex min-h-11 items-center gap-1.5 text-sm"><Printer size={15} aria-hidden="true" />{t("share.printIt")}</Link></p>}
+    {savedCard && <p className="mt-3"><Link href={merchandiseHref(payload, id)} className="link-ledger inline-flex min-h-11 items-center gap-1.5 text-sm"><Printer size={15} aria-hidden="true" />{t("share.printIt")}</Link></p>}
     {fallback && <div className="mt-3"><label htmlFor={`copy-${id}`} className="mb-2 block text-sm">{t("share.fallback")}</label>
       <input id={`copy-${id}`} type="text" readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="field-input" />
     </div>}

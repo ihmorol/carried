@@ -1,10 +1,23 @@
 import { CATALOG } from "./catalog";
 import { bookForPayload } from "@/lib/books";
 import { decodeLine, encodePayload, LINE_ID_MAX, validateLinePayload, type LinePayload } from "@/lib/line";
+import { SEED_LINES } from "@/lib/seeds";
 
 export type Selection = { payload: LinePayload; sourceId: string; isExample: boolean };
 export type ShopQuery = Record<string, string | string[] | undefined>;
 export type Personalization = { selection: Selection | null; issue: "invalid-line" | null; variant?: string; editKey?: string; qty?: number };
+
+/** The one print-concept target for a card: every "print this card" surface
+ * deep-links the quote card so the shop path can never drift per caller. */
+export function merchandiseHref(payload: LinePayload, sourceId: string): string {
+  return selectionHref("/shop/quote-card", { payload, sourceId, isExample: false });
+}
+
+/** The labeled editorial example the shop pages seed when the URL carries no line. */
+export function exampleSelection(): Selection {
+  const seed = SEED_LINES.find(line => line.b === "the-alchemist") ?? SEED_LINES[0];
+  return { payload: seed, sourceId: seed.id, isExample: true };
+}
 export function safeSourceId(value: unknown): value is string {
   return typeof value === "string" && value.length > 0 && value.length <= LINE_ID_MAX && /^[a-zA-Z0-9_-]+$/.test(value);
 }
