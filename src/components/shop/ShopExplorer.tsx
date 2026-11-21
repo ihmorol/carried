@@ -31,7 +31,7 @@ export function ShopExplorer({ initial, example }: { initial: Personalization; e
           <div className="shop-feature-copy">
             <h2>{c("featured")}</h2>
             <p>{c("featureBody")}</p>
-            <Link href={selectionHref("/shop/art-print", selection)} className="ui-button">{c("personalize")}<ConceptArrow /></Link>
+            <Link href={selectionHref("/shop/gift-set", selection)} className="ui-button">{c("personalize")}<ConceptArrow /></Link>
             <p className="shop-note">{c("noPrice")}</p>
           </div>
         </section>
