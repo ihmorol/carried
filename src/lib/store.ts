@@ -123,7 +123,9 @@ class RedisStore implements Store {
     });
     if (!res.ok) throw new StoreError("The live shelf is unreachable.", 502);
     const json = (await res.json()) as { result?: T; error?: string };
-    if (json.error) throw new StoreError(`Shelf error: ${json.error}`, 502);
+    // Upstream error text can name keys and quota state; it stays on the
+    // server side only. Clients get the same generic message every path uses.
+    if (json.error) throw new StoreError("The live shelf is unreachable.", 502);
     return json.result as T;
   }
 
@@ -145,9 +147,11 @@ class RedisStore implements Store {
 
   async limit(kind: "line" | "book" | "vote", ip: string, max: number): Promise<void> {
     const key = `carried:rl:${kind}:${ip}`;
-    const n = await this.cmd<number>(...["INCR", key]);
-    if (n === 1) await this.cmd("EXPIRE", key, 3600);
-    if (n > max) throw new StoreError("Easy, the shelf will still be here in an hour.", 429);
+    // One pipeline per hit: INCR with EXPIRE NX alongside. A lost or crashed
+    // round trip can then never leave a TTL-less counter behind that 429s an
+    // address forever; NX keeps an existing hourly window from being extended.
+    const [n] = await this.pipeline<number>([["INCR", key], ["EXPIRE", key, 3600, "NX"]]);
+    if ((n ?? 0) > max) throw new StoreError("Easy, the shelf will still be here in an hour.", 429);
   }
 
   async getLines(slug: string, limit = 200): Promise<LineRecord[]> {
@@ -191,26 +195,34 @@ class RedisStore implements Store {
     if (dup) return dup;
 
     // short meaningful id, extend the hash suffix only if a different
-    // line already claims it (deterministic, so reposts reuse the id)
+    // line already claims it. The claim itself is the atomic SET NX: two
+    // concurrent identical submissions cannot duplicate feed entries, and
+    // a different line can never overwrite one URL's stored payload.
     let suffixChars = 5;
     let id = lineSlugId(payload, suffixChars);
-    let claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
-    while (claimed) {
-      const previous = parsePayload(claimed);
+    let claim = await this.cmd<string | null>("SET", `carried:line:${id}`, JSON.stringify(payload), "NX");
+    while (claim === null) {
+      const claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
+      const previous = claimed ? parsePayload(claimed) : null;
       if (previous && samePayload(previous, payload)) return existing.find((record) => record.id === id) ?? { id, payload: previous, t: Date.now() };
       if (suffixChars >= 10) throw new StoreError("That line needs a fresh identifier. Try again.", 409);
       suffixChars++;
       id = lineSlugId(payload, suffixChars);
-      claimed = await this.cmd<string | null>("GET", `carried:line:${id}`);
+      claim = await this.cmd<string | null>("SET", `carried:line:${id}`, JSON.stringify(payload), "NX");
     }
-    await this.cmd("SET", `carried:line:${id}`, JSON.stringify(payload));
-
     const record: LineRecord = { id, payload, t: Date.now() };
     const body = JSON.stringify(record);
-    await this.cmd("LPUSH", `carried:lines:${slug}`, body);
-    await this.cmd("LTRIM", `carried:lines:${slug}`, "0", "499");
-    await this.cmd("LPUSH", "carried:recent", body);
-    await this.cmd("LTRIM", "carried:recent", "0", "199");
+    // The write tail shares no read dependency, so five REST round trips
+    // collapse into one pipeline on the hottest write path of the site.
+    // The id-key stores the payload alone (the claim check parses it as such);
+    // the record body rides on the feed lists.
+    await this.pipeline([
+      ["SET", `carried:line:${id}`, JSON.stringify(payload)],
+      ["LPUSH", `carried:lines:${slug}`, body],
+      ["LTRIM", `carried:lines:${slug}`, "0", "499"],
+      ["LPUSH", "carried:recent", body],
+      ["LTRIM", "carried:recent", "0", "199"],
+    ]);
     return record;
   }
 
