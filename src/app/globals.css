@@ -369,7 +369,6 @@ input, textarea { caret-color: var(--color-stamp); }
 }
 
 .edition-accession {
-  font-size: 2.6389cqw;
   font-weight: 600;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
