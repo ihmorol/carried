@@ -1,0 +1,148 @@
+/* Card stage: "laid on the desk." Wrappers only — the painted 4:5 artwork
+   inside .stage-card stays flat and identical to the PNG/OG renderers.
+   Depth is raised-paper sheets and one contact shadow, never gradients,
+   and every decorative layer is aria-hidden. All motion is transform/
+   opacity; landings, lifts, and tilt are disabled for reduced motion,
+   paused/reduced reading rooms, and coarse pointers. */
+
+.stage {
+  position: relative;
+  min-width: 0;
+}
+
+/* One perspective container per featured card (1-2 blurred shadows per page). */
+.stage:not(.stage--flat) { perspective: 1100px; }
+
+.stage-object {
+  position: relative;
+  transform-style: preserve-3d;
+  /* JS writes three numbers (--stage-rx/--stage-ry/--stage-s) in one rAF;
+     the transform reads them. Hover/focus lift rides the same property. */
+  transform: translateY(var(--stage-y, 0px)) rotateX(var(--stage-rx, 0deg))
+    rotateY(var(--stage-ry, 0deg)) scale(var(--stage-s, 1));
+  transition: transform 550ms var(--ease-out-soft);
+}
+
+.stage-card { position: relative; min-width: 0; }
+
+/* Backing stack: two raised-paper sheets behind the card. */
+.stage-stack {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.stage-stack::before,
+.stage-stack::after {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  content: "";
+  pointer-events: none;
+}
+.stage-stack::before {
+  background: var(--color-paper-raised);
+  transform: translateZ(-6px) translate(2px, 3px);
+}
+.stage-stack::after {
+  background: var(--color-surface-soft);
+  transform: translateZ(-14px) translate(5px, 6px);
+}
+
+/* Contact shadow: one solid --color-shadow shape under the card, blurred.
+   Shifts and scales with the lean via the same stage variables. */
+.stage-shadow {
+  position: absolute;
+  inset-inline: 5%;
+  bottom: -11px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-shadow);
+  filter: blur(14px);
+  opacity: 0.32;
+  transform: translateX(var(--stage-shadow-x, 0px)) scale(var(--stage-shadow-s, 1));
+  transition: opacity 550ms var(--ease-out-soft), transform 550ms var(--ease-out-soft);
+  pointer-events: none;
+}
+
+/* Hover and keyboard focus lift the object, the stack separates a touch
+   further, and the shadow deepens toward the light. :hover stays a
+   fine-pointer event; :focus-within keeps the lift for keyboards. */
+.stage:focus-within .stage-object { --stage-y: -6px; }
+.stage:focus-within .stage-shadow { opacity: 0.4; }
+@media (hover: hover) and (pointer: fine) {
+  .stage:hover .stage-object { --stage-y: -6px; }
+  .stage:hover .stage-shadow { opacity: 0.4; }
+  .stage:hover .stage-stack::before { transform: translateZ(-6px) translate(3px, 4px); }
+  .stage:hover .stage-stack::after { transform: translateZ(-14px) translate(6px, 7px); }
+}
+
+/* Landing: a lifted first frame while data-land="pending" (paused), then
+   one settle to rest; the shadow blooms in the final third. No attribute
+   at all means landed, so SSR and no-JS never flash or hide content. */
+@keyframes stage-land {
+  from { transform: translateY(-16px) rotateX(2deg) scale(0.985); }
+  to { transform: translateY(0) rotateX(0deg) scale(1); }
+}
+@keyframes stage-shadow-land {
+  0%, 66% { opacity: 0.1; transform: scale(0.94); }
+  100% { opacity: 0.32; transform: scale(1); }
+}
+.stage-object:is([data-land="pending"], [data-land="run"]) {
+  animation: stage-land var(--dur-land) var(--ease-settle) both;
+}
+.stage-object[data-land="pending"] { animation-play-state: paused; }
+.stage-object:is([data-land="pending"], [data-land="run"]) .stage-shadow {
+  animation: stage-shadow-land var(--dur-land) var(--ease-settle) both;
+}
+.stage-object[data-land="pending"] .stage-shadow { animation-play-state: paused; }
+
+/* Paused or reduced rooms, and reduced-motion systems, keep the card at
+   rest: no landing, no lift; the static depth sheets stay. */
+.reading-workspace:is([data-motion="paused"], [data-motion="reduced"]) :is(.stage-object, .stage-shadow) {
+  animation: none !important;
+  --stage-y: 0px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-object,
+  .stage-shadow {
+    animation: none !important;
+    --stage-y: 0px;
+  }
+}
+
+/* Flat stage: no 3D, no tilt; a static contact shadow and a small lift
+   with :focus-within too. Cheap enough for drawers and narrow panes. */
+.stage--flat .stage-card {
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-card-rest);
+  transition: transform var(--dur) var(--ease-out-soft), box-shadow var(--dur) var(--ease-out-soft);
+}
+.stage--flat:focus-within .stage-card {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-lift);
+}
+@media (hover: hover) and (pointer: fine) {
+  .stage--flat:hover .stage-card {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-card-lift);
+  }
+}
+
+/* Flat grid treatment for reader-line card grids: the contact shadow sits
+   on the card itself (no stage wrapper per tile), and the tile lifts on
+   hover/focus. CSS-only over the existing feed markup, so scroll-reveal
+   transforms on the list items never fight the lift. */
+.line-card-grid .edition-artwork {
+  box-shadow: var(--shadow-card-rest);
+  transition: box-shadow var(--dur) var(--ease-out-soft);
+}
+.line-card-grid > li > div { transition: transform var(--dur) var(--ease-out-soft); }
+@media (hover: hover) and (pointer: fine) {
+  .line-card-grid > li:is(:hover, :focus-within) > div { transform: translateY(-3px); }
+  .line-card-grid > li:is(:hover, :focus-within) .edition-artwork { box-shadow: var(--shadow-card-lift); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .line-card-grid > li > div { transition: none; transform: none !important; }
+}

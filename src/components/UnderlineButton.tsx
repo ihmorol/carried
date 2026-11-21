@@ -1,76 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { getVoterId } from "@/lib/voter";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { beginVote, cancelVote, finishVote, getServerVoteState, getVoteState, getVoterId, subscribeVotes, updateVoteCount } from "@/lib/voter";
+import { TextUnderline } from "@phosphor-icons/react";
+import type { Ink } from "@/lib/inks";
 import { useLocale } from "./LocaleProvider";
 
-/**
- * The vote: "underline this line." One toggle per anonymous reader,
- * and the count decides which lines rise to the top of the margin.
- */
-export function UnderlineButton({
-  lineId,
-  initialVotes = 0,
-  initialVoted = false,
-  onChange,
-}: {
-  lineId: string;
-  initialVotes?: number;
-  initialVoted?: boolean;
+export function UnderlineButton({ lineId, initialVotes = 0, initialVoted = false, onChange, ink }: {
+  lineId: string; initialVotes?: number; initialVoted?: boolean; ink?: Ink;
   onChange?: (lineId: string, votes: number, voted: boolean) => void;
 }) {
   const { t } = useLocale();
-  const [votes, setVotes] = useState(initialVotes);
-  const [voted, setVoted] = useState(initialVoted);
-  const [busy, setBusy] = useState(false);
-
+  const state = useSyncExternalStore(subscribeVotes, () => getVoteState(lineId), getServerVoteState);
+  const [error, setError] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => { updateVoteCount(lineId, initialVotes); }, [lineId, initialVotes]);
+  useEffect(() => () => { if (request.current) { request.current.abort(); cancelVote(lineId); } }, [lineId]);
+  const votes = state.votes ?? initialVotes;
+  // A persisted choice is a preference, never evidence for a live count.
+  const voted = state.voted ?? initialVoted;
   async function toggle(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (busy) return;
-    setBusy(true);
-    const optimisticVoted = !voted;
-    setVoted(optimisticVoted);
-    setVotes((v) => Math.max(0, v + (optimisticVoted ? 1 : -1)));
+    e.preventDefault(); e.stopPropagation();
+    if (!beginVote(lineId)) return;
+    setError(false);
+    const controller = new AbortController(); request.current = controller;
     try {
       const res = await fetch(`/api/lines/${encodeURIComponent(lineId)}/vote`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ voterId: getVoterId() }),
+        method: "POST", signal: controller.signal, headers: { "content-type": "application/json" }, body: JSON.stringify({ voterId: getVoterId() }),
       });
-      if (res.ok) {
-        const data = (await res.json()) as { votes: number; voted: boolean };
-        setVotes(data.votes);
-        setVoted(data.voted);
-        onChange?.(lineId, data.votes, data.voted);
-      } else {
-        setVoted(!optimisticVoted);
-        setVotes((v) => Math.max(0, v + (optimisticVoted ? -1 : 1)));
-      }
-    } catch {
-      setVoted(!optimisticVoted);
-      setVotes((v) => Math.max(0, v + (optimisticVoted ? -1 : 1)));
-    } finally {
-      setBusy(false);
-    }
+      if (!res.ok) throw new Error("vote failed");
+      const data = await res.json() as { votes: number; voted: boolean };
+      if (!Number.isFinite(data.votes) || data.votes < 0 || typeof data.voted !== "boolean") throw new Error("invalid vote");
+      if (controller.signal.aborted) return;
+      finishVote(lineId, data.votes, data.voted); onChange?.(lineId, data.votes, data.voted);
+    } catch { if (!controller.signal.aborted) { cancelVote(lineId); setError(true); } }
+    finally { if (request.current === controller) request.current = null; }
   }
-
-  return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-pressed={voted}
-      aria-label={voted ? `${t("vote.underlined")} · ${votes}` : `${t("vote.underline")} · ${votes}`}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] transition-colors ${
-        voted
-          ? "border-[var(--color-stamp)] bg-[var(--color-stamp)] text-[var(--color-paper-raised)]"
-          : "border-[var(--color-rule)] text-[var(--color-ink-soft)] hover:border-[var(--color-stamp)] hover:text-[var(--color-stamp)]"
-      } disabled:opacity-60`}
-      disabled={busy}
-    >
-      <span aria-hidden="true">⁂</span>
-      {voted ? t("vote.underlined") : t("vote.underline")}
-      <span className="tabular-nums opacity-80">· {votes}</span>
+  return <span className="inline-flex flex-col items-start gap-1">
+    <button type="button" onClick={toggle} aria-pressed={voted} aria-busy={state.busy} disabled={state.busy}
+      aria-label={`${t("vote.underline")} · ${votes}`}
+      className="inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 font-mono text-[13px] font-medium disabled:opacity-60"
+      style={{ color: voted ? ink?.stamp ?? "var(--color-stamp)" : ink?.text ?? "inherit", borderColor: voted ? ink?.stamp ?? "var(--color-stamp)" : ink?.rule ?? "var(--color-rule)", background: "transparent" }}>
+      <TextUnderline size={17} weight="regular" aria-hidden="true" />{t(voted ? "vote.underlined" : "vote.underline")}<span className="tabular-nums">· {votes}</span>
     </button>
-  );
+    {error && <span role="status" className="text-[13px]" style={{ color: ink?.stamp ?? "var(--color-stamp)" }}>{t("vote.error")}</span>}
+  </span>;
 }

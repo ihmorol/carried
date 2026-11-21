@@ -32,8 +32,10 @@ Single-context: `CONTEXT.md` at the root + `docs/adr/`. See `docs/agents/domain.
    garbage); `findBook` decides book existence; the store re-validates
    server-side (`validateLineInput` / `validateBookInput`). Never trust the URL
    or the body.
-4. **Design rules are in the brand doc.** Two typefaces, three inks, one accent.
-   If a diff introduces a gradient or a fourth color scheme, it's wrong.
+4. **Design rules are in the brand doc.** One serif display face (Noto Serif
+   Bengali) plus the Manrope/Anek Bangla interface pair — three locally hosted
+   OFL faces at 400–600 — three inks, one accent. If a diff introduces a
+   gradient or a fourth color scheme, it's wrong.
 5. **Tests for pure logic.** The payload codec, search, and store validation
    have vitest coverage (`npm test`); keep it that way.
 
