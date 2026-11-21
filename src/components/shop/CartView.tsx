@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Bag, Minus, Plus, Trash, PencilSimple } from "@phosphor-icons/react/dist/ssr";
-import { CartError, cartStore, type CartItem } from "@/lib/commerce/cart";
+import { CartError, cartStore, MAX_QUANTITY, type CartItem } from "@/lib/commerce/cart";
 import { getProduct, getVariant } from "@/lib/commerce/catalog";
 import { useShopCopy } from "@/lib/commerce/copy";
 import { useCart } from "@/lib/commerce/hooks";
@@ -32,7 +32,7 @@ function CartRow({ item, onStatus }: { item: CartItem; onStatus: (status: "remov
       </div>
       <DownloadCard selection={item} />
     </div>
-    <div className="shop-cart-quantity"><span>{c("qty")}</span><div className="shop-quantity-stepper"><button type="button" aria-label={c("fewer")} disabled={item.qty <= 1} onClick={() => setQuantity(item.qty - 1)}><Minus size={17} aria-hidden /></button><output aria-label={c("qty")}>{item.qty.toLocaleString(locale)}</output><button type="button" aria-label={c("more")} disabled={item.qty >= 10} onClick={() => setQuantity(item.qty + 1)}><Plus size={17} aria-hidden /></button></div></div>
+    <div className="shop-cart-quantity"><span>{c("qty")}</span><div className="shop-quantity-stepper"><button type="button" aria-label={c("fewer")} disabled={item.qty <= 1} onClick={() => setQuantity(item.qty - 1)}><Minus size={17} aria-hidden /></button><output aria-label={c("qty")}>{item.qty.toLocaleString(locale)}</output><button type="button" aria-label={c("more")} disabled={item.qty >= MAX_QUANTITY} onClick={() => setQuantity(item.qty + 1)}><Plus size={17} aria-hidden /></button></div></div>
   </article>;
 }
 export function CartView({ selection }: { selection: Selection | null }) {

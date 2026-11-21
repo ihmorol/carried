@@ -31,8 +31,8 @@ export const CATALOG: readonly Product[] = [
   { slug: "gift-set", category: "gift-set", name: { en: "Gift set", bn: "উপহার সেট" }, description: { en: "Your line packed to be given — cards, a bookmark, and bookplates together in one box.", bn: "উপহার দেওয়ার জন্য ভরা আপনার কথা — এক বাক্সে কার্ড, একটি বুকমার্ক আর বুকপ্লেট।" }, availability: "concept", price: undefined, variants: boxVariants },
   { slug: "club-pack", category: "club-pack", name: { en: "Book club pack", bn: "বুক ক্লাব প্যাক" }, description: { en: "One card in many copies — for a book club, a classroom, or a stall at the book fair.", bn: "একটি কার্ডের অনেক কপি — বুক ক্লাব, ক্লাসরুম বা বইয়ের মেলার স্টলের জন্য।" }, availability: "concept", price: undefined, variants: packVariants },
 ];
-export function getProduct(slug: string, category?: ProductSlug): Product | undefined {
-  return CATALOG.find(p => p.slug === slug && (!category || p.category === category));
+export function getProduct(slug: string): Product | undefined {
+  return CATALOG.find(p => p.slug === slug);
 }
 export function getVariant(product: Product, id: string): ProductVariant | undefined {
   return product.variants.find(v => v.id === id);

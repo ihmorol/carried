@@ -57,7 +57,6 @@ export const EDITION_SHARED_COPY = {
   afterReading: { latin: "After reading", bengali: "বইটি পড়ে" },
   carriedBy: { latin: "Carried by", bengali: "সঙ্গে রেখেছেন" },
   dated: { latin: "Dated", bengali: "তারিখ" },
-  languageName: { latin: "English", bengali: "বাংলা" },
 } as const satisfies Record<string, Record<CardScript, string>>;
 
 export const editionCopy = (edition: CardTemplateId, script: CardScript) => EDITION_COPY[edition][script];

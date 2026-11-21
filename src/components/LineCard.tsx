@@ -14,8 +14,7 @@ import { LineActions } from "./LineActions";
 /** The three approved collectible editions, ported from the design board.
  * The artwork is a fixed 4:5 painted surface; the vote/actions row lives
  * OUTSIDE it in page tokens. LineCard keeps its prop API for Composer,
- * shop, shelf and feed callers. The legacy `size` hint remains accepted;
- * edition type is content-fitted, so it no longer selects a clamp. */
+ * shop, shelf and feed callers; edition type is content-fitted. */
 export function LineCard({
   payload, book, id, animateStamp = false, asLink = false,
   className = "", votes = 0, actions = true, onChange,
@@ -23,7 +22,6 @@ export function LineCard({
   payload: LinePayload;
   book?: Book;
   id: string;
-  size?: "sm" | "lg";
   animateStamp?: boolean;
   asLink?: boolean;
   className?: string;

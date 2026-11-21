@@ -1,7 +1,7 @@
 /**
  * The shelf. A curated list of books people actually carry lines out of.
- * No cover images by design, every book is drawn as a book-cloth spine,
- * so the wall renders instantly and nothing can ever 404.
+ * Every book renders as a book-cloth spine; optional resolved cover plates
+ * (book-covers.ts, /api/covers) layer on top for the shelf wall and cards.
  */
 
 export type Book = {

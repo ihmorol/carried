@@ -5,7 +5,7 @@ import { Check, Bag } from "@phosphor-icons/react/dist/ssr";
 import { LineCard } from "@/components/LineCard";
 import { encodePayload } from "@/lib/line";
 import { LINE_MAX, NAME_MAX } from "@/lib/site";
-import { CartError, cartStore, makeCartItem } from "@/lib/commerce/cart";
+import { CartError, cartStore, makeCartItem, MAX_QUANTITY } from "@/lib/commerce/cart";
 import { getVariant, type Product } from "@/lib/commerce/catalog";
 import { useShopCopy } from "@/lib/commerce/copy";
 import { useCart, useShopSelection } from "@/lib/commerce/hooks";
@@ -56,7 +56,7 @@ export function Personalizer({ product, initial, example }: { product: Product; 
           <label className="shop-field"><span>{c("lineText")}</span><textarea className="field-input" value={selection.payload.q} onChange={event => editText("q", event.target.value)} maxLength={LINE_MAX} rows={3} required /></label>
           <label className="shop-field"><span>{c("signature")}</span><input className="field-input" value={selection.payload.n} onChange={event => editText("n", event.target.value)} maxLength={NAME_MAX} required /></label>
           <fieldset className="shop-fieldset"><legend>{c("placement")}</legend><div className="shop-placement-options">{product.variants.map(option => <label key={option.id} className={option.id === variant ? "is-selected" : ""}><input type="radio" name="placement" value={option.id} checked={variant === option.id} onChange={() => { setVariant(option.id); setStatus(null); }} />{text(option.name)}</label>)}</div></fieldset>
-          <label className="shop-field shop-quantity-field"><span>{c("qty")}</span><input className="field-input" type="number" min={1} max={10} step={1} required inputMode="numeric" value={qty} onChange={event => { setQty(event.target.value); setStatus(null); }} aria-describedby="shop-qty-hint" /><small id="shop-qty-hint">{c("qtyHint")}</small></label>
+          <label className="shop-field shop-quantity-field"><span>{c("qty")}</span><input className="field-input" type="number" min={1} max={MAX_QUANTITY} step={1} required inputMode="numeric" value={qty} onChange={event => { setQty(event.target.value); setStatus(null); }} aria-describedby="shop-qty-hint" /><small id="shop-qty-hint">{c("qtyHint")}</small></label>
           <p className="shop-note">{c("noPrice")}</p>
           <button type="submit" className="ui-button shop-save-button" disabled={!ready || !validText || !linkRecovered || status === "saved"}>{status === "saved" ? <Check size={19} aria-hidden /> : <Bag size={19} aria-hidden />}{c(initial.editKey ? "replace" : "save")}</button>
           {status === "saved" && <div className="shop-save-status" role="status"><p>{c(initial.editKey ? "replaced" : "saved")}</p><Link className="shop-text-link" href={selectionHref("/shop/cart", selection)}>{c("cart")}</Link></div>}

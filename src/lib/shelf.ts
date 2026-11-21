@@ -1,6 +1,6 @@
 import { LINE_ID_MAX, validateLinePayload, type LinePayload } from "./line";
 
-const SHELF_KEY = "carried.shelf.v1";
+export const SHELF_KEY = "carried.shelf.v1";
 const NAME_KEY = "carried.name.v1";
 const EVENT = "carried:shelf-change";
 let readBlocked = false;

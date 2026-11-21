@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { getShelf } from "@/lib/shelf";
+import { getShelf, SHELF_KEY } from "@/lib/shelf";
 import { cartStore, CART_KEY } from "./cart";
 import { validateSelection, type Selection } from "./personalization";
 
@@ -32,7 +32,7 @@ export function useShopSelection(initial: Selection | null, example: Selection, 
       const entries = refresh();
       if (!cancelled && !initial && !invalid && entries[0]) setSelection(entries[0]);
     });
-    function onStorage(event: StorageEvent) { if (event.key === "carried.shelf.v1" || event.key === null) refresh(); }
+    function onStorage(event: StorageEvent) { if (event.key === SHELF_KEY || event.key === null) refresh(); }
     window.addEventListener("storage", onStorage);
     return () => { cancelled = true; window.removeEventListener("storage", onStorage); };
   }, [initial, invalid]);
