@@ -415,6 +415,24 @@ describe("resolved restyle", () => {
   });
 });
 
+describe("underline failures", () => {
+  it("rolls the underline back with the retry message when the vote POST fails", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 500 } as unknown as Response);
+    wrap(<UnderlineButton lineId="fail-line" initialVotes={2} />); await flush();
+    fireEvent.click(screen.getByRole("button", { name: /Underline/ }));
+    expect(await screen.findByText("Could not underline. Try again.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Underline/ }).getAttribute("aria-pressed")).toBe("false");
+    expect(JSON.parse(window.localStorage.getItem("carried.votes.v1") ?? "{}")).not.toHaveProperty("fail-line");
+  });
+  it("refuses a malformed vote response instead of storing it", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({ votes: -1, voted: true }) } as unknown as Response);
+    wrap(<UnderlineButton lineId="poison-line" initialVotes={0} />); await flush();
+    fireEvent.click(screen.getByRole("button", { name: /Underline/ }));
+    expect(await screen.findByText(/Could not underline/)).toBeTruthy();
+    expect(JSON.parse(window.localStorage.getItem("carried.votes.v1") ?? "{}")).not.toHaveProperty("poison-line");
+  });
+});
+
 describe("design selection", () => {
   it("does not replace an intentionally blank restyle signature with the remembered name", async () => {
     window.localStorage.setItem("carried.name.v1", "Device Reader");
